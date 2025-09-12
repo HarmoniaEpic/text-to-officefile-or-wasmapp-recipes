@@ -420,7 +420,7 @@
 
 ## 📜 ライセンス
 
-本README及び4つのレシピファイル（PPTX-RECIPE.md、DOCX-RECIPE.md、XLSX-RECIPE.md、PDF-RECIPE.md）はMITライセンスの下で提供されています。
+本 README と TECHNICAL_DOCUMENTATION 及び4つのレシピファイル（PPTX-RECIPE.md、DOCX-RECIPE.md、XLSX-RECIPE.md、PDF-RECIPE.md）は MIT ライセンスの下で提供されています。
 
 **MITライセンスとは：**
 - ✅ 自由に使用できます
