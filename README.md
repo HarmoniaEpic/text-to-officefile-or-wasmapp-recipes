@@ -2,7 +2,7 @@
 
 ## これは何？
 
-**AIに頼むだけで、PowerPoint・Word・Excel・PDFファイルが自動で作れる**便利な機能です！
+**添付してAIに頼むだけで、PowerPoint・Word・Excel・PDFファイルが自動で作れる**便利なレシピです！
 
 4つのレシピファイル（PPTX・DOCX・XLSX・PDF）を使って、AIがあなたの要望通りのOffice文書やPDFを生成します。
 
