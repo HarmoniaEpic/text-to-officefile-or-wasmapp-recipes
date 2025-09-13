@@ -1,4 +1,4 @@
-# **DOCX自動生成ページ レシピ v3.0**
+# **DOCX自動生成ページ レシピ v4.0**
 **AIによるワンクリック・ダウンロードページ生成の完全ガイド**
 
 ---
@@ -7,12 +7,17 @@
 
 生成AIがユーザーの指示に基づき、Word文書（.docx）をブラウザ上で生成・ダウンロードできる**単一HTMLファイル**を自動作成するための完全な指示書です。
 
-### **v3.0の特徴**
+### **v4.0の特徴**
 - 🎯 実装ルールを優先順位別に明確化
-- 🖼️ 画像はすべてプレースホルダー方式（直接埋め込みなし）
+- 🖼️ 画像プレースホルダーは**オプション機能**（明示的指示がある場合のみ使用）
 - 📝 Word特有の高度な機能を網羅
 - 🔍 エラー対処の手順と実例を完備
 - 📊 段階的な実装例で学習しやすい
+
+### **重要な変更（v3.x → v4.0）**
+- **デフォルト動作の変更**: 画像プレースホルダーは自動配置されません
+- **明示的指示が必要**: 画像が必要な場合は「画像を配置」等の明確な指示が必要
+- **シンプルさ重視**: デフォルトはテキストベースのクリーンな文書
 
 ---
 
@@ -91,17 +96,18 @@ js.docx_base64_data = docx_base64
 - Pythonコード内の文書内容
 - 文書のスタイル・レイアウト
 - ダウンロードファイル名
-- プレースホルダーの配置と内容
+- プレースホルダーの配置と内容（使用する場合）
 
 ---
 
-## **🖼️ 画像プレースホルダー機能**
+## **🖼️ 画像プレースホルダー機能（オプション）**
 
 ### **基本方針**
-**すべての画像はプレースホルダーとして処理されます**
-- 画像の直接埋め込みは行いません（base64エンコードによるコンテキストウィンドウ超過を防ぐため）
-- 実際の画像挿入はユーザーがWordを開いて行います
-- AIは最適な配置位置と推奨サイズを提案します
+**画像プレースホルダーは完全にオプションです**
+- 明示的な指示がない限り、画像プレースホルダーは配置しません
+- ユーザーが画像について言及した場合のみ、プレースホルダーを作成
+- 画像ファイルが添付されても、常にプレースホルダーとして処理（直接埋め込みなし）
+- デフォルトはテキストベースのクリーンな文書
 
 ### **なぜプレースホルダー方式なのか**
 - **HTMLファイルの軽量化**: 数KBで済む（画像埋め込みだと数MB〜数十MB）
@@ -110,21 +116,35 @@ js.docx_base64_data = docx_base64
 - **共有性**: 複数人での使い回しが容易
 - **著作権**: 画像の権利問題を回避
 
+### **プレースホルダーを使用する条件**
+以下のような指示があった場合にプレースホルダーを配置：
+
+1. **明示的な画像要求**
+   - 「画像を入れて」「写真を配置」「ロゴを追加」
+   - 「図表を挿入」「グラフを配置」「イラストを追加」
+   
+2. **画像ファイルの添付**
+   - 画像ファイルが添付された場合は、そのファイル名でプレースホルダー作成
+   - 添付画像は参照情報として使用（直接埋め込みはしない）
+
+3. **視覚要素への明確な言及**
+   - 「ビジュアルを追加」「図解を入れて」等の明確な指示
+
+### **プレースホルダーを使用しない場合**
+- 単に「文書を作って」「報告書を作成」等の一般的な指示
+- 画像に関する言及がない場合
+- 「テキストのみ」「シンプルに」等の指示がある場合
+- 文字情報だけで十分な場合
+
 ### **プレースホルダーに含める情報**
+プレースホルダーを使用する場合は、以下の情報を含めます：
 1. **推奨ファイル名または説明**（例：`logo.png`、`メイン画像`）
-2. **配置位置**（例：「ヘッダー右上」「本文中央」）
+2. **配置位置**（例：「ヘッダー右上」「本文中央」「左側」）
 3. **推奨サイズ**（例：`600x400px`、`3x2 inches`）
 4. **用途**（例：「企業ロゴ」「説明図」「グラフ」）
 5. **キャプション案**（例：「図1: システム構成図」）
 
-### **実装時の判断基準**
-ユーザーが画像について言及した場合：
-- 「ロゴを入れて」→ ヘッダーにロゴプレースホルダー作成
-- 「図表を配置」→ 本文中に図表プレースホルダー作成
-- 「写真を追加」→ 写真用プレースホルダー作成
-- 画像ファイルが添付された場合 → ファイル名を参考にプレースホルダー作成
-
-### **推奨配置パターン**
+### **推奨配置パターン（使用する場合）**
 | 文書タイプ | 画像の種類 | 推奨位置 | 推奨サイズ |
 |-----------|-----------|---------|-----------|
 | レポート | ロゴ | ヘッダー右上 | 2×1 inches |
@@ -404,8 +424,9 @@ AttributeError: 'Document' object has no attribute 'add_heading'
 
 ## **💡 実装例**
 
-### **レベル1: 最小限の実装**
+### **レベル1: 最小限の実装（画像なし）**
 ```python
+# デフォルト動作：画像プレースホルダーなし
 from docx import Document
 from io import BytesIO
 import base64
@@ -414,14 +435,16 @@ import js
 doc = Document()
 doc.add_heading('シンプルな文書', 0)
 doc.add_paragraph('基本的な段落です。')
+doc.add_paragraph('テキストのみで構成された文書です。')
 
+# 保存処理
 docx_io = BytesIO()
 doc.save(docx_io)
 docx_io.seek(0)
 js.docx_base64_data = base64.b64encode(docx_io.read()).decode('utf-8')
 ```
 
-### **レベル2: 基本的な文書構成**
+### **レベル2: 基本的な文書構成（画像なし）**
 ```python
 from docx import Document
 from docx.shared import Pt, Inches
@@ -483,8 +506,9 @@ docx_io.seek(0)
 js.docx_base64_data = base64.b64encode(docx_io.read()).decode('utf-8')
 ```
 
-### **レベル3: 画像プレースホルダー付き**
+### **レベル3: オプション - 画像プレースホルダー付き（明示的指示がある場合）**
 ```python
+# ※ユーザーが「画像を配置してください」と明示的に指示した場合のみ使用
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -494,9 +518,24 @@ from io import BytesIO
 import base64
 import js
 
+def add_image_placeholder(doc, position_text, size_text, description):
+    """画像プレースホルダーを追加（オプション機能）"""
+    # プレースホルダー用の表を作成
+    table = doc.add_table(rows=1, cols=1)
+    table.style = 'Table Grid'
+    cell = table.cell(0, 0)
+    cell.text = description
+    
+    # 背景色を設定
+    shading_elm = parse_xml(r'<w:shd {} w:fill="F0F0F0"/>'.format(nsdecls('w')))
+    cell._element.get_or_add_tcPr().append(shading_elm)
+    
+    return table
+
 doc = Document()
 
-# ヘッダーロゴプレースホルダー
+# ヘッダー（ユーザーがロゴを要求した場合）
+# 例：「ロゴを配置してください」という指示があった場合
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 run = p.add_run('【ロゴ画像挿入位置】')
@@ -508,18 +547,14 @@ p.add_run('\nlogo.png (2×1 inches)')
 # メインタイトル
 doc.add_heading('製品提案書', 0)
 
-# カバー画像プレースホルダー
-table = doc.add_table(rows=1, cols=1)
-table.style = 'Table Grid'
-cell = table.cell(0, 0)
-cell.text = ('【カバー画像プレースホルダー】\n'
-             'cover_image.jpg\n'
-             '推奨: 6×4 inches\n'
-             '製品の魅力を伝えるメインビジュアル')
-
-# セルの背景色
-shading_elm = parse_xml(r'<w:shd {} w:fill="E6F2FF"/>'.format(nsdecls('w')))
-cell._element.get_or_add_tcPr().append(shading_elm)
+# カバー画像プレースホルダー（ユーザーが画像を要求した場合）
+# 例：「カバー画像を入れてください」という指示があった場合
+add_image_placeholder(
+    doc,
+    "タイトル下",
+    "6×4 inches",
+    '【カバー画像プレースホルダー】\ncover_image.jpg\n推奨: 6×4 inches\n製品の魅力を伝えるメインビジュアル'
+)
 
 doc.add_page_break()
 
@@ -527,7 +562,8 @@ doc.add_page_break()
 doc.add_heading('1. 製品概要', level=1)
 doc.add_paragraph('弊社の製品について説明します。')
 
-# 製品画像プレースホルダー
+# 製品画像プレースホルダー（ユーザーが要求した場合）
+# 例：「製品画像を配置してください」という指示があった場合
 doc.add_paragraph()
 p = doc.add_paragraph('【図1: 製品画像】')
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -535,24 +571,17 @@ run = p.runs[0]
 run.bold = True
 run.font.color.rgb = RGBColor(0, 100, 200)
 
-table = doc.add_table(rows=1, cols=1)
-table.alignment = WD_ALIGN_PARAGRAPH.CENTER
-cell = table.cell(0, 0)
-cell.text = ('product_image.png\n'
-             '推奨: 4×3 inches\n'
-             '製品の外観')
+add_image_placeholder(
+    doc,
+    "本文中央",
+    "4×3 inches",
+    'product_image.png\n推奨: 4×3 inches\n製品の外観'
+)
 
 doc.add_heading('2. 特徴', level=1)
 doc.add_paragraph('• 高性能', style='List Bullet')
 doc.add_paragraph('• 低価格', style='List Bullet')
 doc.add_paragraph('• 使いやすい', style='List Bullet')
-
-# グラフプレースホルダー
-doc.add_heading('3. 性能比較', level=1)
-p = doc.add_paragraph('【グラフ挿入位置】')
-p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-p.add_run('\nperformance_chart.png (5×3 inches)')
-p.add_run('\n他社製品との性能比較グラフ')
 
 # 保存
 docx_io = BytesIO()
@@ -561,36 +590,66 @@ docx_io.seek(0)
 js.docx_base64_data = base64.b64encode(docx_io.read()).decode('utf-8')
 ```
 
-### **レベル4: 高度な書式設定とスタイル**
+### **レベル4: 動的判定による高度な実装**
 ```python
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor, Cm
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.section import WD_SECTION
+from docx.oxml import parse_xml
+from docx.oxml.ns import nsdecls
 from io import BytesIO
 import base64
 import js
 
-def add_image_placeholder(doc, position, size, description):
-    """汎用的な画像プレースホルダー追加関数"""
-    table = doc.add_table(rows=1, cols=1)
-    table.style = 'Table Grid'
-    cell = table.cell(0, 0)
-    cell.text = description
+def should_add_image_placeholder(user_request):
+    """ユーザーの要求に画像指示が含まれるか判定"""
     
-    # 背景色設定
-    from docx.oxml import parse_xml
-    from docx.oxml.ns import nsdecls
-    shading_elm = parse_xml(r'<w:shd {} w:fill="F0F0F0"/>'.format(nsdecls('w')))
-    cell._element.get_or_add_tcPr().append(shading_elm)
+    # 画像関連のキーワード
+    image_keywords = [
+        '画像', 'イメージ', '写真', 'ロゴ', '図',
+        'グラフ', 'チャート', 'イラスト', 'ビジュアル',
+        'image', 'photo', 'picture', 'logo', 'visual'
+    ]
     
-    if position == 'center':
-        table.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    elif position == 'right':
-        table.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    # 明示的な指示パターン
+    explicit_patterns = [
+        '入れ', '配置', '追加', '挿入', 'スペース', '場所'
+    ]
     
-    return table
+    # デフォルトはFalse（画像なし）
+    request_lower = user_request.lower() if user_request else ""
+    
+    for keyword in image_keywords:
+        if keyword in request_lower:
+            for pattern in explicit_patterns:
+                if pattern in request_lower:
+                    return True
+    
+    return False
+
+def add_image_placeholder_if_needed(doc, description, user_wants_image):
+    """条件付きでプレースホルダーを追加"""
+    if user_wants_image:
+        table = doc.add_table(rows=1, cols=1)
+        table.style = 'Table Grid'
+        cell = table.cell(0, 0)
+        cell.text = description
+        
+        # 背景色設定
+        shading_elm = parse_xml(r'<w:shd {} w:fill="E6F2FF"/>'.format(nsdecls('w')))
+        cell._element.get_or_add_tcPr().append(shading_elm)
+        
+        return table
+    return None
+
+# ユーザーの要求を仮定（実際にはAIが判断）
+user_request = "技術仕様書を作成してください"  # この場合、画像なし
+# user_request = "ロゴを配置した技術仕様書を作成してください"  # この場合、画像あり
+
+# 画像の要否を判定
+add_images = should_add_image_placeholder(user_request)
 
 doc = Document()
 
@@ -623,19 +682,20 @@ subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
 date_p = doc.add_paragraph('2025年1月')
 date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-# ロゴプレースホルダー
-add_image_placeholder(
-    doc, 'center', (3, 2),
-    '【企業ロゴ】\ncompany_logo.png\n3×2 inches\n中央配置'
+# 条件付きでロゴプレースホルダーを追加
+add_image_placeholder_if_needed(
+    doc,
+    '【企業ロゴ】\ncompany_logo.png\n3×2 inches\n中央配置',
+    user_wants_image=add_images
 )
 
 doc.add_page_break()
 
-# 目次プレースホルダー
+# 目次
 doc.add_heading('目次', level=1)
-p = doc.add_paragraph('【目次プレースホルダー】')
-p.add_run('\n※ Wordで「参考資料」→「目次」から自動生成してください')
-p.add_run('\n※ 見出しスタイルを使用している箇所が自動的に目次に含まれます')
+p = doc.add_paragraph('1. はじめに ... 3')
+p = doc.add_paragraph('2. 仕様一覧 ... 4')
+p = doc.add_paragraph('3. 技術詳細 ... 5')
 
 doc.add_page_break()
 
@@ -643,19 +703,19 @@ doc.add_page_break()
 doc.add_heading('1. はじめに', level=1)
 doc.add_paragraph('本書は製品の技術仕様について記載します。')
 
-# 複雑な表
+# セクション2
 doc.add_heading('2. 仕様一覧', level=1)
 table = doc.add_table(rows=5, cols=4)
 table.style = 'Medium Grid 1 Accent 1'
 
-# ヘッダー行をマージ
+# ヘッダー行
 table.cell(0, 0).merge(table.cell(0, 3))
 table.cell(0, 0).text = '製品仕様'
 
 # サブヘッダー
 headers = ['項目', '仕様', '備考', '参照']
-for i, header in enumerate(headers):
-    table.cell(1, i).text = header
+for idx, header in enumerate(headers):
+    table.cell(1, idx).text = header
 
 # データ
 specs = [
@@ -670,21 +730,26 @@ for i, (item, spec, note, ref) in enumerate(specs, 2):
     table.cell(i, 2).text = note
     table.cell(i, 3).text = ref
 
-# 図表プレースホルダー
-doc.add_paragraph()
-add_image_placeholder(
-    doc, 'center', (5, 4),
-    '【図1: 製品寸法図】\ndimensions.png\n5×4 inches\nCADから出力した寸法図'
-)
+# 条件付きで図表プレースホルダーを追加
+if add_images:
+    doc.add_paragraph()
+    add_image_placeholder_if_needed(
+        doc,
+        '【図1: 製品寸法図】\ndimensions.png\n5×4 inches\nCADから出力した寸法図',
+        user_wants_image=add_images
+    )
 
 # セクション区切り
 doc.add_section(WD_SECTION.NEW_PAGE)
 
 # 付録
 doc.add_heading('付録A: 試験データ', level=1)
-add_image_placeholder(
-    doc, 'left', (6, 4),
-    '【試験データグラフ】\ntest_results.png\n6×4 inches\n温度試験の結果グラフ'
+
+# 条件付きでグラフプレースホルダーを追加
+add_image_placeholder_if_needed(
+    doc,
+    '【試験データグラフ】\ntest_results.png\n6×4 inches\n温度試験の結果グラフ',
+    user_wants_image=add_images
 )
 
 # フッター情報
@@ -788,11 +853,11 @@ trPr.append(trHeight)
 - [ ] エラーオーバーレイのHTMLが完全である
 
 ### **プレースホルダー確認項目**
-- [ ] 画像の直接埋め込みを行っていない
-- [ ] プレースホルダーに必要な情報が含まれている
-- [ ] 視覚的に分かりやすい表示（枠線や背景色）
-- [ ] 推奨サイズが明記されている
-- [ ] キャプション案が含まれている
+- [ ] デフォルトでは画像プレースホルダーを配置しない
+- [ ] 画像の直接埋め込みを行っていない（必須）
+- [ ] ユーザーが画像を明示的に要求した場合のみプレースホルダー配置
+- [ ] 画像ファイル添付時もプレースホルダー処理
+- [ ] プレースホルダーには必要な情報が含まれている（使用時）
 
 ### **動作確認項目**
 - [ ] ページが正常に読み込まれる
@@ -860,7 +925,7 @@ spacing = Mm(10)  # 10mm
 3. **Pythonコードで文書内容を定義**
 
 ```python
-# 最小限の変更例
+# 最小限の変更例（画像なしのシンプルな文書）
 doc = Document()
 doc.add_heading('あなたのタイトルをここに', 0)
 doc.add_paragraph('本文をここに記述')
@@ -869,8 +934,11 @@ doc.add_paragraph('本文をここに記述')
 
 ### **画像が必要な場合**
 
+ユーザーが明示的に画像を要求した場合のみ：
+
 1. **プレースホルダーを配置**
 ```python
+# 「画像を配置してください」という指示があった場合
 table = doc.add_table(rows=1, cols=1)
 table.style = 'Table Grid'
 table.cell(0, 0).text = '【画像】\nここに画像を配置'
@@ -884,6 +952,13 @@ table.cell(0, 0).text = '【画像】\nここに画像を配置'
 ---
 
 ## **📝 更新履歴**
+
+- **v4.0** (2025-01-17)
+  - 画像プレースホルダーを**オプション機能**に変更
+  - デフォルトではプレースホルダーを配置しない仕様に
+  - 明示的な指示がある場合のみプレースホルダー作成
+  - 画像ファイル添付時も常にプレースホルダー処理（直接埋め込みなし）
+  - XLSX-RECIPE.mdのCSV処理と同じ設計思想を採用
 
 - **v3.0** (2025-01-17)
   - 実装ルールを優先順位別に再構成
@@ -930,8 +1005,14 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
 ### **よくある質問**
 
-**Q: 画像を直接埋め込みたい**
-A: base64エンコードによるコンテキストウィンドウ超過を防ぐため、プレースホルダー方式を採用しています。
+**Q: 画像はどうやって追加しますか？**
+A: 画像が必要な場合は「画像を配置してください」と明示的に指示してください。デフォルトでは画像プレースホルダーは配置されません。
+
+**Q: 以前のバージョンのように自動で画像スペースを作りたい**
+A: 「画像プレースホルダーを含めてください」と指示すれば、v3.xと同様の動作になります。
+
+**Q: 画像ファイルを添付したのに埋め込まれません**
+A: 仕様により、画像は常にプレースホルダーとして処理されます。これによりファイルサイズを軽量に保ち、後から自由に画像を変更できます。
 
 **Q: プレースホルダーの見た目を変えたい**
 A: 表のスタイルや背景色を`table.style`や`shading_elm`で自由にカスタマイズ可能です。
@@ -944,4 +1025,21 @@ A: プレースホルダーを配置し、Wordの目次機能を使用してく�
 
 ---
 
-**これでレシピv3.0の全文です。AIが正しく理解し、適切なDOCX生成ページを作成できるよう、詳細な説明と実例を含めました。**
+## **v3.x → v4.0 移行ガイド**
+
+### **主な変更点**
+- 画像プレースホルダーがデフォルトで配置されなくなりました
+- 画像が必要な場合は明示的に「画像を配置」等の指示が必要です
+
+### **互換性について**
+- 以前と同様の動作を望む場合：「画像プレースホルダーを含めて」と指示
+- シンプルな文書を望む場合：特別な指示は不要（新しいデフォルト）
+
+### **メリット**
+- よりクリーンでシンプルな文書がデフォルトに
+- 必要な時だけ画像スペースが追加される
+- ファイルサイズが常に軽量
+
+---
+
+**これでレシピv4.0の全文です。AIが正しく理解し、ユーザーの意図に沿った適切なDOCX生成ページを作成できるよう、詳細な説明と実例を含めました。**

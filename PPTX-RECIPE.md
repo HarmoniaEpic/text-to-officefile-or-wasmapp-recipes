@@ -1,4 +1,4 @@
-# **PPTX自動生成ページ レシピ v3.4**
+# **PPTX自動生成ページ レシピ v4.0**
 **AIによるワンクリック・ダウンロードページ生成の完全ガイド**
 
 ---
@@ -7,12 +7,17 @@
 
 生成AIがユーザーの指示に基づき、PowerPointファイル（.pptx）をブラウザ上で生成・ダウンロードできる**単一HTMLファイル**を自動作成するための完全な指示書です。
 
-### **v3.4の特徴**
+### **v4.0の特徴**
 - 🎯 実装ルールを優先順位別に明確化
-- 🖼️ 画像はすべてプレースホルダー方式（直接埋め込みなし）
+- 🖼️ 画像プレースホルダーは**オプション機能**（明示的指示がある場合のみ使用）
 - 📝 詳細な理由説明を含む充実した内容
 - 🔍 エラー対処の手順と実例を完備
 - 📊 実用的な配置ガイドを提供
+
+### **重要な変更（v3.x → v4.0）**
+- **デフォルト動作の変更**: 画像プレースホルダーは自動配置されません
+- **明示的指示が必要**: 画像が必要な場合は「画像を配置」等の明確な指示が必要
+- **シンプルさ重視**: デフォルトはテキストベースのクリーンなプレゼンテーション
 
 ---
 
@@ -91,17 +96,18 @@ js.pptx_base64_data = pptx_base64
 - Pythonコード内のプレゼンテーション内容
 - スライドのデザイン・レイアウト
 - ダウンロードファイル名
-- プレースホルダーの配置と内容
+- プレースホルダーの配置と内容（使用する場合）
 
 ---
 
-## **🖼️ 画像プレースホルダー機能**
+## **🖼️ 画像プレースホルダー機能（オプション）**
 
 ### **基本方針**
-**すべての画像はプレースホルダーとして処理されます**
-- 画像の直接埋め込みは行いません（base64エンコードによるコンテキストウィンドウ超過を防ぐため）
-- 実際の画像挿入はユーザーがPowerPointを開いて行います
-- AIは最適な配置位置と推奨サイズを提案します
+**画像プレースホルダーは完全にオプションです**
+- 明示的な指示がない限り、画像プレースホルダーは配置しません
+- ユーザーが画像について言及した場合のみ、プレースホルダーを作成
+- 画像ファイルが添付されても、常にプレースホルダーとして処理（直接埋め込みなし）
+- デフォルトはテキストベースのクリーンなプレゼンテーション
 
 ### **なぜプレースホルダー方式なのか**
 - **HTMLファイルの軽量化**: 数KBで済む（画像埋め込みだと数MB〜数十MB）
@@ -110,27 +116,40 @@ js.pptx_base64_data = pptx_base64
 - **共有性**: 複数人での使い回しが容易
 - **著作権**: 画像の権利問題を回避
 
+### **プレースホルダーを使用する条件**
+以下のような指示があった場合にプレースホルダーを配置：
+
+1. **明示的な画像要求**
+   - 「画像を入れて」「写真を配置」「ロゴを追加」
+   - 「図表を挿入」「グラフを配置」「イラストを追加」
+   
+2. **画像ファイルの添付**
+   - 画像ファイルが添付された場合は、そのファイル名でプレースホルダー作成
+   - 添付画像は参照情報として使用（直接埋め込みはしない）
+
+3. **視覚要素への明確な言及**
+   - 「ビジュアルを追加」「図解を入れて」等の明確な指示
+
+### **プレースホルダーを使用しない場合**
+- 単に「プレゼンを作って」等の一般的な指示
+- 画像に関する言及がない場合
+- 「テキストのみ」「シンプルに」等の指示がある場合
+- 文字情報だけで十分な場合
+
 ### **プレースホルダーに含める情報**
+プレースホルダーを使用する場合は、以下の情報を含めます：
 1. **推奨ファイル名または説明**（例：`logo.png`、`メイン画像`）
 2. **配置位置**（例：「右下」「中央」「左側」）
 3. **推奨サイズ**（例：`800x600px`、`4x3 inches`）
 4. **用途**（例：「企業ロゴ」「メインビジュアル」「背景画像」）
 
-### **実装時の判断基準**
-ユーザーが画像について言及した場合：
-- 「ロゴを入れて」→ ロゴプレースホルダー作成
-- 「画像を配置」→ 汎用プレースホルダー作成
-- 「写真スペースを」→ 写真用プレースホルダー作成
-- 画像ファイルが添付された場合 → ファイル名を参考にプレースホルダー作成
-
-### **推奨配置パターン**
+### **推奨配置パターン（使用する場合）**
 | スライドタイプ | 画像の種類 | 推奨位置 | 推奨サイズ |
 |---------------|-----------|---------|-----------|
 | タイトル | ロゴ | 右下/左下 | 2×1 inches |
 | コンテンツ | メイン画像 | 右側 | 4×3 inches |
 | データ | グラフ/図表 | 中央 | 6×4 inches |
 | まとめ | アイコン | 箇条書き横 | 1×1 inches |
-| 背景 | 装飾画像 | 全面 | 10×5.625 inches |
 
 ---
 
@@ -406,24 +425,34 @@ AttributeError: 'NoneType' object has no attribute 'text'
 
 ## **💡 実装例**
 
-### **レベル1: 最小限の実装**
+### **レベル1: 最小限の実装（画像なし）**
 ```python
+# デフォルト動作：画像プレースホルダーなし
 from pptx import Presentation
 from io import BytesIO
 import base64
 import js
 
 prs = Presentation()
-slide = prs.slides.add_slide(prs.slide_layouts[0])
-slide.shapes.title.text = "シンプルなタイトル"
 
+# シンプルなタイトルスライド
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+slide.shapes.title.text = "シンプルなプレゼンテーション"
+slide.placeholders[1].text = "テキストのみで構成"
+
+# コンテンツスライド
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "内容"
+slide.placeholders[1].text = "• ポイント1\n• ポイント2\n• ポイント3"
+
+# 保存処理
 pptx_io = BytesIO()
 prs.save(pptx_io)
 pptx_io.seek(0)
 js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
 ```
 
-### **レベル2: 複数スライドの基本構成**
+### **レベル2: 複数スライドの基本構成（画像なし）**
 ```python
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -438,13 +467,25 @@ slide = prs.slides.add_slide(prs.slide_layouts[0])
 slide.shapes.title.text = "2025年度事業計画"
 slide.placeholders[1].text = "株式会社サンプル"
 
-# スライド2: 内容
+# スライド2: アジェンダ
 slide = prs.slides.add_slide(prs.slide_layouts[1])
-slide.shapes.title.text = "主要目標"
+slide.shapes.title.text = "アジェンダ"
 content = slide.placeholders[1]
-content.text = "• 売上20%増加\n• 新規顧客100社獲得\n• 顧客満足度95%達成"
+content.text = "1. 現状分析\n2. 目標設定\n3. 戦略概要\n4. 実行計画\n5. まとめ"
 
-# スライド3: まとめ
+# スライド3: 現状分析
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "現状分析"
+content = slide.placeholders[1]
+content.text = "• 市場成長率: 年15%\n• 当社シェア: 12%\n• 競合状況: 激化傾向\n• 強み: 技術力とサポート体制"
+
+# スライド4: 目標設定
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "2025年度目標"
+content = slide.placeholders[1]
+content.text = "• 売上: 前年比120%\n• 新規顧客: 100社獲得\n• 顧客満足度: 95%達成\n• 市場シェア: 15%へ拡大"
+
+# スライド5: まとめ
 slide = prs.slides.add_slide(prs.slide_layouts[1])
 slide.shapes.title.text = "まとめ"
 slide.placeholders[1].text = "目標達成に向けて全社一丸となって取り組みます"
@@ -456,8 +497,9 @@ pptx_io.seek(0)
 js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
 ```
 
-### **レベル3: 画像プレースホルダー付き**
+### **レベル3: オプション - 画像プレースホルダー付き（明示的指示がある場合）**
 ```python
+# ※ユーザーが「画像を配置してください」と明示的に指示した場合のみ使用
 from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
@@ -466,57 +508,8 @@ from io import BytesIO
 import base64
 import js
 
-prs = Presentation()
-
-# タイトルスライド（ロゴプレースホルダー付き）
-slide = prs.slides.add_slide(prs.slide_layouts[0])
-slide.shapes.title.text = "年次報告書 2025"
-slide.placeholders[1].text = "株式会社サンプル"
-
-# ロゴプレースホルダー
-textbox = slide.shapes.add_textbox(
-    left=Inches(7.5), top=Inches(4.5),
-    width=Inches(2), height=Inches(1)
-)
-text_frame = textbox.text_frame
-text_frame.text = "【画像推奨】\nlogo.png\n企業ロゴ\n200x100px"
-textbox.line.color.rgb = RGBColor(200, 200, 200)
-textbox.line.width = Pt(0.5)
-
-# コンテンツスライド（メイン画像プレースホルダー付き）
-slide = prs.slides.add_slide(prs.slide_layouts[1])
-slide.shapes.title.text = "製品紹介"
-slide.placeholders[1].text = "• 高性能\n• 使いやすい\n• コストパフォーマンス"
-
-# メイン画像プレースホルダー
-textbox = slide.shapes.add_textbox(
-    left=Inches(5), top=Inches(1.5),
-    width=Inches(4), height=Inches(3)
-)
-text_frame = textbox.text_frame
-text_frame.text = "【画像推奨】\nproduct_main.jpg\nメイン製品画像\n800x600px\n\n製品の全体像が\nよく分かる画像を\n配置してください"
-text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-textbox.fill.solid()
-textbox.fill.fore_color.rgb = RGBColor(240, 240, 240)
-
-# 保存
-pptx_io = BytesIO()
-prs.save(pptx_io)
-pptx_io.seek(0)
-js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
-```
-
-### **レベル4: 条件分岐を含む高度な実装**
-```python
-from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.dml.color import RGBColor
-from io import BytesIO
-import base64
-import js
-
 def add_image_placeholder(slide, position, size, description):
-    """汎用的な画像プレースホルダー追加関数"""
+    """画像プレースホルダーを追加（オプション機能）"""
     left, top = position
     width, height = size
     
@@ -536,11 +529,108 @@ def add_image_placeholder(slide, position, size, description):
 
 prs = Presentation()
 
-# スライドタイプに応じた処理
+# タイトルスライド
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+slide.shapes.title.text = "年次報告書 2025"
+slide.placeholders[1].text = "株式会社サンプル"
+
+# ロゴプレースホルダー（ユーザーが明示的に要求した場合）
+# 例：「ロゴを配置してください」という指示があった場合
+add_image_placeholder(
+    slide,
+    position=(Inches(7.5), Inches(4.5)),
+    size=(Inches(2), Inches(1)),
+    description="【画像推奨】\nlogo.png\n企業ロゴ\n200x100px"
+)
+
+# コンテンツスライド
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "製品紹介"
+slide.placeholders[1].text = "• 高性能\n• 使いやすい\n• コストパフォーマンス"
+
+# メイン画像プレースホルダー（ユーザーが画像を要求した場合）
+# 例：「製品画像を入れてください」という指示があった場合
+add_image_placeholder(
+    slide,
+    position=(Inches(5), Inches(1.5)),
+    size=(Inches(4), Inches(3)),
+    description="【画像推奨】\nproduct_main.jpg\nメイン製品画像\n800x600px\n\n製品の全体像が\nよく分かる画像を\n配置してください"
+)
+
+# 保存
+pptx_io = BytesIO()
+prs.save(pptx_io)
+pptx_io.seek(0)
+js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
+```
+
+### **レベル4: 動的判定による高度な実装**
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from io import BytesIO
+import base64
+import js
+
+def should_add_image_placeholder(user_request):
+    """ユーザーの要求に画像指示が含まれるか判定"""
+    
+    # 画像関連のキーワード
+    image_keywords = [
+        '画像', 'イメージ', '写真', 'ロゴ', '図',
+        'グラフ', 'チャート', 'イラスト', 'ビジュアル',
+        'image', 'photo', 'picture', 'logo', 'visual'
+    ]
+    
+    # 明示的な指示パターン
+    explicit_patterns = [
+        '入れ', '配置', '追加', '挿入', 'スペース', '場所'
+    ]
+    
+    # デフォルトはFalse（画像なし）
+    request_lower = user_request.lower() if user_request else ""
+    
+    for keyword in image_keywords:
+        if keyword in request_lower:
+            for pattern in explicit_patterns:
+                if pattern in request_lower:
+                    return True
+    
+    return False
+
+def add_image_placeholder_if_needed(slide, position, size, description, user_wants_image):
+    """条件付きでプレースホルダーを追加"""
+    if user_wants_image:
+        left, top = position
+        width, height = size
+        
+        textbox = slide.shapes.add_textbox(left, top, width, height)
+        text_frame = textbox.text_frame
+        text_frame.text = description
+        
+        textbox.line.color.rgb = RGBColor(150, 150, 150)
+        textbox.line.width = Pt(1)
+        textbox.fill.solid()
+        textbox.fill.fore_color.rgb = RGBColor(250, 250, 250)
+        
+        return textbox
+    return None
+
+# ユーザーの要求を仮定（実際にはAIが判断）
+user_request = "プレゼンテーションを作成してください"  # この場合、画像なし
+# user_request = "ロゴを配置したプレゼンを作成してください"  # この場合、画像あり
+
+# 画像の要否を判定
+add_images = should_add_image_placeholder(user_request)
+
+prs = Presentation()
+
+# スライド作成
 slide_configs = [
     {"type": "title", "title": "プレゼンテーション", "subtitle": "サンプル株式会社"},
     {"type": "content", "title": "概要", "content": "主要なポイント"},
-    {"type": "image", "title": "ビジュアル", "content": None}
+    {"type": "content", "title": "詳細", "content": "詳細な説明"}
 ]
 
 for config in slide_configs:
@@ -549,12 +639,13 @@ for config in slide_configs:
         slide.shapes.title.text = config["title"]
         slide.placeholders[1].text = config["subtitle"]
         
-        # ロゴプレースホルダー
-        add_image_placeholder(
+        # 条件付きでロゴプレースホルダーを追加
+        add_image_placeholder_if_needed(
             slide,
             position=(Inches(7), Inches(4.5)),
             size=(Inches(2), Inches(1)),
-            description="【ロゴ】\nlogo.png\n200x100px"
+            description="【ロゴ】\nlogo.png\n200x100px",
+            user_wants_image=add_images
         )
         
     elif config["type"] == "content":
@@ -562,26 +653,6 @@ for config in slide_configs:
         slide.shapes.title.text = config["title"]
         if config["content"]:
             slide.placeholders[1].text = config["content"]
-            
-    elif config["type"] == "image":
-        slide = prs.slides.add_slide(prs.slide_layouts[5])  # 白紙
-        
-        # タイトル追加
-        title_box = slide.shapes.add_textbox(
-            Inches(0.5), Inches(0.3),
-            Inches(9), Inches(0.8)
-        )
-        title_box.text_frame.text = config["title"]
-        title_box.text_frame.paragraphs[0].font.size = Pt(32)
-        title_box.text_frame.paragraphs[0].font.bold = True
-        
-        # 大きな画像プレースホルダー
-        add_image_placeholder(
-            slide,
-            position=(Inches(1), Inches(1.5)),
-            size=(Inches(8), Inches(4)),
-            description="【メイン画像】\nmain_visual.jpg\n1600x800px\n高解像度推奨"
-        )
 
 # 保存
 pptx_io = BytesIO()
@@ -602,10 +673,11 @@ js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
 - [ ] エラーオーバーレイのHTMLが完全である
 
 ### **プレースホルダー確認項目**
-- [ ] 画像の直接埋め込みを行っていない
-- [ ] プレースホルダーに必要な情報が含まれている
-- [ ] 視覚的に分かりやすい枠線がある
-- [ ] 推奨サイズが明記されている
+- [ ] デフォルトでは画像プレースホルダーを配置しない
+- [ ] 画像の直接埋め込みを行っていない（必須）
+- [ ] ユーザーが画像を明示的に要求した場合のみプレースホルダー配置
+- [ ] 画像ファイル添付時もプレースホルダー処理
+- [ ] プレースホルダーには必要な情報が含まれている（使用時）
 
 ### **動作確認項目**
 - [ ] ページが正常に読み込まれる
@@ -693,7 +765,7 @@ width = Cm(10)  # 10cm
 3. **Pythonコードでスライド内容を定義**
 
 ```python
-# 最小限の変更例
+# 最小限の変更例（画像なしのシンプルなプレゼン）
 prs = Presentation()
 slide = prs.slides.add_slide(prs.slide_layouts[0])
 slide.shapes.title.text = "あなたのタイトルをここに"
@@ -703,8 +775,11 @@ slide.placeholders[1].text = "サブタイトルをここに"
 
 ### **画像が必要な場合**
 
+ユーザーが明示的に画像を要求した場合のみ：
+
 1. **プレースホルダーを配置**
 ```python
+# 「画像を配置してください」という指示があった場合
 textbox = slide.shapes.add_textbox(
     Inches(5), Inches(2),  # 位置
     Inches(4), Inches(3)   # サイズ
@@ -720,6 +795,13 @@ textbox.text_frame.text = "【画像】\nここに画像を配置"
 ---
 
 ## **📝 更新履歴**
+
+- **v4.0** (2025-01-17)
+  - 画像プレースホルダーを**オプション機能**に変更
+  - デフォルトではプレースホルダーを配置しない仕様に
+  - 明示的な指示がある場合のみプレースホルダー作成
+  - 画像ファイル添付時も常にプレースホルダー処理（直接埋め込みなし）
+  - XLSX-RECIPE.mdのCSV処理と同じ設計思想を採用
 
 - **v3.4** (2025-01-17)
   - 画像処理方針を明確化（すべてプレースホルダー）
@@ -769,8 +851,14 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
 ### **よくある質問**
 
-**Q: 画像を直接埋め込みたい**
-A: base64エンコードによるコンテキストウィンドウ超過を防ぐため、プレースホルダー方式を採用しています。
+**Q: 画像はどうやって追加しますか？**
+A: 画像が必要な場合は「画像を配置してください」と明示的に指示してください。デフォルトでは画像プレースホルダーは配置されません。
+
+**Q: 以前のバージョンのように自動で画像スペースを作りたい**
+A: 「各スライドに画像プレースホルダーを含めてください」と指示すれば、v3.xと同様の動作になります。
+
+**Q: 画像ファイルを添付したのに埋め込まれません**
+A: 仕様により、画像は常にプレースホルダーとして処理されます。これによりファイルサイズを軽量に保ち、後から自由に画像を変更できます。
 
 **Q: プレースホルダーの見た目を変えたい**
 A: テキストボックスの`line`、`fill`プロパティで自由にカスタマイズ可能です。
@@ -780,4 +868,21 @@ A: レイアウト5（白紙）を使用し、`add_textbox()`で自由に配置�
 
 ---
 
-**これでレシピv3.4の全文です。AIが正しく理解し、適切なPPTX生成ページを作成できるよう、詳細な説明と実例を含めました。**
+## **v3.x → v4.0 移行ガイド**
+
+### **主な変更点**
+- 画像プレースホルダーがデフォルトで配置されなくなりました
+- 画像が必要な場合は明示的に「画像を配置」等の指示が必要です
+
+### **互換性について**
+- 以前と同様の動作を望む場合：「画像プレースホルダーを含めて」と指示
+- シンプルな文書を望む場合：特別な指示は不要（新しいデフォルト）
+
+### **メリット**
+- よりクリーンでシンプルなプレゼンテーションがデフォルトに
+- 必要な時だけ画像スペースが追加される
+- ファイルサイズが常に軽量
+
+---
+
+**これでレシピv4.0の全文です。AIが正しく理解し、ユーザーの意図に沿った適切なPPTX生成ページを作成できるよう、詳細な説明と実例を含めました。**
