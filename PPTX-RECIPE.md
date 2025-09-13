@@ -1,172 +1,140 @@
-# **PPTX自動生成ページ レシピ v3.1**
+# **PPTX自動生成ページ レシピ v3.4**
+**AIによるワンクリック・ダウンロードページ生成の完全ガイド**
 
-このドキュメントは、生成AIがユーザーの指示に基づき、「ワンクリック・ダウンロードページ」を自動生成するためのレシピ（指示書＋テンプレート）です。
+---
 
-AIはこのレシピに従い、最終的な成果物として単一のHTMLファイルを出力します。
+## **📌 このレシピについて**
 
-## **🔴 必須要件 - 必ず最初に確認してください 🔴**
+生成AIがユーザーの指示に基づき、PowerPointファイル（.pptx）をブラウザ上で生成・ダウンロードできる**単一HTMLファイル**を自動作成するための完全な指示書です。
 
-### **1. 外部ライブラリのインストール（絶対に省略禁止）**
+### **v3.4の特徴**
+- 🎯 実装ルールを優先順位別に明確化
+- 🖼️ 画像はすべてプレースホルダー方式（直接埋め込みなし）
+- 📝 詳細な理由説明を含む充実した内容
+- 🔍 エラー対処の手順と実例を完備
+- 📊 実用的な配置ガイドを提供
 
-**⚠️ 最重要事項：python-pptxライブラリのインストール処理は絶対に削除・省略してはいけません**
+---
 
-HTMLテンプレート内の以下のコードブロックは**必須**です：
+## **🚨 実装ルール（優先順位順）**
+
+### **🔴 レベル1: 絶対禁止事項（変更・削除厳禁）**
+
+以下の要素は**一切変更してはいけません**：
+
+#### **1.1 python-pptxライブラリのインストール処理**
 ```javascript
-// このコードブロックは削除厳禁
 await pyodide.loadPackage("micropip");
 await pyodide.runPythonAsync(`
     import micropip
-    await micropip.install('python-pptx')  # ← これがないとPowerPointファイルを生成できません
+    await micropip.install('python-pptx')
 `);
 ```
 
-**なぜ必要か？**
-- python-pptxはPowerPointファイル（.pptx）を生成するための外部ライブラリです
-- ブラウザ環境では標準では利用できないため、micropipでインストールが必要です
-- このインストール処理を削除すると、`ModuleNotFoundError: No module named 'pptx'`エラーが発生します
+**なぜ絶対に必要か：**
+- python-pptxはPowerPointファイル生成のための外部ライブラリ
+- ブラウザのPyodide環境には標準で含まれていない
+- micropipを使用してランタイムでインストールする必要がある
+- **削除すると必ず発生するエラー**: `ModuleNotFoundError: No module named 'pptx'`
 
-### **2. Pythonコードのインデント規則（エラー防止のため厳守）**
+#### **1.2 エラーオーバーレイのHTML/CSS/JavaScript**
+- エラーオーバーレイのHTML構造（`<div id="error-overlay">`）
+- エラーハンドリングのJavaScriptコード
+- CSSクラス名（`.error-overlay`, `.error-card`等）
 
-**⚠️ IndentationErrorを防ぐため、以下の規則を必ず守ってください**
+**理由**: エラー時のユーザビリティを確保する重要な機能
 
-- **scriptタグ内のPythonコードは、絶対に左端から開始すること**
-- HTMLのインデントに影響されてPythonコードにインデントを追加してはいけない
-- `<script type="text/python" id="python-code">` の直後の行から、インデントなしでPythonコードを記述する
-
-**正しい例：**
+#### **1.3 Pyodideのロード処理**
 ```html
-    <script type="text/python" id="python-code">
-from pptx import Presentation  # ← 左端から開始（正しい）
-import base64  # ← インデントなし（正しい）
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 ```
 
-**間違った例：**
-```html
-    <script type="text/python" id="python-code">
-        from pptx import Presentation  # ← ❌ 不要なインデント（エラーの原因）
-        import base64  # ← ❌ IndentationErrorが発生
+**理由**: Python実行環境の基盤となる必須ライブラリ
+
+### **🟡 レベル2: 必須ルール（必ず従う）**
+
+#### **2.1 Pythonコードのインデント規則**
+```python
+# ✅ 正しい（左端開始）
+from pptx import Presentation
+import base64
+
+# ❌ 間違い（インデントあり）
+    from pptx import Presentation  # IndentationError発生
+    import base64
 ```
 
-## **🖼️ 画像プレースホルダー機能について**
+**理由**: HTMLのインデントに影響されてPythonコードにインデントを追加するとエラーになる
 
-### **画像が添付された場合の動作**
-- AIは添付された画像を分析し、効果的な配置位置を提案します
-- 生成される文書には画像そのものではなく、配置推奨位置のプレースホルダーが挿入されます
-- **すべての添付画像を使用する必要はありません**（最適なものだけを提案します）
-- プレースホルダーは後から手動で画像に置き換えることを想定しています
-
-### **プレースホルダーの内容**
-各プレースホルダーには以下の情報が含まれます：
-- 推奨する画像ファイル名
-- 配置位置の説明（例：「メインビジュアルとして中央配置」）
-- 推奨サイズ（幅×高さ）
-- 使用目的（ロゴ、メインビジュアル、説明図、背景など）
-
-### **画像選択の基準**
-AIは以下の基準で画像の用途を判定します：
-- **アスペクト比**：横長→背景/ヘッダー、正方形→アイコン/ロゴ
-- **ファイル名**：「logo」→ロゴ位置、「chart」→データセクション
-- **画像の数**：複数ある場合は優先順位を付けて提案
-- **スライドの内容**：タイトルスライド、コンテンツスライドなどに応じた配置
-
-### **ユーザーへのメリット**
-- 複雑な画像埋め込み処理が不要
-- 後から手動で最適な画像を選択・配置可能
-- プロフェッショナルなレイアウト提案を受けられる
-- ファイルサイズの軽量化
-
-## **📋 AIへの実装指示**
-
-以下のHTML骨子テンプレートを使用し、指定された箇所をユーザーの要求に応じて書き換えてください。**それ以外の部分（特にライブラリインストール部分）は一切変更してはいけません。**
-
-### **書き換える箇所**
-
-1. **ページのタイトルと見出しを書き換える**  
-   * `<!-- AIがここを書き換える: ページのタイトル -->` とコメントされている2箇所を、生成するプレゼンテーションの内容に合わせた具体的なタイトルに書き換えてください。
-
-2. **Pythonコードを書き換える**  
-   * `<script type="text/python" id="python-code">` タグの内部を、要求されたプレゼンテーションを生成するための python-pptx コードに完全に置き換えてください。
-   * **画像が添付された場合**：画像プレースホルダーを適切な位置に追加してください
-   * **重要**: Pythonコードは必ず左端から開始し、HTMLのインデントを無視してください
-   * このPythonコードは、必ず**最終行で `js.pptx_base64_data` にBase64文字列を代入する**ルールに従う必要があります。
-
-### **Pythonコード作成のルール**
-
-1. **必須のインポート文**（左端から記述）
+#### **2.2 必須のインポート文**
 ```python
 from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.enum.text import PP_ALIGN
-from pptx.dml.color import RGBColor
 from io import BytesIO
 import base64
-import js
+import js  # JavaScriptとの連携に必須
 ```
 
-2. **プレゼンテーション作成の基本構造**
+**省略した場合のエラー**: `NameError: name 'js' is not defined`
+
+#### **2.3 Base64データの受け渡し**
+Pythonコードの最終部で必ず実行：
 ```python
-# プレゼンテーションの作成
-prs = Presentation()
-
-# スライドの追加
-slide_layout = prs.slide_layouts[0]  # 0: タイトルスライド, 1: タイトルとコンテンツ
-slide = prs.slides.add_slide(slide_layout)
-
-# タイトルと内容の設定
-title = slide.shapes.title
-title.text = "スライドタイトル"
-
-# コンテンツの設定（レイアウト1の場合）
-content = slide.placeholders[1]
-content.text = "コンテンツテキスト"
-```
-
-3. **画像プレースホルダーの追加方法**
-```python
-# 画像プレースホルダーの追加（画像が添付された場合）
-# 例：タイトルスライドにロゴ配置の提案
-left = Inches(7)  # 右下配置
-top = Inches(4)
-width = Inches(2)
-height = Inches(1)
-textbox = slide.shapes.add_textbox(left, top, width, height)
-text_frame = textbox.text_frame
-text_frame.text = "【画像推奨】\nファイル: logo.png\n用途: 企業ロゴ\n推奨サイズ: 200x100px"
-
-# 枠線を追加して視認性を向上
-textbox.line.color.rgb = RGBColor(200, 200, 200)
-textbox.line.width = Pt(1)
-
-# 例：コンテンツスライドにメイン画像配置の提案
-left = Inches(5)  # 右側配置
-top = Inches(1.5)
-width = Inches(4)
-height = Inches(3)
-textbox = slide.shapes.add_textbox(left, top, width, height)
-text_frame = textbox.text_frame
-text_frame.text = "【画像推奨】\nファイル: main_visual.jpg\n用途: メインビジュアル\n推奨サイズ: 800x600px\n説明: このエリアに製品画像を配置すると効果的です"
-```
-
-4. **必須の終了処理**（必ず含める）
-```python
-# BytesIOに保存
-pptx_io = BytesIO()
-prs.save(pptx_io)
-pptx_io.seek(0)
-
-# Base64エンコード
-pptx_bytes = pptx_io.read()
-pptx_base64 = base64.b64encode(pptx_bytes).decode('utf-8')
-
-# JavaScriptに渡す（この行は必須）
 js.pptx_base64_data = pptx_base64
-
-print("PPTX file has been generated in memory.")
 ```
 
-## **📄 HTML骨子テンプレート**
+**理由**: JavaScriptがPPTXデータを受け取るための必須処理
 
-**⚠️ 重要：以下のテンプレートの中で、赤字でマークされた部分は絶対に削除・変更しないでください**
+### **🟢 レベル3: カスタマイズ可能要素**
+
+以下は自由に変更できます：
+- ページタイトル（`<title>`タグと`<h1>`タグ）
+- Pythonコード内のプレゼンテーション内容
+- スライドのデザイン・レイアウト
+- ダウンロードファイル名
+- プレースホルダーの配置と内容
+
+---
+
+## **🖼️ 画像プレースホルダー機能**
+
+### **基本方針**
+**すべての画像はプレースホルダーとして処理されます**
+- 画像の直接埋め込みは行いません（base64エンコードによるコンテキストウィンドウ超過を防ぐため）
+- 実際の画像挿入はユーザーがPowerPointを開いて行います
+- AIは最適な配置位置と推奨サイズを提案します
+
+### **なぜプレースホルダー方式なのか**
+- **HTMLファイルの軽量化**: 数KBで済む（画像埋め込みだと数MB〜数十MB）
+- **コンテキストウィンドウの節約**: AIの処理限界を超えない
+- **柔軟性**: 後から自由に画像を変更可能
+- **共有性**: 複数人での使い回しが容易
+- **著作権**: 画像の権利問題を回避
+
+### **プレースホルダーに含める情報**
+1. **推奨ファイル名または説明**（例：`logo.png`、`メイン画像`）
+2. **配置位置**（例：「右下」「中央」「左側」）
+3. **推奨サイズ**（例：`800x600px`、`4x3 inches`）
+4. **用途**（例：「企業ロゴ」「メインビジュアル」「背景画像」）
+
+### **実装時の判断基準**
+ユーザーが画像について言及した場合：
+- 「ロゴを入れて」→ ロゴプレースホルダー作成
+- 「画像を配置」→ 汎用プレースホルダー作成
+- 「写真スペースを」→ 写真用プレースホルダー作成
+- 画像ファイルが添付された場合 → ファイル名を参考にプレースホルダー作成
+
+### **推奨配置パターン**
+| スライドタイプ | 画像の種類 | 推奨位置 | 推奨サイズ |
+|---------------|-----------|---------|-----------|
+| タイトル | ロゴ | 右下/左下 | 2×1 inches |
+| コンテンツ | メイン画像 | 右側 | 4×3 inches |
+| データ | グラフ/図表 | 中央 | 6×4 inches |
+| まとめ | アイコン | 箇条書き横 | 1×1 inches |
+| 背景 | 装飾画像 | 全面 | 10×5.625 inches |
+
+---
+
+## **📝 HTMLテンプレート（完全版）**
 
 ```html
 <!DOCTYPE html>
@@ -175,7 +143,7 @@ print("PPTX file has been generated in memory.")
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- AIがここを書き換える: ページのタイトル -->
+    <!-- カスタマイズ可能: ページタイトル -->
     <title>プレゼンテーションのダウンロード</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -194,12 +162,22 @@ print("PPTX file has been generated in memory.")
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* エラーオーバーレイ（変更禁止） */
+        .error-overlay { position: fixed; inset: 0; background: rgba(17,24,39,0.25); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
+        .error-card { width: 100%; max-width: 880px; background: rgba(255,255,255,0.96); border: 1px solid rgba(55,65,81,0.25); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 20px; }
+        .error-title { display:flex; align-items:center; gap:8px; font-weight:800; font-size:18px; color:#991b1b; }
+        .error-subtitle { margin-top:6px; color:#374151; line-height:1.55; }
+        .error-actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+        .copy-btn { border:1px solid rgba(55,65,81,.3); padding:8px 12px; border-radius:10px; font-weight:600; background:#fff; cursor: pointer; }
+        .copy-btn:hover { background: #f3f4f6; }
+        .error-pre { margin-top:12px; background:#0b1020; color:#e5e7eb; border-radius:12px; padding:12px 14px; max-height:320px; overflow:auto; white-space:pre-wrap; word-break:break-word; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace; font-size:13px; line-height:1.45; }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
     <div class="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-md w-full">
-        <!-- AIがここを書き換える: ページのタイトル -->
+        <!-- カスタマイズ可能: 見出し -->
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
             プレゼンテーション
         </h1>
@@ -215,10 +193,7 @@ print("PPTX file has been generated in memory.")
         </button>
     </div>
 
-    <!-- 
-      AIがここを書き換える: python-pptxのコード
-      重要: Pythonコードは左端から開始（インデントなし）
-    -->
+    <!-- カスタマイズ可能: Pythonコード（ルールに従って） -->
     <script type="text/python" id="python-code">
 from pptx import Presentation
 from io import BytesIO
@@ -252,15 +227,47 @@ js.pptx_base64_data = pptx_base64
 print("PPTX file has been generated in memory.")
     </script>
 
-    <!-- 
-      ⚠️⚠️⚠️ 警告: 以下のPyodideとpython-pptxインストール部分は削除厳禁 ⚠️⚠️⚠️
-      この部分を削除すると、PowerPointファイルの生成が不可能になります
-    -->
+    <!-- エラーオーバーレイ（変更禁止） -->
+    <div id="error-overlay" class="error-overlay" role="dialog" aria-modal="true" aria-labelledby="error-title">
+        <div class="error-card">
+            <div class="error-title" id="error-title">エラーが発生しました：AIのチャットエリアに以下のエラーメッセージを貼り付けて修正を依頼して下さい</div>
+            <div class="error-subtitle">エラーの全文をコピーして、そのままAIに投げてください。原因の特定とパッチを提案します。</div>
+            <div class="error-actions">
+                <button id="copy-error" class="copy-btn" aria-label="エラーメッセージをコピーする">エラー全文をコピー</button>
+                <button id="close-error" class="copy-btn" aria-label="このエラー表示を閉じる">閉じる</button>
+            </div>
+            <pre id="error-text" class="error-pre" tabindex="0" aria-live="polite"></pre>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <script type="module">
         const statusMessage = document.getElementById('status-message');
         const downloadButton = document.getElementById('download-button');
         const loadingSpinner = document.getElementById('loading-spinner');
+        const overlay = document.getElementById('error-overlay');
+        const errorText = document.getElementById('error-text');
+        const copyBtn = document.getElementById('copy-error');
+        const closeBtn = document.getElementById('close-error');
+
+        // エラーUI用イベントリスナー
+        copyBtn?.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(errorText.textContent || '');
+                copyBtn.textContent = 'コピーしました';
+                setTimeout(() => (copyBtn.textContent = 'エラー全文をコピー'), 1200);
+            } catch (_) {
+                const r = document.createRange(); 
+                r.selectNodeContents(errorText);
+                const sel = window.getSelection(); 
+                sel.removeAllRanges(); 
+                sel.addRange(r);
+            }
+        });
+
+        closeBtn?.addEventListener('click', () => { 
+            overlay.style.display = 'none'; 
+        });
 
         async function main() {
             try {
@@ -269,19 +276,16 @@ print("PPTX file has been generated in memory.")
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
                 });
 
-                // 🔴🔴🔴 削除厳禁: python-pptxライブラリのインストール 🔴🔴🔴
-                // このコードブロックを削除するとModuleNotFoundErrorが発生します
+                // python-pptxのインストール（削除禁止）
                 statusMessage.textContent = 'ライブラリをインストール中...';
                 await pyodide.loadPackage("micropip");
                 await pyodide.runPythonAsync(`
                     import micropip
-                    await micropip.install('python-pptx')  # PowerPoint生成に必須のライブラリ
+                    await micropip.install('python-pptx')
                 `);
-                // 🔴🔴🔴 ここまで削除厳禁 🔴🔴🔴
 
                 statusMessage.textContent = 'ファイルを生成しています...';
                 const pythonCode = document.getElementById('python-code').textContent;
-                // JavaScriptのグローバルスコープにデータを渡すための準備
                 window.pptx_base64_data = null; 
                 await pyodide.runPythonAsync(pythonCode);
                 const base64Data = window.pptx_base64_data;
@@ -297,7 +301,16 @@ print("PPTX file has been generated in memory.")
 
             } catch (error) {
                 console.error("An error occurred:", error);
-                statusMessage.textContent = `エラーが発生しました: ${error.message}`;
+                
+                try {
+                    const details = (error && (error.stack || error.message || String(error))) || 'Unknown error';
+                    errorText.textContent = details.trim();
+                } catch(_) {
+                    errorText.textContent = 'Unknown error';
+                }
+                
+                overlay.style.display = 'flex';
+                statusMessage.textContent = '処理を中断しました。';
                 loadingSpinner.style.display = 'none';
             }
         }
@@ -337,29 +350,116 @@ print("PPTX file has been generated in memory.")
 </html>
 ```
 
-## **⚠️ よくあるエラーと対処法**
+---
 
-### **ModuleNotFoundError: No module named 'pptx'**
-**原因**: micropipでpython-pptxをインストールする処理が削除または省略されている  
-**対処法**: HTMLテンプレートの中の `await micropip.install('python-pptx')` の部分を復元する
+## **🔧 エラー診断ガイド**
 
-### **IndentationError: unexpected indent**
-**原因**: Pythonコードに不要なインデントが含まれている  
-**対処法**: すべてのPythonコードを左端から開始する
+### **よくあるエラーと解決方法**
 
-### **NameError: name 'js' is not defined**
-**原因**: `import js` が抜けている  
-**対処法**: 必須インポート文をすべて含める
+#### **1. ModuleNotFoundError**
+```
+ModuleNotFoundError: No module named 'pptx'
+```
+**原因**: python-pptxのインストール処理が削除されている
+**解決**: `await micropip.install('python-pptx')` を復元
 
-### **AttributeError: 'NoneType' object has no attribute 'text'**
-**原因**: プレースホルダーのインデックスが間違っている  
-**対処法**: `slide.placeholders[1]` のインデックスを確認
+#### **2. IndentationError**
+```
+IndentationError: unexpected indent
+```
+**原因**: Pythonコードが左端から開始されていない
+**解決**: すべてのPythonコードのインデントを削除
 
-## **💡 実装例：画像プレースホルダー付きプレゼンテーション**
+#### **3. NameError**
+```
+NameError: name 'js' is not defined
+```
+**原因**: `import js` が抜けている
+**解決**: 必須インポート文に `import js` を追加
 
+#### **4. AttributeError**
+```
+AttributeError: 'NoneType' object has no attribute 'text'
+```
+**原因**: スライドレイアウトに該当プレースホルダーが存在しない
+**解決**: レイアウトインデックスを確認、または `add_textbox()` を使用
+
+### **エラー発生時の対処手順（4ステップ）**
+
+1. **自動表示**: エラーオーバーレイがフルスクリーンで表示される
+   - 見逃すことがない高視認性デザイン
+   - エラーの詳細（スタックトレース）が完全表示
+
+2. **ワンクリックコピー**: 「エラー全文をコピー」ボタンをクリック
+   - クリップボードに自動コピー
+   - 「コピーしました」の確認表示
+
+3. **AIに貼り付け**: チャットエリアにそのまま貼り付け
+   - AIが自動的にエラー内容を分析
+   - 原因を特定
+
+4. **解決**: AIが提示する修正版を使用
+   - 具体的な修正内容の説明
+   - 修正済みコードの提供
+
+---
+
+## **💡 実装例**
+
+### **レベル1: 最小限の実装**
 ```python
 from pptx import Presentation
-from pptx.util import Pt, Inches
+from io import BytesIO
+import base64
+import js
+
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+slide.shapes.title.text = "シンプルなタイトル"
+
+pptx_io = BytesIO()
+prs.save(pptx_io)
+pptx_io.seek(0)
+js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
+```
+
+### **レベル2: 複数スライドの基本構成**
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from io import BytesIO
+import base64
+import js
+
+prs = Presentation()
+
+# スライド1: タイトル
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+slide.shapes.title.text = "2025年度事業計画"
+slide.placeholders[1].text = "株式会社サンプル"
+
+# スライド2: 内容
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "主要目標"
+content = slide.placeholders[1]
+content.text = "• 売上20%増加\n• 新規顧客100社獲得\n• 顧客満足度95%達成"
+
+# スライド3: まとめ
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "まとめ"
+slide.placeholders[1].text = "目標達成に向けて全社一丸となって取り組みます"
+
+# 保存と変換
+pptx_io = BytesIO()
+prs.save(pptx_io)
+pptx_io.seek(0)
+js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
+```
+
+### **レベル3: 画像プレースホルダー付き**
+```python
+from pptx import Presentation
+from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 from io import BytesIO
@@ -368,221 +468,316 @@ import js
 
 prs = Presentation()
 
-# スライド1: タイトル（ロゴプレースホルダー付き）
-slide_layout = prs.slide_layouts[0]
-slide = prs.slides.add_slide(slide_layout)
-title = slide.shapes.title
-subtitle = slide.placeholders[1]
-title.text = "年次報告書 2025"
-subtitle.text = "株式会社サンプル"
+# タイトルスライド（ロゴプレースホルダー付き）
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+slide.shapes.title.text = "年次報告書 2025"
+slide.placeholders[1].text = "株式会社サンプル"
 
-# ロゴプレースホルダーを右下に配置
-left = Inches(7.5)
-top = Inches(4.5)
-width = Inches(2)
-height = Inches(1)
-textbox = slide.shapes.add_textbox(left, top, width, height)
+# ロゴプレースホルダー
+textbox = slide.shapes.add_textbox(
+    left=Inches(7.5), top=Inches(4.5),
+    width=Inches(2), height=Inches(1)
+)
 text_frame = textbox.text_frame
 text_frame.text = "【画像推奨】\nlogo.png\n企業ロゴ\n200x100px"
 textbox.line.color.rgb = RGBColor(200, 200, 200)
 textbox.line.width = Pt(0.5)
 
-# スライド2: コンテンツ（メイン画像プレースホルダー付き）
-slide_layout = prs.slide_layouts[1]
-slide = prs.slides.add_slide(slide_layout)
-title = slide.shapes.title
-content = slide.placeholders[1]
-title.text = "製品紹介"
-content.text = "• 高性能\n• 使いやすい\n• コストパフォーマンス"
+# コンテンツスライド（メイン画像プレースホルダー付き）
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "製品紹介"
+slide.placeholders[1].text = "• 高性能\n• 使いやすい\n• コストパフォーマンス"
 
-# メイン画像プレースホルダーを右側に配置
-left = Inches(5)
-top = Inches(1.5)
-width = Inches(4)
-height = Inches(3.5)
-textbox = slide.shapes.add_textbox(left, top, width, height)
+# メイン画像プレースホルダー
+textbox = slide.shapes.add_textbox(
+    left=Inches(5), top=Inches(1.5),
+    width=Inches(4), height=Inches(3)
+)
 text_frame = textbox.text_frame
-text_frame.text = "【画像推奨】\nproduct_main.jpg\nメイン製品画像\n800x700px\n\n製品の全体像が\nよく分かる画像を\n配置してください"
+text_frame.text = "【画像推奨】\nproduct_main.jpg\nメイン製品画像\n800x600px\n\n製品の全体像が\nよく分かる画像を\n配置してください"
 text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-textbox.line.color.rgb = RGBColor(100, 100, 100)
-textbox.line.width = Pt(1)
 textbox.fill.solid()
 textbox.fill.fore_color.rgb = RGBColor(240, 240, 240)
 
-# スライド3: データ（グラフ画像プレースホルダー付き）
-slide_layout = prs.slide_layouts[5]  # 白紙
-slide = prs.slides.add_slide(slide_layout)
-
-# タイトルを手動で追加
-left = Inches(0.5)
-top = Inches(0.3)
-width = Inches(9)
-height = Inches(0.8)
-title_box = slide.shapes.add_textbox(left, top, width, height)
-title_frame = title_box.text_frame
-p = title_frame.add_paragraph()
-p.text = "売上推移"
-p.font.size = Pt(32)
-p.font.bold = True
-p.alignment = PP_ALIGN.CENTER
-
-# グラフプレースホルダー
-left = Inches(1)
-top = Inches(1.5)
-width = Inches(8)
-height = Inches(4)
-textbox = slide.shapes.add_textbox(left, top, width, height)
-text_frame = textbox.text_frame
-text_frame.text = "【画像推奨】\nsales_chart.png または sales_graph.jpg\n売上グラフ・チャート\n推奨: 1600x800px\n\nExcelやその他のツールで作成した\nグラフ画像をここに配置してください"
-text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-for paragraph in text_frame.paragraphs:
-    paragraph.font.size = Pt(14)
-textbox.line.color.rgb = RGBColor(50, 50, 200)
-textbox.line.width = Pt(2)
-
-# 保存とBase64変換
+# 保存
 pptx_io = BytesIO()
 prs.save(pptx_io)
 pptx_io.seek(0)
-
-pptx_bytes = pptx_io.read()
-pptx_base64 = base64.b64encode(pptx_bytes).decode('utf-8')
-
-js.pptx_base64_data = pptx_base64
-
-print("PPTX file with image placeholders has been generated.")
+js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
 ```
 
-## **📚 python-pptxの主要機能リファレンス**
-
-### **基本操作**
-- `Presentation()`: 新規プレゼンテーションの作成
-- `prs.slides.add_slide(layout)`: スライドの追加
-- `slide.shapes.title`: タイトルへのアクセス
-- `slide.placeholders[n]`: プレースホルダーへのアクセス
-
-### **テキストボックス（画像プレースホルダー用）**
+### **レベル4: 条件分岐を含む高度な実装**
 ```python
+from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
+from io import BytesIO
+import base64
+import js
 
-# テキストボックスの追加
-textbox = slide.shapes.add_textbox(left, top, width, height)
-text_frame = textbox.text_frame
-text_frame.text = "テキスト"
+def add_image_placeholder(slide, position, size, description):
+    """汎用的な画像プレースホルダー追加関数"""
+    left, top = position
+    width, height = size
+    
+    textbox = slide.shapes.add_textbox(left, top, width, height)
+    text_frame = textbox.text_frame
+    text_frame.text = description
+    
+    # 視覚的な枠線
+    textbox.line.color.rgb = RGBColor(150, 150, 150)
+    textbox.line.width = Pt(1)
+    
+    # 背景色
+    textbox.fill.solid()
+    textbox.fill.fore_color.rgb = RGBColor(250, 250, 250)
+    
+    return textbox
 
-# 枠線の設定
-textbox.line.color.rgb = RGBColor(200, 200, 200)
-textbox.line.width = Pt(1)
+prs = Presentation()
 
-# 背景色の設定
-textbox.fill.solid()
-textbox.fill.fore_color.rgb = RGBColor(240, 240, 240)
-
-# テキストの配置
-text_frame.paragraphs[0].alignment = PP_ALIGN.CENTER
-```
-
-### **レイアウトの種類**
-- `0`: タイトルスライド
-- `1`: タイトルとコンテンツ
-- `2`: セクションヘッダー
-- `3`: 2つのコンテンツ
-- `4`: 比較
-- `5`: 白紙
-- `6`: コンテンツとキャプション
-- `7`: 画像とキャプション
-
-### **画像プレースホルダーの配置戦略**
-
-#### **スライドタイプ別の推奨位置**
-1. **タイトルスライド**
-   - ロゴ: 右下または左下（小さめ）
-   - 背景画像: 全体（透明度調整の注記付き）
-
-2. **コンテンツスライド**
-   - メイン画像: 右側半分
-   - 補助画像: 下部に横並び
-
-3. **データスライド**
-   - グラフ: 中央大きく
-   - 参考画像: 隅に小さく
-
-4. **まとめスライド**
-   - アイコン: 箇条書きの横
-   - イメージ画像: 背景または上部
-
-## **✅ 最終チェックリスト**
-
-AIがHTMLを生成する際の確認事項：
-
-- [ ] **python-pptxのインストール処理（`await micropip.install('python-pptx')`）が含まれているか**
-- [ ] Pythonコードは左端から開始されているか
-- [ ] 必須のimport文がすべて含まれているか
-- [ ] `js.pptx_base64_data = pptx_base64` の行が存在するか
-- [ ] 画像が添付された場合、適切なプレースホルダーを追加しているか
-- [ ] プレースホルダーに必要な情報（ファイル名、用途、サイズ）が含まれているか
-- [ ] ページタイトルは適切に変更されているか
-- [ ] MIMEタイプが正しく設定されているか
-- [ ] エラーメッセージの表示処理が含まれているか
-- [ ] Pyodideのロード処理が含まれているか
-
-## **🎯 応用例**
-
-### **複数画像のグリッド配置プレースホルダー**
-```python
-# 4つの画像をグリッド配置
-positions = [
-    (Inches(1), Inches(2)),   # 左上
-    (Inches(5), Inches(2)),   # 右上
-    (Inches(1), Inches(4)),   # 左下
-    (Inches(5), Inches(4))    # 右下
+# スライドタイプに応じた処理
+slide_configs = [
+    {"type": "title", "title": "プレゼンテーション", "subtitle": "サンプル株式会社"},
+    {"type": "content", "title": "概要", "content": "主要なポイント"},
+    {"type": "image", "title": "ビジュアル", "content": None}
 ]
 
-for i, (left, top) in enumerate(positions, 1):
-    textbox = slide.shapes.add_textbox(left, top, Inches(3.5), Inches(1.5))
-    text_frame = textbox.text_frame
-    text_frame.text = f"【画像{i}】\nimage{i}.jpg\n600x400px"
-    textbox.line.color.rgb = RGBColor(150, 150, 150)
+for config in slide_configs:
+    if config["type"] == "title":
+        slide = prs.slides.add_slide(prs.slide_layouts[0])
+        slide.shapes.title.text = config["title"]
+        slide.placeholders[1].text = config["subtitle"]
+        
+        # ロゴプレースホルダー
+        add_image_placeholder(
+            slide,
+            position=(Inches(7), Inches(4.5)),
+            size=(Inches(2), Inches(1)),
+            description="【ロゴ】\nlogo.png\n200x100px"
+        )
+        
+    elif config["type"] == "content":
+        slide = prs.slides.add_slide(prs.slide_layouts[1])
+        slide.shapes.title.text = config["title"]
+        if config["content"]:
+            slide.placeholders[1].text = config["content"]
+            
+    elif config["type"] == "image":
+        slide = prs.slides.add_slide(prs.slide_layouts[5])  # 白紙
+        
+        # タイトル追加
+        title_box = slide.shapes.add_textbox(
+            Inches(0.5), Inches(0.3),
+            Inches(9), Inches(0.8)
+        )
+        title_box.text_frame.text = config["title"]
+        title_box.text_frame.paragraphs[0].font.size = Pt(32)
+        title_box.text_frame.paragraphs[0].font.bold = True
+        
+        # 大きな画像プレースホルダー
+        add_image_placeholder(
+            slide,
+            position=(Inches(1), Inches(1.5)),
+            size=(Inches(8), Inches(4)),
+            description="【メイン画像】\nmain_visual.jpg\n1600x800px\n高解像度推奨"
+        )
+
+# 保存
+pptx_io = BytesIO()
+prs.save(pptx_io)
+pptx_io.seek(0)
+js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
 ```
 
-### **条件付きプレースホルダー**
+---
+
+## **✅ 実装チェックリスト**
+
+### **必須確認項目**
+- [ ] python-pptxインストール処理が存在する
+- [ ] Pythonコードが左端から開始されている
+- [ ] `import js` が含まれている
+- [ ] `js.pptx_base64_data` への代入がある
+- [ ] エラーオーバーレイのHTMLが完全である
+
+### **プレースホルダー確認項目**
+- [ ] 画像の直接埋め込みを行っていない
+- [ ] プレースホルダーに必要な情報が含まれている
+- [ ] 視覚的に分かりやすい枠線がある
+- [ ] 推奨サイズが明記されている
+
+### **動作確認項目**
+- [ ] ページが正常に読み込まれる
+- [ ] ダウンロードボタンが有効になる
+- [ ] PPTXファイルがダウンロードできる
+- [ ] エラー時にオーバーレイが表示される
+- [ ] エラーコピーボタンが機能する
+
+---
+
+## **📊 python-pptxリファレンス**
+
+### **スライドレイアウト**
+| Index | レイアウト名 | 用途 | プレースホルダー |
+|-------|-------------|------|-----------------|
+| 0 | タイトルスライド | 表紙 | title, subtitle |
+| 1 | タイトルとコンテンツ | 標準 | title, content |
+| 2 | セクションヘッダー | 章区切り | title, content |
+| 3 | 2つのコンテンツ | 比較 | title, content×2 |
+| 4 | 比較 | 対比表示 | title, content×2 |
+| 5 | 白紙 | 自由配置 | なし |
+| 6 | コンテンツとキャプション | 説明付き | title, content, caption |
+
+### **よく使うメソッド**
 ```python
-# ユーザーの要求に応じて配置を変更
-if "logo" in attached_images:  # 仮定: attached_imagesに画像名リスト
-    # ロゴプレースホルダーを追加
-    add_logo_placeholder(slide)
+# プレゼンテーション作成
+prs = Presentation()
 
-if "chart" in content_keywords:  # 仮定: content_keywordsにキーワード
-    # グラフプレースホルダーを追加
-    add_chart_placeholder(slide)
+# スライド追加
+slide = prs.slides.add_slide(prs.slide_layouts[n])
+
+# テキスト設定
+slide.shapes.title.text = "タイトル"
+slide.placeholders[1].text = "内容"
+
+# テキストボックス追加
+textbox = slide.shapes.add_textbox(left, top, width, height)
+textbox.text_frame.text = "テキスト"
+
+# フォント設定
+from pptx.util import Pt
+paragraph = textbox.text_frame.paragraphs[0]
+paragraph.font.size = Pt(24)
+paragraph.font.bold = True
+
+# 色設定
+from pptx.dml.color import RGBColor
+paragraph.font.color.rgb = RGBColor(255, 0, 0)
+
+# 配置設定
+from pptx.enum.text import PP_ALIGN
+paragraph.alignment = PP_ALIGN.CENTER
+
+# 枠線設定
+textbox.line.color.rgb = RGBColor(0, 0, 0)
+textbox.line.width = Pt(1)
+
+# 背景色設定
+textbox.fill.solid()
+textbox.fill.fore_color.rgb = RGBColor(255, 255, 255)
 ```
+
+### **単位の扱い**
+```python
+from pptx.util import Inches, Pt, Cm
+
+# インチ単位
+left = Inches(1)  # 1インチ
+
+# ポイント単位（フォントサイズ等）
+size = Pt(24)  # 24ポイント
+
+# センチメートル単位
+width = Cm(10)  # 10cm
+```
+
+---
+
+## **🚀 クイックスタート**
+
+### **最速実装（3ステップ）**
+
+1. **HTMLテンプレートをコピー**
+2. **タイトルを変更**（`<title>`と`<h1>`の2箇所）
+3. **Pythonコードでスライド内容を定義**
+
+```python
+# 最小限の変更例
+prs = Presentation()
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+slide.shapes.title.text = "あなたのタイトルをここに"
+slide.placeholders[1].text = "サブタイトルをここに"
+# ... 残りは保存処理（テンプレート通り）
+```
+
+### **画像が必要な場合**
+
+1. **プレースホルダーを配置**
+```python
+textbox = slide.shapes.add_textbox(
+    Inches(5), Inches(2),  # 位置
+    Inches(4), Inches(3)   # サイズ
+)
+textbox.text_frame.text = "【画像】\nここに画像を配置"
+```
+
+2. **ユーザーがPowerPointで画像を追加**
+   - ダウンロードしたPPTXファイルを開く
+   - プレースホルダーを削除
+   - 実際の画像を挿入
+
+---
 
 ## **📝 更新履歴**
 
-- **v3.1** (2025-01-17): 外部ライブラリインストールの重要性を強調
-  - 必須要件セクションを冒頭に追加
-  - HTMLテンプレート内にコメントで警告を追加
-  - チェックリストにpython-pptx確認項目を追加
-  - エラー対処法にModuleNotFoundErrorを追加
-- **v3.0** (2025-01-17): 画像プレースホルダー機能を追加
-  - 画像配置のサジェスチョン機能
-  - プレースホルダーの視覚的表現
-  - 画像選択の自動判定基準
-- **v2.0** (2025-01-17): インデントエラー防止のための明確な指示を追加
-- **v1.0** (2025-01-16): 初版リリース
+- **v3.4** (2025-01-17)
+  - 画像処理方針を明確化（すべてプレースホルダー）
+  - v3.1.5の詳細説明を復活
+  - エラー対処手順を完備
+  - 推奨配置パターンを追加
+
+- **v3.3** (2025-01-17)
+  - 実装ルールを優先順位別に再構成
+  - エラーメッセージの実例を追加
+  - 構造を論理的に最適化
+
+- **v3.1.5** (2025-01-17)
+  - エラーUI機能を強化
+  - ワンクリックコピー機能を実装
+
+- **v3.1** (2025-01-17)
+  - 必須要件の明確化
+  - エラー防止の強化
+
+---
 
 ## **📄 ライセンス**
 
-本レシピはMITライセンスの下で提供されています。自由に使用、改変、再配布、商用利用が可能です。
+MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
-## **🆘 トラブルシューティング**
+---
 
-もしAIがこのレシピを正しく実行できない場合：
+## **🆘 サポート**
 
-1. **最初に必須要件セクションを確認** - 特にpython-pptxのインストール処理
-2. **HTMLテンプレートの警告コメントを確認** - 削除厳禁の箇所が残っているか
-3. **チェックリストを使用して検証** - すべての項目が満たされているか
-4. **エラーメッセージを確認** - ModuleNotFoundErrorの場合はライブラリインストールの問題
+### **問題が発生した場合の対処**
 
-**それでも問題が解決しない場合は、このレシピの最新版を確認してください。**
+1. **エラーメッセージをコピー**
+   - エラーオーバーレイの「エラー全文をコピー」ボタンを使用
+
+2. **AIに貼り付けて相談**
+   - コピーした内容をチャットエリアに貼り付け
+   - AIが原因を分析し、修正版を提供
+
+3. **チェックリストで確認**
+   - 必須項目が漏れていないか確認
+   - 特にpython-pptxのインストール処理
+
+4. **実装例を参考に**
+   - レベル1の最小限実装から始める
+   - 段階的に機能を追加
+
+### **よくある質問**
+
+**Q: 画像を直接埋め込みたい**
+A: base64エンコードによるコンテキストウィンドウ超過を防ぐため、プレースホルダー方式を採用しています。
+
+**Q: プレースホルダーの見た目を変えたい**
+A: テキストボックスの`line`、`fill`プロパティで自由にカスタマイズ可能です。
+
+**Q: 特殊なレイアウトを作りたい**
+A: レイアウト5（白紙）を使用し、`add_textbox()`で自由に配置してください。
+
+---
+
+**これでレシピv3.4の全文です。AIが正しく理解し、適切なPPTX生成ページを作成できるよう、詳細な説明と実例を含めました。**

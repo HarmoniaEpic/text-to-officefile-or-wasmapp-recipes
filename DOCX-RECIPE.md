@@ -1,203 +1,141 @@
-# **DOCX自動生成ページ レシピ v2.1**
+# **DOCX自動生成ページ レシピ v3.0**
+**AIによるワンクリック・ダウンロードページ生成の完全ガイド**
 
-このドキュメントは、生成AIがユーザーの指示に基づき、「ワンクリック・ダウンロードページ」を自動生成するためのレシピ（指示書＋テンプレート）です。
+---
 
-AIはこのレシピに従い、最終的な成果物として単一のHTMLファイルを出力します。
+## **📌 このレシピについて**
 
-## **🔴 必須要件 - 必ず最初に確認してください 🔴**
+生成AIがユーザーの指示に基づき、Word文書（.docx）をブラウザ上で生成・ダウンロードできる**単一HTMLファイル**を自動作成するための完全な指示書です。
 
-### **1. 外部ライブラリのインストール（絶対に省略禁止）**
+### **v3.0の特徴**
+- 🎯 実装ルールを優先順位別に明確化
+- 🖼️ 画像はすべてプレースホルダー方式（直接埋め込みなし）
+- 📝 Word特有の高度な機能を網羅
+- 🔍 エラー対処の手順と実例を完備
+- 📊 段階的な実装例で学習しやすい
 
-**⚠️ 最重要事項：python-docxライブラリのインストール処理は絶対に削除・省略してはいけません**
+---
 
-HTMLテンプレート内の以下のコードブロックは**必須**です：
+## **🚨 実装ルール（優先順位順）**
+
+### **🔴 レベル1: 絶対禁止事項（変更・削除厳禁）**
+
+以下の要素は**一切変更してはいけません**：
+
+#### **1.1 python-docxライブラリのインストール処理**
 ```javascript
-// このコードブロックは削除厳禁
 await pyodide.loadPackage("micropip");
 await pyodide.runPythonAsync(`
     import micropip
-    await micropip.install('python-docx')  # ← これがないとWordファイルを生成できません
+    await micropip.install('python-docx')
 `);
 ```
 
-**なぜ必要か？**
-- python-docxはWordファイル（.docx）を生成するための外部ライブラリです
-- ブラウザ環境では標準では利用できないため、micropipでインストールが必要です
-- このインストール処理を削除すると、`ModuleNotFoundError: No module named 'docx'`エラーが発生します
+**なぜ絶対に必要か：**
+- python-docxはWord文書生成のための外部ライブラリ
+- ブラウザのPyodide環境には標準で含まれていない
+- micropipを使用してランタイムでインストールする必要がある
+- **削除すると必ず発生するエラー**: `ModuleNotFoundError: No module named 'docx'`
 
-### **2. Pythonコードのインデント規則（エラー防止のため厳守）**
+#### **1.2 エラーオーバーレイのHTML/CSS/JavaScript**
+- エラーオーバーレイのHTML構造（`<div id="error-overlay">`）
+- エラーハンドリングのJavaScriptコード
+- CSSクラス名（`.error-overlay`, `.error-card`等）
 
-**⚠️ IndentationErrorを防ぐため、以下の規則を必ず守ってください**
+**理由**: エラー時のユーザビリティを確保する重要な機能
 
-- **scriptタグ内のPythonコードは、絶対に左端から開始すること**
-- HTMLのインデントに影響されてPythonコードにインデントを追加してはいけない
-- `<script type="text/python" id="python-code">` の直後の行から、インデントなしでPythonコードを記述する
-
-**正しい例：**
+#### **1.3 Pyodideのロード処理**
 ```html
-    <script type="text/python" id="python-code">
-from docx import Document  # ← 左端から開始（正しい）
-import base64  # ← インデントなし（正しい）
+<script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
 ```
 
-**間違った例：**
-```html
-    <script type="text/python" id="python-code">
-        from docx import Document  # ← ❌ 不要なインデント（エラーの原因）
-        import base64  # ← ❌ IndentationErrorが発生
+**理由**: Python実行環境の基盤となる必須ライブラリ
+
+### **🟡 レベル2: 必須ルール（必ず従う）**
+
+#### **2.1 Pythonコードのインデント規則**
+```python
+# ✅ 正しい（左端開始）
+from docx import Document
+import base64
+
+# ❌ 間違い（インデントあり）
+    from docx import Document  # IndentationError発生
+    import base64
 ```
 
-## **🖼️ 画像プレースホルダー機能について**
+**理由**: HTMLのインデントに影響されてPythonコードにインデントを追加するとエラーになる
 
-### **画像が添付された場合の動作**
-- AIは添付された画像を分析し、効果的な配置位置を提案します
-- 生成される文書には画像そのものではなく、配置推奨位置のプレースホルダーが挿入されます
-- **すべての添付画像を使用する必要はありません**（最適なものだけを提案します）
-- プレースホルダーは後から手動で画像に置き換えることを想定しています
-
-### **プレースホルダーの内容**
-各プレースホルダーには以下の情報が含まれます：
-- 推奨する画像ファイル名
-- 配置位置の説明（例：「章の冒頭に配置」「説明図として本文中に挿入」）
-- 推奨サイズ（幅×高さ）
-- 使用目的（ロゴ、挿絵、図表、グラフ、写真など）
-- キャプションの提案
-
-### **画像選択の基準**
-AIは以下の基準で画像の用途を判定します：
-- **アスペクト比**：横長→ヘッダー/図表、縦長→挿絵、正方形→アイコン/ロゴ
-- **ファイル名**：「logo」→ヘッダー位置、「chart」「graph」→データセクション、「fig」→図表
-- **画像の数**：複数ある場合は文書の流れに沿って適切に配置
-- **文書の構成**：章立て、セクション、段落に応じた配置
-
-### **ユーザーへのメリット**
-- 複雑な画像埋め込み処理が不要
-- 後から手動で最適な画像を選択・配置可能
-- プロフェッショナルな文書レイアウトの提案を受けられる
-- ファイルサイズの軽量化
-- Wordの画像挿入機能で簡単に置き換え可能
-
-## **📋 AIへの実装指示**
-
-以下のHTML骨子テンプレートを使用し、指定された箇所をユーザーの要求に応じて書き換えてください。**それ以外の部分（特にライブラリインストール部分）は一切変更してはいけません。**
-
-### **書き換える箇所**
-
-1. **ページのタイトルと見出しを書き換える**  
-   * `<!-- AIがここを書き換える: ページのタイトル -->` とコメントされている2箇所を、生成する文書の内容に合わせた具体的なタイトルに書き換えてください。
-
-2. **Pythonコードを書き換える**  
-   * `<script type="text/python" id="python-code">` タグの内部を、要求された文書を生成するための python-docx コードに完全に置き換えてください。
-   * **画像が添付された場合**：画像プレースホルダーを適切な位置に追加してください
-   * **重要**: Pythonコードは必ず左端から開始し、HTMLのインデントを無視してください
-   * このPythonコードは、必ず**最終行で `js.docx_base64_data` にBase64文字列を代入する**ルールに従う必要があります。
-
-### **Pythonコード作成のルール**
-
-1. **必須のインポート文**（左端から記述）
+#### **2.2 必須のインポート文**
 ```python
 from docx import Document
-from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.style import WD_STYLE_TYPE
 from io import BytesIO
 import base64
-import js
+import js  # JavaScriptとの連携に必須
 ```
 
-2. **文書作成の基本構造**
+**省略した場合のエラー**: `NameError: name 'js' is not defined`
+
+#### **2.3 Base64データの受け渡し**
+Pythonコードの最終部で必ず実行：
 ```python
-# 文書の作成
-doc = Document()
-
-# タイトルの追加
-doc.add_heading('文書タイトル', 0)
-
-# 段落の追加
-p = doc.add_paragraph('通常のテキスト')
-p.alignment = WD_ALIGN_PARAGRAPH.LEFT
-
-# 太字・斜体の追加
-p = doc.add_paragraph()
-p.add_run('太字のテキスト').bold = True
-p.add_run(' と ')
-p.add_run('斜体のテキスト').italic = True
-
-# 箇条書きの追加
-doc.add_paragraph('項目1', style='List Bullet')
-doc.add_paragraph('項目2', style='List Bullet')
-
-# 番号付きリストの追加
-doc.add_paragraph('手順1', style='List Number')
-doc.add_paragraph('手順2', style='List Number')
-
-# 表の追加
-table = doc.add_table(rows=2, cols=3)
-table.style = 'Light Grid Accent 1'
-# セルにアクセス
-cell = table.cell(0, 0)
-cell.text = 'ヘッダー1'
-```
-
-3. **画像プレースホルダーの追加方法**
-```python
-# 画像プレースホルダーの追加（画像が添付された場合）
-
-# 例1：文書冒頭のロゴプレースホルダー
-p = doc.add_paragraph()
-p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-run = p.add_run('【画像挿入推奨位置】')
-run.bold = True
-run.font.color.rgb = RGBColor(0, 0, 255)
-p.add_run('\nファイル: logo.png\n用途: 企業ロゴ\n推奨サイズ: 2インチ幅\n配置: ヘッダー右上')
-
-# 枠線付きのプレースホルダー（表を使用）
-table = doc.add_table(rows=1, cols=1)
-table.style = 'Table Grid'
-cell = table.cell(0, 0)
-cell.text = '【画像プレースホルダー】\nファイル: main_image.jpg\n推奨サイズ: 幅4インチ\n用途: メインビジュアル\nキャプション: 製品の全体像'
-# セルの背景色を設定（視認性向上）
-from docx.oxml import parse_xml
-from docx.oxml.ns import nsdecls
-shading_elm = parse_xml(r'<w:shd {} w:fill="E0E0E0"/>'.format(nsdecls('w')))
-cell._element.get_or_add_tcPr().append(shading_elm)
-
-# 例2：本文中の説明図プレースホルダー
-doc.add_paragraph()  # 空行
-p = doc.add_paragraph('【図1 挿入位置】')
-p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-run = p.runs[0]
-run.bold = True
-run.font.size = Pt(10)
-run.font.color.rgb = RGBColor(100, 100, 100)
-
-p = doc.add_paragraph('ファイル: diagram.png または flowchart.jpg')
-p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-p.add_run('\n推奨: 幅5インチ、中央配置')
-p.add_run('\n説明: プロセスフローを示す図表')
-doc.add_paragraph()  # 空行
-```
-
-4. **必須の終了処理**（必ず含める）
-```python
-# BytesIOに保存
-docx_io = BytesIO()
-doc.save(docx_io)
-docx_io.seek(0)
-
-# Base64エンコード
-docx_bytes = docx_io.read()
-docx_base64 = base64.b64encode(docx_bytes).decode('utf-8')
-
-# JavaScriptに渡す（この行は必須）
 js.docx_base64_data = docx_base64
-
-print("DOCX file has been generated in memory.")
 ```
 
-## **📄 HTML骨子テンプレート**
+**理由**: JavaScriptがDOCXデータを受け取るための必須処理
 
-**⚠️ 重要：以下のテンプレートの中で、赤字でマークされた部分は絶対に削除・変更しないでください**
+### **🟢 レベル3: カスタマイズ可能要素**
+
+以下は自由に変更できます：
+- ページタイトル（`<title>`タグと`<h1>`タグ）
+- Pythonコード内の文書内容
+- 文書のスタイル・レイアウト
+- ダウンロードファイル名
+- プレースホルダーの配置と内容
+
+---
+
+## **🖼️ 画像プレースホルダー機能**
+
+### **基本方針**
+**すべての画像はプレースホルダーとして処理されます**
+- 画像の直接埋め込みは行いません（base64エンコードによるコンテキストウィンドウ超過を防ぐため）
+- 実際の画像挿入はユーザーがWordを開いて行います
+- AIは最適な配置位置と推奨サイズを提案します
+
+### **なぜプレースホルダー方式なのか**
+- **HTMLファイルの軽量化**: 数KBで済む（画像埋め込みだと数MB〜数十MB）
+- **コンテキストウィンドウの節約**: AIの処理限界を超えない
+- **柔軟性**: 後から自由に画像を変更可能
+- **共有性**: 複数人での使い回しが容易
+- **著作権**: 画像の権利問題を回避
+
+### **プレースホルダーに含める情報**
+1. **推奨ファイル名または説明**（例：`logo.png`、`メイン画像`）
+2. **配置位置**（例：「ヘッダー右上」「本文中央」）
+3. **推奨サイズ**（例：`600x400px`、`3x2 inches`）
+4. **用途**（例：「企業ロゴ」「説明図」「グラフ」）
+5. **キャプション案**（例：「図1: システム構成図」）
+
+### **実装時の判断基準**
+ユーザーが画像について言及した場合：
+- 「ロゴを入れて」→ ヘッダーにロゴプレースホルダー作成
+- 「図表を配置」→ 本文中に図表プレースホルダー作成
+- 「写真を追加」→ 写真用プレースホルダー作成
+- 画像ファイルが添付された場合 → ファイル名を参考にプレースホルダー作成
+
+### **推奨配置パターン**
+| 文書タイプ | 画像の種類 | 推奨位置 | 推奨サイズ |
+|-----------|-----------|---------|-----------|
+| レポート | ロゴ | ヘッダー右上 | 2×1 inches |
+| レポート | カバー画像 | タイトル下 | 6×4 inches |
+| マニュアル | スクリーンショット | 手順説明後 | 5×3 inches |
+| 提案書 | 製品画像 | セクション内 | 4×3 inches |
+| 契約書 | 社印 | フッター | 1×1 inches |
+
+---
+
+## **📝 HTMLテンプレート（完全版）**
 
 ```html
 <!DOCTYPE html>
@@ -206,7 +144,7 @@ print("DOCX file has been generated in memory.")
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- AIがここを書き換える: ページのタイトル -->
+    <!-- カスタマイズ可能: ページタイトル -->
     <title>Word文書のダウンロード</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -225,12 +163,22 @@ print("DOCX file has been generated in memory.")
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* エラーオーバーレイ（変更禁止） */
+        .error-overlay { position: fixed; inset: 0; background: rgba(17,24,39,0.25); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
+        .error-card { width: 100%; max-width: 880px; background: rgba(255,255,255,0.96); border: 1px solid rgba(55,65,81,0.25); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 20px; }
+        .error-title { display:flex; align-items:center; gap:8px; font-weight:800; font-size:18px; color:#991b1b; }
+        .error-subtitle { margin-top:6px; color:#374151; line-height:1.55; }
+        .error-actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+        .copy-btn { border:1px solid rgba(55,65,81,.3); padding:8px 12px; border-radius:10px; font-weight:600; background:#fff; cursor: pointer; }
+        .copy-btn:hover { background: #f3f4f6; }
+        .error-pre { margin-top:12px; background:#0b1020; color:#e5e7eb; border-radius:12px; padding:12px 14px; max-height:320px; overflow:auto; white-space:pre-wrap; word-break:break-word; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace; font-size:13px; line-height:1.45; }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
     <div class="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-md w-full">
-        <!-- AIがここを書き換える: ページのタイトル -->
+        <!-- カスタマイズ可能: 見出し -->
         <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">
             Word文書
         </h1>
@@ -246,10 +194,7 @@ print("DOCX file has been generated in memory.")
         </button>
     </div>
 
-    <!-- 
-      AIがここを書き換える: python-docxのコード
-      重要: Pythonコードは左端から開始（インデントなし）
-    -->
+    <!-- カスタマイズ可能: Pythonコード（ルールに従って） -->
     <script type="text/python" id="python-code">
 from docx import Document
 from io import BytesIO
@@ -280,15 +225,47 @@ js.docx_base64_data = docx_base64
 print("DOCX file has been generated in memory.")
     </script>
 
-    <!-- 
-      ⚠️⚠️⚠️ 警告: 以下のPyodideとpython-docxインストール部分は削除厳禁 ⚠️⚠️⚠️
-      この部分を削除すると、Wordファイルの生成が不可能になります
-    -->
+    <!-- エラーオーバーレイ（変更禁止） -->
+    <div id="error-overlay" class="error-overlay" role="dialog" aria-modal="true" aria-labelledby="error-title">
+        <div class="error-card">
+            <div class="error-title" id="error-title">エラーが発生しました：AIのチャットエリアに以下のエラーメッセージを貼り付けて修正を依頼して下さい</div>
+            <div class="error-subtitle">エラーの全文をコピーして、そのままAIに投げてください。原因の特定とパッチを提案します。</div>
+            <div class="error-actions">
+                <button id="copy-error" class="copy-btn" aria-label="エラーメッセージをコピーする">エラー全文をコピー</button>
+                <button id="close-error" class="copy-btn" aria-label="このエラー表示を閉じる">閉じる</button>
+            </div>
+            <pre id="error-text" class="error-pre" tabindex="0" aria-live="polite"></pre>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
     <script type="module">
         const statusMessage = document.getElementById('status-message');
         const downloadButton = document.getElementById('download-button');
         const loadingSpinner = document.getElementById('loading-spinner');
+        const overlay = document.getElementById('error-overlay');
+        const errorText = document.getElementById('error-text');
+        const copyBtn = document.getElementById('copy-error');
+        const closeBtn = document.getElementById('close-error');
+
+        // エラーUI用イベントリスナー
+        copyBtn?.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(errorText.textContent || '');
+                copyBtn.textContent = 'コピーしました';
+                setTimeout(() => (copyBtn.textContent = 'エラー全文をコピー'), 1200);
+            } catch (_) {
+                const r = document.createRange(); 
+                r.selectNodeContents(errorText);
+                const sel = window.getSelection(); 
+                sel.removeAllRanges(); 
+                sel.addRange(r);
+            }
+        });
+
+        closeBtn?.addEventListener('click', () => { 
+            overlay.style.display = 'none'; 
+        });
 
         async function main() {
             try {
@@ -297,19 +274,16 @@ print("DOCX file has been generated in memory.")
                     indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
                 });
 
-                // 🔴🔴🔴 削除厳禁: python-docxライブラリのインストール 🔴🔴🔴
-                // このコードブロックを削除するとModuleNotFoundErrorが発生します
+                // python-docxのインストール（削除禁止）
                 statusMessage.textContent = 'ライブラリをインストール中...';
                 await pyodide.loadPackage("micropip");
                 await pyodide.runPythonAsync(`
                     import micropip
-                    await micropip.install('python-docx')  # Word文書生成に必須のライブラリ
+                    await micropip.install('python-docx')
                 `);
-                // 🔴🔴🔴 ここまで削除厳禁 🔴🔴🔴
 
                 statusMessage.textContent = 'ファイルを生成しています...';
                 const pythonCode = document.getElementById('python-code').textContent;
-                // JavaScriptのグローバルスコープにデータを渡すための準備
                 window.docx_base64_data = null; 
                 await pyodide.runPythonAsync(pythonCode);
                 const base64Data = window.docx_base64_data;
@@ -325,7 +299,16 @@ print("DOCX file has been generated in memory.")
 
             } catch (error) {
                 console.error("An error occurred:", error);
-                statusMessage.textContent = `エラーが発生しました: ${error.message}`;
+                
+                try {
+                    const details = (error && (error.stack || error.message || String(error))) || 'Unknown error';
+                    errorText.textContent = details.trim();
+                } catch(_) {
+                    errorText.textContent = 'Unknown error';
+                }
+                
+                overlay.style.display = 'flex';
+                statusMessage.textContent = '処理を中断しました。';
                 loadingSpinner.style.display = 'none';
             }
         }
@@ -365,29 +348,145 @@ print("DOCX file has been generated in memory.")
 </html>
 ```
 
-## **⚠️ よくあるエラーと対処法**
+---
 
-### **ModuleNotFoundError: No module named 'docx'**
-**原因**: micropipでpython-docxをインストールする処理が削除または省略されている  
-**対処法**: HTMLテンプレートの中の `await micropip.install('python-docx')` の部分を復元する
+## **🔧 エラー診断ガイド**
 
-### **IndentationError: unexpected indent**
-**原因**: Pythonコードに不要なインデントが含まれている  
-**対処法**: すべてのPythonコードを左端から開始する
+### **よくあるエラーと解決方法**
 
-### **NameError: name 'js' is not defined**
-**原因**: `import js` が抜けている  
-**対処法**: 必須インポート文をすべて含める
+#### **1. ModuleNotFoundError**
+```
+ModuleNotFoundError: No module named 'docx'
+```
+**原因**: python-docxのインストール処理が削除されている
+**解決**: `await micropip.install('python-docx')` を復元
 
-### **AttributeError: 'Document' object has no attribute ...**
-**原因**: python-docxのAPIを間違って使用している  
-**対処法**: 正しいメソッド名を確認（add_heading, add_paragraph, add_table等）
+#### **2. IndentationError**
+```
+IndentationError: unexpected indent
+```
+**原因**: Pythonコードが左端から開始されていない
+**解決**: すべてのPythonコードのインデントを削除
 
-## **💡 実装例：画像プレースホルダー付き文書**
+#### **3. NameError**
+```
+NameError: name 'js' is not defined
+```
+**原因**: `import js` が抜けている
+**解決**: 必須インポート文に `import js` を追加
 
+#### **4. AttributeError**
+```
+AttributeError: 'Document' object has no attribute 'add_heading'
+```
+**原因**: python-docxのAPIを間違って使用
+**解決**: 正しいメソッド名を確認（add_heading, add_paragraph等）
+
+### **エラー発生時の対処手順（4ステップ）**
+
+1. **自動表示**: エラーオーバーレイがフルスクリーンで表示される
+   - 見逃すことがない高視認性デザイン
+   - エラーの詳細（スタックトレース）が完全表示
+
+2. **ワンクリックコピー**: 「エラー全文をコピー」ボタンをクリック
+   - クリップボードに自動コピー
+   - 「コピーしました」の確認表示
+
+3. **AIに貼り付け**: チャットエリアにそのまま貼り付け
+   - AIが自動的にエラー内容を分析
+   - 原因を特定
+
+4. **解決**: AIが提示する修正版を使用
+   - 具体的な修正内容の説明
+   - 修正済みコードの提供
+
+---
+
+## **💡 実装例**
+
+### **レベル1: 最小限の実装**
 ```python
 from docx import Document
-from docx.shared import Pt, Inches, RGBColor
+from io import BytesIO
+import base64
+import js
+
+doc = Document()
+doc.add_heading('シンプルな文書', 0)
+doc.add_paragraph('基本的な段落です。')
+
+docx_io = BytesIO()
+doc.save(docx_io)
+docx_io.seek(0)
+js.docx_base64_data = base64.b64encode(docx_io.read()).decode('utf-8')
+```
+
+### **レベル2: 基本的な文書構成**
+```python
+from docx import Document
+from docx.shared import Pt, Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from io import BytesIO
+import base64
+import js
+
+doc = Document()
+
+# タイトル
+doc.add_heading('業務報告書', 0)
+doc.add_heading('2025年1月度', level=1)
+
+# 概要
+doc.add_heading('概要', level=2)
+doc.add_paragraph('今月の業務内容について報告いたします。')
+
+# 箇条書き
+doc.add_heading('実施項目', level=2)
+doc.add_paragraph('データ分析', style='List Bullet')
+doc.add_paragraph('レポート作成', style='List Bullet')
+doc.add_paragraph('会議参加', style='List Bullet')
+
+# 番号付きリスト
+doc.add_heading('今後の予定', level=2)
+doc.add_paragraph('要件定義の完了', style='List Number')
+doc.add_paragraph('設計書の作成', style='List Number')
+doc.add_paragraph('実装開始', style='List Number')
+
+# 表の追加
+doc.add_heading('進捗状況', level=2)
+table = doc.add_table(rows=4, cols=3)
+table.style = 'Light Grid Accent 1'
+
+# ヘッダー行
+hdr_cells = table.rows[0].cells
+hdr_cells[0].text = 'タスク'
+hdr_cells[1].text = '進捗'
+hdr_cells[2].text = 'ステータス'
+
+# データ行
+data = [
+    ('分析', '100%', '完了'),
+    ('設計', '60%', '進行中'),
+    ('実装', '0%', '未着手')
+]
+
+for i, (task, progress, status) in enumerate(data, 1):
+    row_cells = table.rows[i].cells
+    row_cells[0].text = task
+    row_cells[1].text = progress
+    row_cells[2].text = status
+
+# 保存
+docx_io = BytesIO()
+doc.save(docx_io)
+docx_io.seek(0)
+js.docx_base64_data = base64.b64encode(docx_io.read()).decode('utf-8')
+```
+
+### **レベル3: 画像プレースホルダー付き**
+```python
+from docx import Document
+from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
@@ -397,273 +496,452 @@ import js
 
 doc = Document()
 
-# ヘッダー部分（ロゴプレースホルダー）
+# ヘッダーロゴプレースホルダー
 p = doc.add_paragraph()
 p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 run = p.add_run('【ロゴ画像挿入位置】')
 run.bold = True
 run.font.size = Pt(8)
 run.font.color.rgb = RGBColor(150, 150, 150)
+p.add_run('\nlogo.png (2×1 inches)')
 
 # メインタイトル
-title = doc.add_heading('業務報告書', 0)
-title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-# サブタイトル
-doc.add_heading('2025年1月 月次レポート', level=1)
+doc.add_heading('製品提案書', 0)
 
 # カバー画像プレースホルダー
 table = doc.add_table(rows=1, cols=1)
 table.style = 'Table Grid'
 cell = table.cell(0, 0)
 cell.text = ('【カバー画像プレースホルダー】\n'
-             'ファイル: cover_image.jpg\n'
-             '推奨サイズ: 幅6インチ\n'
-             '用途: レポートのメインビジュアル\n'
-             'キャプション: 2025年1月の成果')
-# 背景色設定
-shading_elm = parse_xml(r'<w:shd {} w:fill="F0F0F0"/>'.format(nsdecls('w')))
+             'cover_image.jpg\n'
+             '推奨: 6×4 inches\n'
+             '製品の魅力を伝えるメインビジュアル')
+
+# セルの背景色
+shading_elm = parse_xml(r'<w:shd {} w:fill="E6F2FF"/>'.format(nsdecls('w')))
 cell._element.get_or_add_tcPr().append(shading_elm)
 
 doc.add_page_break()
 
-# 概要セクション
-doc.add_heading('1. 概要', level=2)
-p = doc.add_paragraph('今月の業務について、以下の通り報告いたします。')
+# 本文
+doc.add_heading('1. 製品概要', level=1)
+doc.add_paragraph('弊社の製品について説明します。')
 
-# 詳細セクション
-doc.add_heading('2. 実施内容', level=2)
-doc.add_paragraph('プロジェクトA: 完了', style='List Bullet')
-doc.add_paragraph('プロジェクトB: 進行中（80%）', style='List Bullet')
-doc.add_paragraph('プロジェクトC: 計画段階', style='List Bullet')
-
-# グラフプレースホルダー
+# 製品画像プレースホルダー
 doc.add_paragraph()
-p = doc.add_paragraph('【図1: 進捗グラフ挿入位置】')
+p = doc.add_paragraph('【図1: 製品画像】')
 p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 run = p.runs[0]
 run.bold = True
 run.font.color.rgb = RGBColor(0, 100, 200)
 
 table = doc.add_table(rows=1, cols=1)
-table.style = 'Table Grid'
 table.alignment = WD_ALIGN_PARAGRAPH.CENTER
 cell = table.cell(0, 0)
-cell.text = ('progress_chart.png または progress_graph.xlsx のグラフ\n'
-             '推奨: 幅5インチ\n'
-             'Excelで作成したグラフを画像として挿入')
-# 薄い青の背景
-shading_elm = parse_xml(r'<w:shd {} w:fill="E6F2FF"/>'.format(nsdecls('w')))
-cell._element.get_or_add_tcPr().append(shading_elm)
+cell.text = ('product_image.png\n'
+             '推奨: 4×3 inches\n'
+             '製品の外観')
 
-doc.add_paragraph()
+doc.add_heading('2. 特徴', level=1)
+doc.add_paragraph('• 高性能', style='List Bullet')
+doc.add_paragraph('• 低価格', style='List Bullet')
+doc.add_paragraph('• 使いやすい', style='List Bullet')
 
-# 表の追加
-doc.add_heading('3. 進捗状況', level=2)
-table = doc.add_table(rows=4, cols=3)
-table.style = 'Light Grid Accent 1'
+# グラフプレースホルダー
+doc.add_heading('3. 性能比較', level=1)
+p = doc.add_paragraph('【グラフ挿入位置】')
+p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+p.add_run('\nperformance_chart.png (5×3 inches)')
+p.add_run('\n他社製品との性能比較グラフ')
 
-# ヘッダー行
-hdr_cells = table.rows[0].cells
-hdr_cells[0].text = 'プロジェクト'
-hdr_cells[1].text = '進捗率'
-hdr_cells[2].text = 'ステータス'
-
-# データ行
-data = [
-    ('プロジェクトA', '100%', '完了'),
-    ('プロジェクトB', '80%', '進行中'),
-    ('プロジェクトC', '20%', '計画中')
-]
-
-for i, (proj, prog, status) in enumerate(data, 1):
-    row_cells = table.rows[i].cells
-    row_cells[0].text = proj
-    row_cells[1].text = prog
-    row_cells[2].text = status
-
-# 写真ギャラリープレースホルダー
-doc.add_heading('4. 活動記録', level=2)
-p = doc.add_paragraph('今月の主な活動を写真で振り返ります。')
-
-# 2x2のグリッドで写真プレースホルダー
-table = doc.add_table(rows=2, cols=2)
-table.style = 'Table Grid'
-for i in range(2):
-    for j in range(2):
-        cell = table.cell(i, j)
-        num = i * 2 + j + 1
-        cell.text = f'【写真{num}】\nphoto{num}.jpg\n3インチ四方'
-
-# 備考
-doc.add_heading('5. 備考', level=2)
-p = doc.add_paragraph()
-p.add_run('重要: ').bold = True
-p.add_run('来月までに全プロジェクトの完了を目指します。')
-
-# サイドバー画像プレースホルダー（小さなアイコン的使用）
-doc.add_paragraph()
-p = doc.add_paragraph('【参考資料アイコン】')
-run = p.runs[0]
-run.font.size = Pt(9)
-run.font.color.rgb = RGBColor(128, 128, 128)
-p.add_run('\nicon_document.png (1インチ) - 関連文書へのリンク用アイコン')
-
-# 保存とBase64変換
+# 保存
 docx_io = BytesIO()
 doc.save(docx_io)
 docx_io.seek(0)
-
-docx_bytes = docx_io.read()
-docx_base64 = base64.b64encode(docx_bytes).decode('utf-8')
-
-js.docx_base64_data = docx_base64
-
-print("DOCX file with image placeholders has been generated.")
+js.docx_base64_data = base64.b64encode(docx_io.read()).decode('utf-8')
 ```
 
-## **📚 python-docxの主要機能リファレンス**
+### **レベル4: 高度な書式設定とスタイル**
+```python
+from docx import Document
+from docx.shared import Inches, Pt, RGBColor, Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.style import WD_STYLE_TYPE
+from docx.enum.section import WD_SECTION
+from io import BytesIO
+import base64
+import js
 
-### **文書構造**
-- `Document()`: 新規文書の作成
-- `add_heading(text, level)`: 見出しの追加（level 0-9）
-- `add_paragraph(text, style)`: 段落の追加
-- `add_page_break()`: 改ページの挿入
+def add_image_placeholder(doc, position, size, description):
+    """汎用的な画像プレースホルダー追加関数"""
+    table = doc.add_table(rows=1, cols=1)
+    table.style = 'Table Grid'
+    cell = table.cell(0, 0)
+    cell.text = description
+    
+    # 背景色設定
+    from docx.oxml import parse_xml
+    from docx.oxml.ns import nsdecls
+    shading_elm = parse_xml(r'<w:shd {} w:fill="F0F0F0"/>'.format(nsdecls('w')))
+    cell._element.get_or_add_tcPr().append(shading_elm)
+    
+    if position == 'center':
+        table.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    elif position == 'right':
+        table.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    
+    return table
+
+doc = Document()
+
+# ページ設定
+section = doc.sections[0]
+section.page_height = Cm(29.7)  # A4
+section.page_width = Cm(21.0)   # A4
+section.left_margin = Cm(2.5)
+section.right_margin = Cm(2.5)
+section.top_margin = Cm(2.5)
+section.bottom_margin = Cm(2.5)
+
+# カスタムスタイルの作成
+styles = doc.styles
+heading_style = styles.add_style('CustomHeading', WD_STYLE_TYPE.PARAGRAPH)
+heading_style.font.name = 'メイリオ'
+heading_style.font.size = Pt(14)
+heading_style.font.bold = True
+heading_style.font.color.rgb = RGBColor(0, 51, 102)
+
+# 表紙
+title = doc.add_paragraph('技術仕様書', style='CustomHeading')
+title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+title.runs[0].font.size = Pt(24)
+
+subtitle = doc.add_paragraph('バージョン 1.0')
+subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+# 日付
+date_p = doc.add_paragraph('2025年1月')
+date_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+# ロゴプレースホルダー
+add_image_placeholder(
+    doc, 'center', (3, 2),
+    '【企業ロゴ】\ncompany_logo.png\n3×2 inches\n中央配置'
+)
+
+doc.add_page_break()
+
+# 目次プレースホルダー
+doc.add_heading('目次', level=1)
+p = doc.add_paragraph('【目次プレースホルダー】')
+p.add_run('\n※ Wordで「参考資料」→「目次」から自動生成してください')
+p.add_run('\n※ 見出しスタイルを使用している箇所が自動的に目次に含まれます')
+
+doc.add_page_break()
+
+# セクション1
+doc.add_heading('1. はじめに', level=1)
+doc.add_paragraph('本書は製品の技術仕様について記載します。')
+
+# 複雑な表
+doc.add_heading('2. 仕様一覧', level=1)
+table = doc.add_table(rows=5, cols=4)
+table.style = 'Medium Grid 1 Accent 1'
+
+# ヘッダー行をマージ
+table.cell(0, 0).merge(table.cell(0, 3))
+table.cell(0, 0).text = '製品仕様'
+
+# サブヘッダー
+headers = ['項目', '仕様', '備考', '参照']
+for i, header in enumerate(headers):
+    table.cell(1, i).text = header
+
+# データ
+specs = [
+    ('サイズ', '100×50×30mm', '±2mm', '図1参照'),
+    ('重量', '500g', '±10g', '-'),
+    ('動作温度', '-10〜50℃', '結露なきこと', '試験データ参照')
+]
+
+for i, (item, spec, note, ref) in enumerate(specs, 2):
+    table.cell(i, 0).text = item
+    table.cell(i, 1).text = spec
+    table.cell(i, 2).text = note
+    table.cell(i, 3).text = ref
+
+# 図表プレースホルダー
+doc.add_paragraph()
+add_image_placeholder(
+    doc, 'center', (5, 4),
+    '【図1: 製品寸法図】\ndimensions.png\n5×4 inches\nCADから出力した寸法図'
+)
+
+# セクション区切り
+doc.add_section(WD_SECTION.NEW_PAGE)
+
+# 付録
+doc.add_heading('付録A: 試験データ', level=1)
+add_image_placeholder(
+    doc, 'left', (6, 4),
+    '【試験データグラフ】\ntest_results.png\n6×4 inches\n温度試験の結果グラフ'
+)
+
+# フッター情報
+doc.add_paragraph()
+doc.add_paragraph()
+p = doc.add_paragraph()
+p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+run = p.add_run('機密情報 - 取扱注意')
+run.font.size = Pt(9)
+run.font.color.rgb = RGBColor(128, 128, 128)
+
+# 保存
+docx_io = BytesIO()
+doc.save(docx_io)
+docx_io.seek(0)
+js.docx_base64_data = base64.b64encode(docx_io.read()).decode('utf-8')
+```
+
+---
+
+## **📚 Word特有の機能**
+
+### **ページ設定**
+```python
+from docx.shared import Cm
+section = doc.sections[0]
+section.page_height = Cm(29.7)  # A4縦
+section.page_width = Cm(21.0)
+section.left_margin = Cm(2.5)
+section.right_margin = Cm(2.5)
+section.top_margin = Cm(2.5)
+section.bottom_margin = Cm(2.5)
+section.orientation = WD_ORIENT.LANDSCAPE  # 横向き
+```
+
+### **スタイル管理**
+```python
+# カスタムスタイルの作成
+styles = doc.styles
+custom_style = styles.add_style('MyStyle', WD_STYLE_TYPE.PARAGRAPH)
+custom_style.font.name = 'メイリオ'
+custom_style.font.size = Pt(12)
+custom_style.font.bold = True
+
+# スタイルの適用
+p = doc.add_paragraph('スタイル付きテキスト', style='MyStyle')
+```
+
+### **セクション区切り**
+```python
+from docx.enum.section import WD_SECTION
+# 新しいページから始まるセクション
+doc.add_section(WD_SECTION.NEW_PAGE)
+# 連続セクション（同じページ内）
+doc.add_section(WD_SECTION.CONTINUOUS)
+```
+
+### **ヘッダー・フッター**
+```python
+# ヘッダーの設定
+header = doc.sections[0].header
+header_p = header.paragraphs[0]
+header_p.text = "文書タイトル"
+header_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+# フッターの設定
+footer = doc.sections[0].footer
+footer_p = footer.paragraphs[0]
+footer_p.text = "ページ番号: "
+footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+```
+
+### **高度な表操作**
+```python
+# セルの結合
+table.cell(0, 0).merge(table.cell(0, 2))
+
+# セル内の段落書式
+cell = table.cell(0, 0)
+cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+# 行の高さ設定
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+tr = table.rows[0]._tr
+trPr = tr.get_or_add_trPr()
+trHeight = OxmlElement('w:trHeight')
+trHeight.set(qn('w:val'), '1000')  # 高さ（twips単位）
+trPr.append(trHeight)
+```
+
+---
+
+## **✅ 実装チェックリスト**
+
+### **必須確認項目**
+- [ ] python-docxインストール処理が存在する
+- [ ] Pythonコードが左端から開始されている
+- [ ] `import js` が含まれている
+- [ ] `js.docx_base64_data` への代入がある
+- [ ] エラーオーバーレイのHTMLが完全である
+
+### **プレースホルダー確認項目**
+- [ ] 画像の直接埋め込みを行っていない
+- [ ] プレースホルダーに必要な情報が含まれている
+- [ ] 視覚的に分かりやすい表示（枠線や背景色）
+- [ ] 推奨サイズが明記されている
+- [ ] キャプション案が含まれている
+
+### **動作確認項目**
+- [ ] ページが正常に読み込まれる
+- [ ] ダウンロードボタンが有効になる
+- [ ] DOCXファイルがダウンロードできる
+- [ ] エラー時にオーバーレイが表示される
+- [ ] エラーコピーボタンが機能する
+
+---
+
+## **📊 python-docxリファレンス**
+
+### **文書要素の追加**
+| メソッド | 用途 | 例 |
+|---------|------|-----|
+| `add_heading(text, level)` | 見出し追加 | `doc.add_heading('タイトル', 0)` |
+| `add_paragraph(text, style)` | 段落追加 | `doc.add_paragraph('本文')` |
+| `add_table(rows, cols)` | 表追加 | `doc.add_table(3, 4)` |
+| `add_page_break()` | 改ページ | `doc.add_page_break()` |
+| `add_section(start_type)` | セクション区切り | `doc.add_section()` |
 
 ### **テキスト書式**
-- `run.bold = True`: 太字
-- `run.italic = True`: 斜体
-- `run.underline = True`: 下線
-- `run.font.size = Pt(12)`: フォントサイズ
-- `run.font.color.rgb = RGBColor(255, 0, 0)`: 文字色
+```python
+# 段落の取得と書式設定
+p = doc.add_paragraph()
+run = p.add_run('テキスト')
+run.bold = True
+run.italic = True
+run.underline = True
+run.font.size = Pt(12)
+run.font.name = 'メイリオ'
+run.font.color.rgb = RGBColor(255, 0, 0)
 
-### **段落配置**
-- `WD_ALIGN_PARAGRAPH.LEFT`: 左寄せ
-- `WD_ALIGN_PARAGRAPH.CENTER`: 中央寄せ
-- `WD_ALIGN_PARAGRAPH.RIGHT`: 右寄せ
-- `WD_ALIGN_PARAGRAPH.JUSTIFY`: 両端揃え
+# 段落の配置
+p.alignment = WD_ALIGN_PARAGRAPH.CENTER  # 中央寄せ
+p.alignment = WD_ALIGN_PARAGRAPH.RIGHT   # 右寄せ
+p.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY # 両端揃え
+```
 
-### **画像プレースホルダーの配置戦略**
+### **単位の扱い**
+```python
+from docx.shared import Inches, Pt, Cm, Mm
 
-#### **文書タイプ別の推奨位置**
+# インチ単位
+width = Inches(3)  # 3インチ
 
-1. **レポート・報告書**
-   - ロゴ: ヘッダー右上
-   - カバー画像: タイトル下
-   - グラフ・図表: 該当セクション内
-   - 写真: ギャラリー形式または本文中
+# ポイント単位（フォントサイズ等）
+size = Pt(12)  # 12ポイント
 
-2. **契約書・公式文書**
-   - 社印・ロゴ: ヘッダーまたはフッター
-   - 署名欄: 文書末尾
-   - 参考図: 付録セクション
+# センチメートル単位
+margin = Cm(2.5)  # 2.5cm
 
-3. **マニュアル・手順書**
-   - スクリーンショット: 手順説明の直後
-   - 図解: 概念説明の箇所
-   - アイコン: 注意事項の横
+# ミリメートル単位
+spacing = Mm(10)  # 10mm
+```
 
-4. **提案書**
-   - メインビジュアル: 表紙
-   - 製品画像: 製品説明セクション
-   - 比較表: データセクション
+---
 
-### **プレースホルダーのスタイル設定**
+## **🚀 クイックスタート**
+
+### **最速実装（3ステップ）**
+
+1. **HTMLテンプレートをコピー**
+2. **タイトルを変更**（`<title>`と`<h1>`の2箇所）
+3. **Pythonコードで文書内容を定義**
 
 ```python
-# 色付き背景のプレースホルダー
-from docx.oxml import parse_xml
-from docx.oxml.ns import nsdecls
+# 最小限の変更例
+doc = Document()
+doc.add_heading('あなたのタイトルをここに', 0)
+doc.add_paragraph('本文をここに記述')
+# ... 残りは保存処理（テンプレート通り）
+```
 
+### **画像が必要な場合**
+
+1. **プレースホルダーを配置**
+```python
 table = doc.add_table(rows=1, cols=1)
-cell = table.cell(0, 0)
-cell.text = "プレースホルダーテキスト"
-
-# 背景色の設定
-shading_elm = parse_xml(r'<w:shd {} w:fill="COLOR_HEX"/>'.format(nsdecls('w')))
-cell._element.get_or_add_tcPr().append(shading_elm)
-
-# 色の例:
-# "E0E0E0" - 薄いグレー
-# "E6F2FF" - 薄い青
-# "FFF0E6" - 薄いオレンジ
-# "E6FFE6" - 薄い緑
+table.style = 'Table Grid'
+table.cell(0, 0).text = '【画像】\nここに画像を配置'
 ```
 
-## **✅ 最終チェックリスト**
+2. **ユーザーがWordで画像を追加**
+   - ダウンロードしたDOCXファイルを開く
+   - プレースホルダーを削除
+   - 「挿入」→「画像」で実際の画像を挿入
 
-AIがHTMLを生成する際の確認事項：
-
-- [ ] **python-docxのインストール処理（`await micropip.install('python-docx')`）が含まれているか**
-- [ ] Pythonコードは左端から開始されているか
-- [ ] 必須のimport文がすべて含まれているか
-- [ ] `js.docx_base64_data = docx_base64` の行が存在するか
-- [ ] 画像が添付された場合、適切なプレースホルダーを追加しているか
-- [ ] プレースホルダーに必要な情報（ファイル名、用途、サイズ、キャプション）が含まれているか
-- [ ] ページタイトルは適切に変更されているか
-- [ ] MIMEタイプが正しく設定されているか
-- [ ] エラーメッセージの表示処理が含まれているか
-- [ ] Pyodideのロード処理が含まれているか
-
-## **🎯 応用例**
-
-### **インライン画像プレースホルダー**
-```python
-# 文章の途中に画像を挿入する場合
-p = doc.add_paragraph('製品の特徴について説明します。')
-p.add_run(' [画像: product_detail.jpg, 2インチ幅] ')
-p.add_run('このように、細部まで丁寧に作られています。')
-```
-
-### **サイドバイサイド配置**
-```python
-# 表を使って文章と画像を並列配置
-table = doc.add_table(rows=1, cols=2)
-# 左側: テキスト
-cell_left = table.cell(0, 0)
-cell_left.text = '説明文がここに入ります。'
-# 右側: 画像プレースホルダー
-cell_right = table.cell(0, 1)
-cell_right.text = '【画像】\nside_image.jpg\n幅2.5インチ'
-```
-
-### **条件付きプレースホルダー**
-```python
-# 文書の内容に応じて動的にプレースホルダーを配置
-if "データ分析" in content:
-    # データビジュアライゼーション用プレースホルダー
-    add_chart_placeholder(doc)
-
-if "手順説明" in content:
-    # スクリーンショット用プレースホルダー
-    add_screenshot_placeholders(doc)
-```
+---
 
 ## **📝 更新履歴**
 
-- **v2.1** (2025-01-17): 外部ライブラリインストールの重要性を強調
-  - 必須要件セクションを冒頭に追加
-  - HTMLテンプレート内にコメントで警告を追加
-  - チェックリストにpython-docx確認項目を追加
-  - エラー対処法にModuleNotFoundErrorを追加
-- **v2.0** (2025-01-17): 画像プレースホルダー機能を追加
+- **v3.0** (2025-01-17)
+  - 実装ルールを優先順位別に再構成
+  - 画像処理方針を明確化（すべてプレースホルダー）
+  - エラーUI機能を追加（フルスクリーンオーバーレイ）
+  - 実装例を4段階に拡充
+  - Word特有の高度な機能を追加
+  - エラー対処手順を完備
+
+- **v2.1** (2025-01-17)
+  - 外部ライブラリインストールの重要性を強調
+  - 画像プレースホルダー機能を追加
+
+- **v2.0** (2025-01-17)
   - 画像配置のサジェスチョン機能
-  - プレースホルダーの視覚的表現（表と背景色）
-  - 画像選択の自動判定基準
-  - キャプション提案機能
-- **v1.0** (2025-01-17): 初版リリース
+  - インデントエラー防止の明確化
+
+---
 
 ## **📄 ライセンス**
 
-本レシピはMITライセンスの下で提供されています。自由に使用、改変、再配布、商用利用が可能です。
+MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
-## **🆘 トラブルシューティング**
+---
 
-もしAIがこのレシピを正しく実行できない場合：
+## **🆘 サポート**
 
-1. **最初に必須要件セクションを確認** - 特にpython-docxのインストール処理
-2. **HTMLテンプレートの警告コメントを確認** - 削除厳禁の箇所が残っているか
-3. **チェックリストを使用して検証** - すべての項目が満たされているか
-4. **エラーメッセージを確認** - ModuleNotFoundErrorの場合はライブラリインストールの問題
+### **問題が発生した場合の対処**
 
-**それでも問題が解決しない場合は、このレシピの最新版を確認してください。**
+1. **エラーメッセージをコピー**
+   - エラーオーバーレイの「エラー全文をコピー」ボタンを使用
+
+2. **AIに貼り付けて相談**
+   - コピーした内容をチャットエリアに貼り付け
+   - AIが原因を分析し、修正版を提供
+
+3. **チェックリストで確認**
+   - 必須項目が漏れていないか確認
+   - 特にpython-docxのインストール処理
+
+4. **実装例を参考に**
+   - レベル1の最小限実装から始める
+   - 段階的に機能を追加
+
+### **よくある質問**
+
+**Q: 画像を直接埋め込みたい**
+A: base64エンコードによるコンテキストウィンドウ超過を防ぐため、プレースホルダー方式を採用しています。
+
+**Q: プレースホルダーの見た目を変えたい**
+A: 表のスタイルや背景色を`table.style`や`shading_elm`で自由にカスタマイズ可能です。
+
+**Q: 縦書きの文書を作りたい**
+A: python-docxの制限により、縦書きは直接サポートされていません。Wordで開いた後に設定してください。
+
+**Q: 目次を自動生成したい**
+A: プレースホルダーを配置し、Wordの目次機能を使用してください。見出しスタイルが自動的に認識されます。
+
+---
+
+**これでレシピv3.0の全文です。AIが正しく理解し、適切なDOCX生成ページを作成できるよう、詳細な説明と実例を含めました。**
