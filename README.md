@@ -1,4 +1,4 @@
-# 🎉 Office文書自動生成システム
+# 🎉 Office文書自動生成レシピシステム
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/badge/Version-1.1.1-blue.svg)](https://github.com/HarmoniaEpic/text-to-office-recipes)
@@ -7,7 +7,7 @@
 
 **AIとレシピファイルで、PowerPoint・Word・Excel・PDFを瞬時に自動生成！**
 
-ローカルAI対応・MITライセンス・選択可能なセキュリティレベルを実現した文書生成ツール
+ローカルAI対応・MITライセンス・選択可能なセキュリティレベルを実現した文書生成レシピ
 
 ---
 
