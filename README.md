@@ -9,8 +9,6 @@
 
 ローカルAI対応・MITライセンス・選択可能なセキュリティレベルを実現した文書生成ツール
 
-![Demo](https://via.placeholder.com/800x400/4A90E2/FFFFFF?text=Office+Document+Auto-Generation+System)
-
 ---
 
 ## 📚 目次
