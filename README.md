@@ -274,7 +274,9 @@
 ## ❓ よくある質問
 
 ### Q: レシピファイルはどこで入手できますか？
-**A:** 4つのレシピファイル（PPTX-RECIPE.md、DOCX-RECIPE.md、XLSX-RECIPE.md、PDF-RECIPE.md）は本READMEとセットで提供されています。
+**A:** 4つのレシピファイル（PPTX-RECIPE.md、DOCX-RECIPE.md、XLSX-RECIPE.md、PDF-RECIPE.md）は本READMEとセットで提供されています。以下のリンクからダウンロード可能です。
+
+https://github.com/HarmoniaEpic/text-to-office-recipes/archive/refs/heads/main.zip
 
 ### Q: レシピファイルを添付し忘れたらどうなりますか？
 **A:** AIが正しくファイルを生成できません。必ず最初にレシピファイルを添付してから依頼してください。
