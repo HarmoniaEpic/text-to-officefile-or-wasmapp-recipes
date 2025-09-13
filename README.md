@@ -6,15 +6,22 @@
 
 4つのレシピファイル（PPTX・DOCX・XLSX・PDF）を使って、AIがあなたの要望通りのOffice文書やPDFを生成します。
 
+現在のレシピファイルのバージョン：
+
+- `PPTX-RECIPE.md` v3.4
+- `DOCX-RECIPE.md` v3.0
+- `XLSX-RECIPE.md` v2.0
+- `PDF-RECIPE.md` v2.0
+
 面倒な作業はAIにお任せして、あなたは内容を考えるだけでOK。
 
 ## 🚀 4ステップで完成！
 
 ### 1️⃣ 作りたいファイルに合わせてレシピを選ぶ
-- **PowerPointを作る** → `PPTX-RECIPE.md`を選ぶ
-- **Wordを作る** → `DOCX-RECIPE.md`を選ぶ
-- **Excelを作る** → `XLSX-RECIPE.md`を選ぶ
-- **PDFを作る** → `PDF-RECIPE.md`を選ぶ
+- **PowerPointを作る** → `PPTX-RECIPE.md` (v3.4) を選ぶ
+- **Wordを作る** → `DOCX-RECIPE.md` (v3.0) を選ぶ
+- **Excelを作る** → `XLSX-RECIPE.md` (v2.0) を選ぶ
+- **PDFを作る** → `PDF-RECIPE.md` (v2.0) を選ぶ
 
 ### 2️⃣ 選んだレシピをAIに添付する
 ※ Excelで既存データを使う場合は、CSVファイルも一緒に添付
@@ -60,10 +67,10 @@
 
 | 作りたいもの | 使うレシピファイル | ファイル名 |
 |------------|-----------------|-----------|
-| 📊 プレゼン・スライド | PowerPointレシピ | `PPTX-RECIPE.md` |
-| 📄 文書・レポート | Wordレシピ | `DOCX-RECIPE.md` |
-| 📈 表・グラフ・データ | Excelレシピ＋データCSV（任意） | `XLSX-RECIPE.md` + データ.csv |
-| 📑 請求書・証明書・印刷物 | PDFレシピ | `PDF-RECIPE.md` |
+| 📊 プレゼン・スライド | PowerPointレシピ | `PPTX-RECIPE.md` (v3.4) |
+| 📄 文書・レポート | Wordレシピ | `DOCX-RECIPE.md` (v3.0) |
+| 📈 表・グラフ・データ | Excelレシピ＋データCSV（任意） | `XLSX-RECIPE.md` (v2.0) + データ.csv |
+| 📑 請求書・証明書・印刷物 | PDFレシピ | `PDF-RECIPE.md` (v2.0) |
 
 ### 📤 **AIへの添付方法**
 
