@@ -719,7 +719,7 @@ READMEや技術文書の改善も歓迎します。誤字脱字の修正から�
 ```
 MIT License
 
-Copyright (c) 2025 Office Document Auto-Generation Recipes
+Copyright (c) 2025 HarmoniaEpic
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
