@@ -35,7 +35,7 @@
 - **プログラミング知識不要** - 誰でも使える
 
 ### 🔒 **安全・プライベート**
-- **ローカルAI対応** - Ollama/Jan使用で完全オフライン
+- **ローカルAI対応** - Ollama/Jan/Docker Model Runner使用で完全オフライン推論
 - **文書生成はローカル処理** - WebAssemblyでブラウザ内実行
 - **選択可能なセキュリティレベル** - 用途に応じてAIを選択
 
@@ -70,8 +70,8 @@
 - 対応ブラウザ（Chrome、Firefox、Edge、Safari）
 - レシピファイル（本プロジェクトに含まれる）
 - AIアシスタント（以下から選択）：
-  - **高セキュリティ**: [Ollama](https://ollama.ai/)、[Jan](https://jan.ai/)（ローカルAI）
-  - **高利便性**: Claude、ChatGPT（クラウドAI）
+  - **高セキュリティ**: [Ollama](https://ollama.ai/)、[Jan](https://jan.ai/)、[Docker Model Runner](https://www.docker.com/ja-jp/blog/introducing-docker-model-runner/)（ローカルAI）
+  - **高利便性**: Claude、ChatGPT、Gemini（クラウドAI）
 
 ### 30秒で始める（クラウドAI使用）
 
@@ -314,16 +314,18 @@ CSVファイルの例：
 
 このシステムは使用するAIによって、セキュリティとプライバシーのレベルが異なります。
 
-#### 🔐 **高レベル：ローカルAI使用時（Ollama/Jan）**
+#### 🔐 **高レベル：ローカルAI使用時（Ollama/Jan/Docker Model Runner）**
 
 **高いプライバシー保護を実現**
 ※ 汚染されたモデルや悪意あるモデルを使用する場合はこの限りではありません
+
 ※ ローカルAIでは特にモデルの出所やモデル提供者の信頼性に注意を払いましょう
 
 | AI | 特徴 | プライバシーレベル |
 |-----|------|------------------|
-| **[Ollama](https://ollama.ai/)** | ローカルで動作するLLM | ⭐⭐⭐⭐⭐ 完全保護 |
-| **[Jan](https://jan.ai/)** | オフライン対応AI | ⭐⭐⭐⭐⭐ 完全保護 |
+| **[Ollama](https://ollama.ai/)** | ローカルで動作するLLM運用プラットフォーム | ⭐⭐⭐⭐⭐ 完全保護 |
+| **[Jan](https://jan.ai/)** | オフライン対応LLM運用プラットフォーム | ⭐⭐⭐⭐⭐ 完全保護 |
+| **[Docker Model Runner](https://www.docker.com/ja-jp/blog/introducing-docker-model-runner/)** | コンテナ化されたLLM運用プラットフォーム | ⭐⭐⭐⭐⭐ 完全保護 |
 
 **メリット：**
 - ✅ **完全オフライン動作** - モデルダウンロード後はインターネット接続不要
