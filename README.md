@@ -11,7 +11,7 @@
 [![Python](https://img.shields.io/badge/Python-3.x-green.svg)](https://www.python.org/)
 [![Pyodide](https://img.shields.io/badge/Powered%20by-Pyodide-orange.svg)](https://pyodide.org/)
 
-**AIとレシピファイルで、PowerPoint・Word・Excel・PDF・数式PNGを瞬時に自動生成！**
+**AIとレシピファイルで、PowerPoint・Word・Excel・PDF・数式PNGを手軽に自動生成出来ます**
 
 ローカルAI対応・MITライセンス・選択可能なセキュリティレベルを実現したオフィス系文書ファイル生成レシピ
 
