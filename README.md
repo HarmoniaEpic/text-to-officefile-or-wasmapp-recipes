@@ -1,3 +1,6 @@
+# !!!Caution PoC!!!
+こちらはAIを使用し急ぎアイデアをとりあえず動く段階まで形にしたものです。有用とは思いますが使用時は At Your Own Risk でお願いします。
+
 # 🎉 Office文書自動生成レシピシステム
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
