@@ -364,7 +364,7 @@ flowchart TD
 | **OS** | Windows 10<br/>macOS 10.15<br/>Linux（Ubuntu 20.04+） | 64bit OS最新版 | 同左 |
 
 <details>
-<summary>🤖 **詳細な構成ガイド（クリックで展開）**</summary>
+<summary>🤖 <b>詳細な構成ガイド（クリックで展開）</b></summary>
 
 #### 🤖 **LLMモデル要件**
 
