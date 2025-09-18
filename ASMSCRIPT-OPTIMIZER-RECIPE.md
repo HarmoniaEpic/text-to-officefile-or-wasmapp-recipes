@@ -297,6 +297,310 @@ const AppModule = {
    - プログレスバーの更新
    - 現在試行中のCDN表示
 
+### 🟠 型変換に関する重要注意事項（v1.3.1追加）
+
+AssemblyScriptはJavaScriptと異なり、厳格な型システムを持つため、型変換でのコンパイルエラーが頻発します。
+特に**f64からf32への変換**は最も失敗しやすく、生成AIは以下のルールを厳守する必要があります。
+
+#### **1. 基本的な型変換ルール**
+
+##### **🔴 絶対に避けるべきパターン**
+
+```typescript
+// ❌ エラー: 暗黙的な型変換は許可されない
+let value: f64 = 3.14159;
+let result: f32 = value;  // Type 'f64' is not assignable to type 'f32'
+
+// ❌ エラー: 数値リテラルのデフォルトはf64
+let x: f32 = 0.1;  // 0.1はf64として解釈される
+let y: f32 = 3.14;  // 同様にエラー
+
+// ❌ エラー: 演算結果の型不一致
+let a: f32 = 1.0f;
+let b: f32 = a * 0.5;  // 0.5はf64なので、結果もf64になる
+
+// ❌ エラー: Math関数の戻り値はf64
+let angle: f32 = Math.sin(1.0);  // Math.sinはf64を返す
+
+// ❌ エラー: 配列要素の型不一致
+let arr: f32[] = [1.0, 2.0, 3.0];  // リテラルがf64
+```
+
+##### **✅ 正しい実装パターン**
+
+```typescript
+// ✅ 明示的なキャスト
+let value: f64 = 3.14159;
+let result: f32 = <f32>value;  // 明示的にキャスト
+
+// ✅ f32リテラルの使用（3つの方法）
+let x: f32 = 0.1f;        // 方法1: fサフィックス
+let y: f32 = <f32>3.14;   // 方法2: キャスト
+let z = f32(2.71);        // 方法3: コンストラクタ形式
+
+// ✅ 演算時の型統一
+let a: f32 = 1.0f;
+let b: f32 = a * 0.5f;    // 両方f32で統一
+
+// ✅ Math関数使用時のキャスト
+let angle: f32 = <f32>Math.sin(1.0);
+
+// ✅ 配列要素の型指定
+let arr: f32[] = [1.0f, 2.0f, 3.0f];  // fサフィックス付き
+// または
+let arr: f32[] = [<f32>1.0, <f32>2.0, <f32>3.0];  // キャスト
+```
+
+#### **2. 物理演算・グラフィックス処理での実装パターン**
+
+```typescript
+// Canvas座標計算（f32推奨）
+export class Vector2D {
+    x: f32;
+    y: f32;
+    
+    constructor(x: f32, y: f32) {
+        this.x = x;
+        this.y = y;
+    }
+    
+    // ✅ 正しい: すべてf32で統一
+    rotate(angle: f32): void {
+        const cos = <f32>Math.cos(angle);
+        const sin = <f32>Math.sin(angle);
+        const nx = this.x * cos - this.y * sin;
+        const ny = this.x * sin + this.y * cos;
+        this.x = nx;
+        this.y = ny;
+    }
+    
+    // ✅ 正しい: 定数もf32で定義
+    scale(factor: f32): void {
+        const SCALE_LIMIT: f32 = 10.0f;
+        if (factor > SCALE_LIMIT) {
+            factor = SCALE_LIMIT;
+        }
+        this.x *= factor;
+        this.y *= factor;
+    }
+}
+
+// 物理シミュレーション
+export class PhysicsObject {
+    position: f32;
+    velocity: f32;
+    acceleration: f32;
+    
+    // ✅ 正しい: 時間ステップもf32
+    update(deltaTime: f32): void {
+        // 重力定数をf32として定義
+        const GRAVITY: f32 = 9.8f;
+        
+        this.acceleration = -GRAVITY;
+        this.velocity += this.acceleration * deltaTime;
+        this.position += this.velocity * deltaTime;
+        
+        // 床との衝突判定
+        if (this.position <= 0.0f) {
+            this.position = 0.0f;
+            this.velocity = -this.velocity * 0.8f;  // 反発係数
+        }
+    }
+}
+```
+
+#### **3. Mathライブラリ使用時の注意点**
+
+```typescript
+// ❌ 間違い: Math関数はすべてf64を返す
+let sinValue: f32 = Math.sin(angle);  // エラー
+
+// ✅ 正解: 明示的にキャスト
+let sinValue: f32 = <f32>Math.sin(angle);
+
+// ✅ より良い: Mathf（f32版）を使用する場合
+// ※Mathfは別途定義が必要
+namespace Mathf {
+    export const PI: f32 = 3.14159265f;
+    export const E: f32 = 2.71828182f;
+    
+    export function sin(x: f32): f32 {
+        return <f32>Math.sin(x);
+    }
+    
+    export function cos(x: f32): f32 {
+        return <f32>Math.cos(x);
+    }
+    
+    export function sqrt(x: f32): f32 {
+        return <f32>Math.sqrt(x);
+    }
+}
+
+// 使用例
+let angle: f32 = 45.0f * Mathf.PI / 180.0f;
+let result: f32 = Mathf.sin(angle);
+```
+
+#### **4. 配列・TypedArray操作時の注意**
+
+```typescript
+// Float32Array使用（推奨）
+let vertices = new Float32Array(100);
+for (let i = 0; i < vertices.length; i++) {
+    vertices[i] = <f32>i * 0.1f;  // インデックスはi32なのでキャスト不要
+}
+
+// 通常配列の場合
+let points: f32[] = [];
+points.push(1.0f);  // fサフィックス必須
+points.push(<f32>Math.random());  // Math.randomもf64なのでキャスト
+
+// マトリックス演算
+function multiply4x4(a: Float32Array, b: Float32Array): Float32Array {
+    let result = new Float32Array(16);
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < 4; j++) {
+            let sum: f32 = 0.0f;
+            for (let k = 0; k < 4; k++) {
+                sum += a[i * 4 + k] * b[k * 4 + j];
+            }
+            result[i * 4 + j] = sum;
+        }
+    }
+    return result;
+}
+```
+
+#### **5. 定数定義のベストプラクティス**
+
+```typescript
+// ✅ 推奨: 型を明示的に指定
+const SPEED: f32 = 5.0f;
+const GRAVITY: f32 = 9.8f;
+const PI_F32: f32 = 3.14159265f;
+const EPSILON: f32 = 0.00001f;
+
+// グローバル定数の定義
+namespace Constants {
+    export const MAX_VELOCITY: f32 = 100.0f;
+    export const MIN_VELOCITY: f32 = -100.0f;
+    export const FRICTION: f32 = 0.95f;
+    export const BOUNCE: f32 = 0.8f;
+}
+
+// 使用時
+let velocity: f32 = Constants.MAX_VELOCITY;
+```
+
+#### **6. 精度とパフォーマンスのトレードオフ**
+
+```typescript
+/*
+精度比較:
+- f64: 15-17桁の有効数字（倍精度）
+- f32: 6-9桁の有効数字（単精度）
+
+使い分けの指針:
+*/
+
+// f32を使うべき場合（パフォーマンス優先）
+// - グラフィックス座標計算
+// - リアルタイムゲーム物理
+// - 大量の頂点データ処理
+// - WebGL/Canvas描画
+
+// f64を使うべき場合（精度優先）
+// - 科学計算
+// - 金融計算
+// - 累積誤差が問題となる長時間シミュレーション
+// - 高精度が要求される数値解析
+
+// 混在使用の例
+export class PrecisionExample {
+    // 表示用座標はf32で十分
+    displayX: f32 = 0.0f;
+    displayY: f32 = 0.0f;
+    
+    // 内部計算用は高精度f64
+    internalX: f64 = 0.0;
+    internalY: f64 = 0.0;
+    
+    update(deltaTime: f64): void {
+        // 高精度で計算
+        this.internalX += deltaTime * 0.001;
+        this.internalY += Math.sin(this.internalX) * 100.0;
+        
+        // 表示時にf32に変換
+        this.displayX = <f32>this.internalX;
+        this.displayY = <f32>this.internalY;
+    }
+}
+```
+
+#### **7. デバッグとトラブルシューティング**
+
+##### **よく見るエラーメッセージと対処法**
+
+| エラーメッセージ | 原因 | 対処法 |
+|-----------------|------|--------|
+| `Type 'f64' is not assignable to type 'f32'` | 暗黙的型変換を試みている | `<f32>value`でキャスト |
+| `Type '~lib/number/F64' is not assignable to type '~lib/number/F32'` | 内部型の不一致 | 明示的キャストを追加 |
+| `Cannot convert 0.1 to f32` | リテラルの型推論エラー | `0.1f`または`<f32>0.1`を使用 |
+| `Operator '*' cannot be applied to types 'f32' and 'f64'` | 異なる型での演算 | 両辺の型を統一 |
+
+##### **デバッグ用ユーティリティ関数**
+
+```typescript
+// 型チェックヘルパー
+function assertF32(value: f32, name: string): void {
+    // コンパイル時に型がチェックされるため、実行時チェックは不要
+    console.log(`${name} is f32: ${value}`);
+}
+
+// 精度損失の可視化
+function checkPrecisionLoss(original: f64): void {
+    const converted: f32 = <f32>original;
+    const backToF64: f64 = <f64>converted;
+    const loss: f64 = Math.abs(original - backToF64);
+    
+    console.log(`Original: ${original}`);
+    console.log(`Converted: ${converted}`);
+    console.log(`Precision loss: ${loss}`);
+}
+
+// 使用例
+checkPrecisionLoss(3.141592653589793);  // PI
+// Output:
+// Original: 3.141592653589793
+// Converted: 3.1415927
+// Precision loss: 0.0000000464...
+```
+
+#### **8. AIコード生成時のチェックリスト**
+
+生成AIは、AssemblyScriptコードを生成する前に以下を確認すること：
+
+- [ ] **数値リテラルの確認**: すべての浮動小数点リテラルに`f`サフィックスまたはキャストがあるか
+- [ ] **Math関数の確認**: `Math.*`の戻り値に`<f32>`キャストがあるか
+- [ ] **演算の確認**: f32同士の演算になっているか（混在していないか）
+- [ ] **定数の確認**: 定数定義で型が明示されているか
+- [ ] **配列の確認**: 配列初期化時の要素がすべて適切な型か
+- [ ] **関数引数の確認**: 関数の引数と戻り値の型が一致しているか
+- [ ] **ループ変数の確認**: ループカウンタ（i32）を浮動小数点演算に使う場合のキャスト
+
+#### **9. 実装時の優先順位**
+
+1. **最優先**: コンパイルエラーを防ぐ（型の明示的指定）
+2. **高優先**: パフォーマンスを考慮（適切な型の選択）
+3. **中優先**: 可読性の確保（一貫した記法の使用）
+4. **低優先**: 将来の拡張性（型エイリアスの使用など）
+
+---
+
+**この注意事項は、AssemblyScriptコードを含むすべてのHTML生成において適用されます。**
+**特に物理演算、グラフィックス、ゲーム開発の実装時は厳格に遵守してください。**
+
 ---
 
 ## **📄 公式推奨方式互換による実装（v1.3.1）**
