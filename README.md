@@ -304,7 +304,7 @@ flowchart TD
     D2 --> E
     D3 --> E
     
-    E --> F[Pyodide WASM<br/>Python実行環境<br/>ライブラリ管理]
+    E --> F[Pyodide WASM<br/>🐍Python実行環境<br/>ライブラリ管理]
     F --> G[文書生成ライブラリ]
     
     G --> G1[python-docx<br/>Word文書生成]
