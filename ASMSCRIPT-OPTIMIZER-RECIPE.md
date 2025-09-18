@@ -210,7 +210,7 @@ const AppModule = {
    const url = "assemblyscript@latest/dist/web.js";
    
    // ✅ 必ず具体的バージョンを指定
-   const ASSEMBLYSCRIPT_VERSION = "0.27.30"; // GitHubタグから取得
+   const ASSEMBLYSCRIPT_VERSION = "0.28.8"; // GitHubタグから取得
    const url = `assemblyscript@${ASSEMBLYSCRIPT_VERSION}/dist/web.js`;
    ```
 
@@ -321,7 +321,7 @@ Phase 2: 公式web.js方式試行
 ```javascript
 // AIが生成すべきコード構造
 const COMPILER_METADATA = {
-    version: "0.27.30",         // GitHubタグから取得した最新安定版
+    version: "0.28.8",         // GitHubタグから取得した最新安定版
     fetchedFrom: "GitHub Tags",  // バージョン情報の取得元
     generatedAt: new Date().toISOString(),
     fallbackEnabled: true,
@@ -458,7 +458,7 @@ const PRESETS = {
 // バージョン管理とメタデータ（v1.2.3新規）
 // ============================================
 const COMPILER_METADATA = {
-    version: "0.27.30",         // GitHubタグから取得した最新安定版
+    version: "0.28.8",         // GitHubタグから取得した最新安定版
     fetchedFrom: "GitHub Tags",
     generatedAt: "2024-01-XX",
     fallbackEnabled: true,
@@ -1745,7 +1745,7 @@ const AppModule = {
         // コンパイラメタデータ（v1.2.3新規）
         // ============================================
         const COMPILER_METADATA = {
-            version: "0.27.30",  // GitHubタグから取得した最新安定版
+            version: "0.28.8",  // GitHubタグから取得した最新安定版
             fetchedFrom: "GitHub Tags",
             generatedAt: new Date().toISOString(),
             fallbackEnabled: true,
@@ -2758,4 +2758,4 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
 **生成日**: 2024年1月  
 **レシピバージョン**: 1.2.3  
-**AssemblyScript対応バージョン**: 0.27.30（GitHubタグから動的に更新）
+**AssemblyScript対応バージョン**: 0.28.8（GitHubタグから動的に更新）
