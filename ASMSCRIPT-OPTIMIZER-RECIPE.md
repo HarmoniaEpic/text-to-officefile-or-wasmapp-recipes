@@ -1065,6 +1065,8 @@ AppModuleセクションをユースケースに応じて置き換えてくだ�
 ### ユーザーがテンプレートファイルを添付し忘れている等により「ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md」を参照できない場合
 
 作業を中断し、「ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md」のファイル添付を促して下さい。
+<BR>
+「ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md」のファイル添付を確認出来たら作業を再開して下さい。
 
 ---
 
