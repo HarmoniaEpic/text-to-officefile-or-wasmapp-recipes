@@ -1,4 +1,4 @@
-# **ASMSCRIPT-OPTIMIZER-RECIPE v1.3.0**
+# **ASMSCRIPT-OPTIMIZER-RECIPE v1.3.1**
 **AssemblyScript WebAssembly コンパイラ統合型単一HTMLアプリケーション生成レシピ**
 
 ---
@@ -7,18 +7,21 @@
 
 生成AIがユーザーの要求を解釈し、AssemblyScriptコードをブラウザ内でWebAssemblyにコンパイル・実行する**高性能単一HTMLファイル**を自動生成するための汎用指示書です。本レシピは特定のAI環境に依存せず、あらゆる生成AIシステムで利用可能な設計となっています。
 
-### **v1.3.0の主な改善点（公式推奨方式互換への一本化）**
-- 🎯 **読み込み方式の統一**: 公式互換のweb.js方式のみを使用
-- 🌐 **3つのCDNプロバイダー**: jsDelivr → UNPKG → esm.sh
-- 🔧 **シンプルな実装**: 単一パターンで保守性向上
-- ⚡ **import map対応**: 安定した動作
+### **v1.3.1の主な改善点（安定性とシンプル化の向上）**
+- 🎯 **CDNプロバイダーの最適化**: esm.shを除外し2プロバイダー体制へ
+- 🔄 **動的バージョン取得**: NPM最新安定版の自動検出機能
+- 🚀 **jsDelivr優先**: AssemblyScript公式推奨に準拠
+- ⚡ **初期化時間短縮**: 最悪ケース30秒→20秒に改善
+- 🔧 **保守性向上**: コードのシンプル化とデバッグ容易性の改善
 
-### **v1.2.2からの改善内容**
-- ❌ **削除**: 直接import方式（問題が多い）
-- ✅ **採用**: 公式互換のweb.js方式のみ（安定性重視）
-- 🔄 **簡素化**: 複雑な分岐を排除
+### **v1.3.0からの変更内容**
+- ✅ **追加**: 動的バージョン取得機能（jsDelivr API優先）
+- ✅ **追加**: バージョンキャッシュ機構（セッションストレージ）
+- ❌ **削除**: esm.sh CDNプロバイダー（互換性問題のため）
+- 🔄 **改善**: CDNフォールバック処理の効率化
+- 📊 **改善**: デバッグ情報の詳細化
 
-### **v1.2.1からの継承機能**
+### **v1.2.2からの継承機能**
 - 🎯 **ステップ0**: 曖昧な要求に対する確認プロセス
 - 🚫 **自動判断の禁止**: 不明確な指示での勝手な実装を防止
 - 📝 **構造化された問い合わせ**: テンプレートによる明確な要件収集
@@ -87,27 +90,113 @@ AIは最初に以下のチェックを実行し、要求が不明確な場合は
 具体的な要望をお聞かせください。
 ```
 
-### **ステップ0.5: AssemblyScriptバージョンの確認**
+### **ステップ0.5: AssemblyScriptバージョンの動的取得**
 
-HTMLを生成する前に、AIは以下の手順で最新の安定版バージョンを確認します：
+HTMLを生成する前に、AIは以下の手順で最新の安定版バージョンを取得します：
 
-#### **GitHubタグからのバージョン取得**
+#### **動的バージョン取得の実装**
 
-1. **GitHubタグページの確認**
-   - URL: https://github.com/AssemblyScript/assemblyscript/tags
-   - 最新の安定版リリースタグを確認（例: v0.28.8）
-   - プレリリース版（-dev, -rc, -alpha, -beta等）は使用しない
-
-2. **バージョン番号の抽出**
-   ```
-   取得例: "v0.28.8" → "0.28.8"（vプレフィックスを除去）
-   ```
-
-3. **バージョン定数の生成**
-   ```javascript
-   // AIが生成すべきコード
-   const ASSEMBLYSCRIPT_VERSION = "0.28.8"; // GitHubタグから取得した最新安定版
-   ```
+```javascript
+// バージョン管理システム
+const VersionManager = {
+    // キャッシュ機構
+    cache: {
+        get() {
+            try {
+                const cached = sessionStorage.getItem('asc_version_cache');
+                if (cached) {
+                    const data = JSON.parse(cached);
+                    // 1時間以内のキャッシュは有効
+                    if (Date.now() - data.timestamp < 3600000) {
+                        return data.version;
+                    }
+                }
+            } catch (e) {}
+            return null;
+        },
+        set(version) {
+            try {
+                sessionStorage.setItem('asc_version_cache', JSON.stringify({
+                    version,
+                    timestamp: Date.now()
+                }));
+            } catch (e) {}
+        }
+    },
+    
+    async getLatestVersion() {
+        // キャッシュチェック
+        const cached = this.cache.get();
+        if (cached) {
+            console.log(`[Version] Using cached: ${cached}`);
+            return cached;
+        }
+        
+        // jsDelivr優先の取得戦略
+        const strategies = [
+            { name: 'jsDelivr API', fn: () => this.fetchFromJsDelivr() },
+            { name: 'jsDelivr Package', fn: () => this.fetchJsDelivrPackageJson() },
+            { name: 'Unpkg', fn: () => this.fetchFromUnpkg() }
+        ];
+        
+        for (const strategy of strategies) {
+            try {
+                console.log(`[Version] Trying ${strategy.name}...`);
+                const version = await Promise.race([
+                    strategy.fn(),
+                    this.timeout(3000)
+                ]);
+                
+                if (version && this.isValidStableVersion(version)) {
+                    console.log(`[Version] Success: ${version}`);
+                    this.cache.set(version);
+                    return version;
+                }
+            } catch (e) {
+                console.warn(`[Version] ${strategy.name} failed`);
+            }
+        }
+        
+        // フォールバック
+        return "0.28.8";
+    },
+    
+    async fetchFromJsDelivr() {
+        const response = await fetch('https://data.jsdelivr.com/v1/package/npm/assemblyscript');
+        const data = await response.json();
+        const stable = data.versions.filter(v => this.isValidStableVersion(v));
+        return stable[0];
+    },
+    
+    async fetchJsDelivrPackageJson() {
+        const response = await fetch('https://cdn.jsdelivr.net/npm/assemblyscript@latest/package.json');
+        const data = await response.json();
+        return data.version;
+    },
+    
+    async fetchFromUnpkg() {
+        const response = await fetch('https://unpkg.com/assemblyscript@latest/package.json');
+        const data = await response.json();
+        return data.version;
+    },
+    
+    isValidStableVersion(version) {
+        const semverRegex = /^(\d+)\.(\d+)\.(\d+)$/;
+        if (!version.match(semverRegex)) return false;
+        
+        const preRelease = ['alpha', 'beta', 'rc', 'dev', '-'];
+        return !preRelease.some(indicator => 
+            version.toLowerCase().includes(indicator)
+        );
+    },
+    
+    timeout(ms) {
+        return new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Timeout')), ms)
+        );
+    }
+};
+```
 
 ### **ステップ1: ユーザー要求の分析**
 
@@ -151,18 +240,18 @@ const AppModule = {
 ### **ステップ3: HTMLファイルの組み立て**
 
 1. コア構造テンプレートを読み込み
-2. **AssemblyScriptバージョンを定数として埋め込み**
+2. **動的バージョン取得機能を組み込み**
 3. AppModuleを埋め込み
 4. 必要に応じてUIカスタマイズ部分を追加
 5. 単一HTMLファイルとして出力
 
 ---
 
-## **🚨 実装ルール（v1.3.0 公式方式互換版）**
+## **🚨 実装ルール（v1.3.1 簡素化版）**
 
 ### **🔴 絶対禁止事項**
 
-1. **直接importの使用禁止（v1.3.0強化）**
+1. **直接importの使用禁止**
    ```javascript
    // ❌ 絶対に使用禁止（動作しない）
    import("https://cdn.jsdelivr.net/npm/assemblyscript@latest/dist/asc/index.js");
@@ -178,8 +267,8 @@ const AppModule = {
    const url = "assemblyscript@latest/dist/web.js";
    
    // ✅ 必ず具体的バージョンを指定
-   const ASSEMBLYSCRIPT_VERSION = "0.28.8"; // GitHubタグから取得
-   const url = `assemblyscript@${ASSEMBLYSCRIPT_VERSION}/dist/web.js`;
+   const version = await VersionManager.getLatestVersion(); // 動的取得
+   const url = `assemblyscript@${version}/dist/web.js`;
    ```
 
 3. **単一CDNへの依存禁止**
@@ -187,21 +276,20 @@ const AppModule = {
    // ❌ 単一CDNのみは禁止
    const url = "https://cdn.jsdelivr.net/...";
    
-   // ✅ 必ず3つのCDNでフォールバック
-   const cdnProviders = ['jsDelivr', 'UNPKG', 'esm.sh'];
+   // ✅ 必ず2つのCDNでフォールバック
+   const cdnProviders = ['jsDelivr', 'UNPKG'];
    ```
 
-### **🟡 必須ルール（v1.3.0）**
+### **🟡 必須ルール（v1.3.1）**
 
 1. **公式互換のweb.js方式の使用**
    - web.jsスクリプトタグを動的に挿入
    - import map設定を待機
    - "assemblyscript/asc"をimport
 
-2. **3段階CDNフォールバック**
-   - 第1優先: jsDelivr（高速）
-   - 第2優先: UNPKG（安定）
-   - 第3優先: esm.sh（最新）
+2. **2段階CDNフォールバック**
+   - 第1優先: jsDelivr（高速・公式推奨）
+   - 第2優先: UNPKG（安定・npmミラー）
 
 3. **タイムアウト保護**
    - 各CDN試行に10秒の上限
@@ -215,6 +303,7 @@ const AppModule = {
    - 使用したCDNプロバイダー
    - 読み込み時間
    - 試行回数
+   - バージョン取得元
 
 ### **🟢 推奨事項**
 
@@ -233,12 +322,19 @@ const AppModule = {
 
 ---
 
-## **🔄 公式推奨方式互換による実装（v1.3.0）**
+## **📄 公式推奨方式互換による実装（v1.3.1）**
 
 ### **実装フローチャート**
 
 ```
 AssemblyScriptコンパイラ読み込み開始
+    ↓
+バージョン動的取得
+    ├─ キャッシュ確認 → あれば使用
+    └─ 新規取得
+        ├─ jsDelivr API
+        ├─ jsDelivr package.json
+        └─ UNPKG package.json
     ↓
 CDN選択ループ開始
     ↓
@@ -250,32 +346,22 @@ CDN選択ループ開始
 2. UNPKG試行
     ├─ web.js読み込み → import map設定 → asc import
     ├─ 成功 → 使用開始
-    └─ 失敗 → 次のCDNへ
-    ↓
-3. esm.sh試行
-    ├─ web.js読み込み → import map設定 → asc import
-    ├─ 成功 → 使用開始
     └─ 失敗 → エラー表示
 ```
 
-### **CDNプロバイダー設定**
+### **CDNプロバイダー設定（v1.3.1）**
 
 ```javascript
 const CDN_PROVIDERS = [
     {
         name: 'jsDelivr',
         baseUrl: 'https://cdn.jsdelivr.net/npm',
-        characteristics: '高速・グローバル最適化'
+        characteristics: '高速・グローバル最適化・AssemblyScript公式推奨'
     },
     {
         name: 'UNPKG',
         baseUrl: 'https://unpkg.com',
-        characteristics: 'npm公式ミラー・安定性重視'
-    },
-    {
-        name: 'esm.sh',
-        baseUrl: 'https://esm.sh',
-        characteristics: 'ESモジュール特化・最新技術'
+        characteristics: 'npm公式ミラー・完全性保証・安定性重視'
     }
 ];
 ```
@@ -283,16 +369,16 @@ const CDN_PROVIDERS = [
 ### **読み込み処理の詳細実装**
 
 ```javascript
-// CDNフォールバック対応ローダー
+// CDNフォールバック対応ローダー（v1.3.1簡素化版）
 async function loadCompilerWithCDNFallback() {
-    const version = COMPILER_METADATA.version;
+    const version = await VersionManager.getLatestVersion();
     
     for (let i = 0; i < CDN_PROVIDERS.length; i++) {
         const cdn = CDN_PROVIDERS[i];
         const startTime = performance.now();
         
         try {
-            updateProgress(20 + (i * 25), `コンパイラ読み込み中 (${cdn.name})...`);
+            updateProgress(30 + (i * 35), `コンパイラ読み込み中 (${cdn.name})...`);
             
             // web.jsのURLを構築
             const webJsUrl = `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
@@ -316,6 +402,7 @@ async function loadCompilerWithCDNFallback() {
             COMPILER_METADATA.cdnProvider = cdn.name;
             COMPILER_METADATA.loadTime = loadTime;
             COMPILER_METADATA.attempts = i + 1;
+            COMPILER_METADATA.versionSource = 'Dynamic fetch';
             
             console.log(`[Loader] Success with ${cdn.name} in ${loadTime}ms`);
             updateProgress(100, 'コンパイラ準備完了');
@@ -393,6 +480,10 @@ function cleanupFailedScripts() {
             script.remove();
         }
     });
+    
+    // グローバル変数もクリア
+    delete window.ASSEMBLYSCRIPT_VERSION;
+    delete window.ASSEMBLYSCRIPT_IMPORTMAP;
 }
 ```
 
@@ -432,20 +523,21 @@ const PRESETS = {
     },
     debug: {
         optimize: false,
+        optimizeLevel: '0',
         debug: true,
         sourceMap: true,
         measure: true
     },
     release: {
         optimize: true,
-        optimizeLevel: 3,
-        shrinkLevel: 1,
+        optimizeLevel: '3',
+        shrinkLevel: '1',
         noAssert: true
     },
     minimal: {
         optimize: true,
-        optimizeLevel: 3,
-        shrinkLevel: 2,
+        optimizeLevel: '3',
+        shrinkLevel: '2',
         runtime: 'stub',
         noAssert: true
     }
@@ -456,41 +548,61 @@ const PRESETS = {
 
 ## **📦 モジュールアーキテクチャ**
 
-### **Layer 1: コアインフラ（v1.3.0 公式互換方式統一版）**
+### **Layer 1: コアインフラ（v1.3.1 動的バージョン対応版）**
 
 ```javascript
 // ============================================
 // バージョン管理とメタデータ
 // ============================================
 const COMPILER_METADATA = {
-    version: "0.28.8",         // GitHubタグから取得した最新安定版
-    fetchedFrom: "GitHub Tags",
-    generatedAt: "2024-01-XX",
-    cdnProvider: null,          // 成功したCDNプロバイダー
-    loadTime: null,             // 読み込み時間（ms）
-    attempts: 0                 // 試行回数
+    version: null,          // 動的取得
+    versionSource: null,    // 取得元（Dynamic/Fallback）
+    fetchedFrom: "NPM Registry via CDN",
+    generatedAt: new Date().toISOString(),
+    cdnProvider: null,      // 成功したCDNプロバイダー
+    loadTime: null,         // 読み込み時間（ms）
+    attempts: 0,            // 試行回数
+    
+    async initialize() {
+        const startTime = performance.now();
+        try {
+            this.version = await VersionManager.getLatestVersion();
+            this.versionSource = 'Dynamic fetch';
+            console.log(`[Version] Fetched: v${this.version}`);
+        } catch (error) {
+            this.version = "0.28.8";
+            this.versionSource = 'Hardcoded fallback';
+            console.warn('[Version] Using fallback version');
+        }
+        const fetchTime = Math.round(performance.now() - startTime);
+        console.log(`[Version] Time: ${fetchTime}ms`);
+    }
 };
 
 // ============================================
-// CDNプロバイダー定義
+// CDNプロバイダー定義（v1.3.1簡素化版）
 // ============================================
 const CDN_PROVIDERS = [
     {
         name: 'jsDelivr',
         baseUrl: 'https://cdn.jsdelivr.net/npm',
-        timeout: 10000
+        timeout: 10000,
+        priority: 1
     },
     {
         name: 'UNPKG',
         baseUrl: 'https://unpkg.com',
-        timeout: 10000
-    },
-    {
-        name: 'esm.sh',
-        baseUrl: 'https://esm.sh',
-        timeout: 10000
+        timeout: 10000,
+        priority: 2
     }
 ];
+
+// ============================================
+// バージョン管理システム（v1.3.1新規）
+// ============================================
+const VersionManager = {
+    // 実装は上記ステップ0.5を参照
+};
 
 // ============================================
 // コンパイラローダー（公式互換方式統一版）
@@ -498,165 +610,12 @@ const CDN_PROVIDERS = [
 const CompilerLoader = {
     compiler: null,
     
-    // プログレス更新
-    updateProgress(percent, message) {
-        const progressBar = document.getElementById('progress-bar');
-        const statusText = document.getElementById('status-text');
-        
-        if (progressBar) progressBar.style.width = `${percent}%`;
-        if (statusText) statusText.textContent = message;
-        
-        console.log(`[CompilerLoader] ${percent}% - ${message}`);
-    },
-    
-    // メインローダー（CDNフォールバック対応）
     async load() {
-        const version = COMPILER_METADATA.version;
-        console.log(`[CompilerLoader] Starting load for AssemblyScript ${version}`);
+        // バージョンを動的取得
+        await COMPILER_METADATA.initialize();
         
-        for (let i = 0; i < CDN_PROVIDERS.length; i++) {
-            const cdn = CDN_PROVIDERS[i];
-            const startTime = performance.now();
-            
-            try {
-                this.updateProgress(20 + (i * 25), `コンパイラ読み込み中 (${cdn.name})...`);
-                
-                // CDN固有のURLを構築
-                const webJsUrl = this.buildCDNUrl(cdn, version);
-                console.log(`[CompilerLoader] Trying ${cdn.name}: ${webJsUrl}`);
-                
-                // web.jsを読み込み
-                await this.loadWebJS(webJsUrl, cdn.timeout);
-                
-                // import mapの設定を待機
-                await this.waitForImportMap();
-                
-                // assemblyscript/ascをimport
-                const asc = await import("assemblyscript/asc");
-                this.compiler = asc.default || asc;
-                
-                // コンパイラの検証
-                await this.validateCompiler(this.compiler);
-                
-                // 成功したらメタデータを更新
-                const loadTime = Math.round(performance.now() - startTime);
-                COMPILER_METADATA.cdnProvider = cdn.name;
-                COMPILER_METADATA.loadTime = loadTime;
-                COMPILER_METADATA.attempts = i + 1;
-                
-                console.log(`[CompilerLoader] Success with ${cdn.name} in ${loadTime}ms`);
-                this.updateProgress(100, 'コンパイラ準備完了');
-                
-                return this.compiler;
-                
-            } catch (error) {
-                console.error(`[CompilerLoader] ${cdn.name} failed:`, error.message);
-                
-                // 失敗したスクリプトをクリーンアップ
-                this.cleanupFailedScripts();
-                
-                // グローバル変数もクリア（次の試行のため）
-                delete window.ASSEMBLYSCRIPT_VERSION;
-                delete window.ASSEMBLYSCRIPT_IMPORTMAP;
-            }
-        }
-        
-        throw new Error(`Failed to load AssemblyScript ${version} from all CDN providers`);
-    },
-    
-    // CDN固有のURL構築
-    buildCDNUrl(cdn, version) {
-        if (cdn.name === 'esm.sh') {
-            // esm.shは少し異なるパス構造を使用
-            return `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
-        }
-        return `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
-    },
-    
-    // web.jsの読み込み
-    async loadWebJS(url, timeout) {
-        return new Promise((resolve, reject) => {
-            // 既に読み込まれているかチェック
-            if (window.ASSEMBLYSCRIPT_VERSION) {
-                console.log('[CompilerLoader] AssemblyScript already loaded');
-                resolve();
-                return;
-            }
-            
-            const script = document.createElement('script');
-            script.src = url;
-            script.dataset.assemblyScript = 'loading';
-            
-            // タイムアウト設定
-            const timeoutId = setTimeout(() => {
-                script.remove();
-                reject(new Error(`Timeout loading: ${url}`));
-            }, timeout);
-            
-            script.onload = () => {
-                clearTimeout(timeoutId);
-                script.dataset.assemblyScript = 'loaded';
-                console.log('[CompilerLoader] Script loaded successfully');
-                // web.jsがimport mapを設定するのを少し待つ
-                setTimeout(resolve, 200);
-            };
-            
-            script.onerror = () => {
-                clearTimeout(timeoutId);
-                script.remove();
-                reject(new Error(`Failed to load script: ${url}`));
-            };
-            
-            document.head.appendChild(script);
-        });
-    },
-    
-    // import mapの待機
-    async waitForImportMap() {
-        const maxAttempts = 20;
-        const waitTime = 100;
-        
-        for (let i = 0; i < maxAttempts; i++) {
-            if (window.ASSEMBLYSCRIPT_VERSION) {
-                console.log('[CompilerLoader] Import map and globals ready');
-                return;
-            }
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-        
-        throw new Error('Import map setup timeout');
-    },
-    
-    // コンパイラの検証
-    async validateCompiler(compiler) {
-        if (!compiler || typeof compiler.main !== 'function') {
-            throw new Error('Invalid compiler object structure');
-        }
-        
-        // 簡単なテストコンパイル
-        const testCode = 'export function test(): i32 { return 42; }';
-        const { error } = await compiler.main(['test.ts', '--validate'], {
-            readFile: (name) => name === 'test.ts' ? testCode : null,
-            writeFile: () => {},
-            listFiles: () => ['test.ts']
-        });
-        
-        if (error) {
-            throw new Error('Compiler validation failed');
-        }
-        
-        console.log('[CompilerLoader] Compiler validated successfully');
-    },
-    
-    // 失敗したスクリプトのクリーンアップ
-    cleanupFailedScripts() {
-        const scripts = document.querySelectorAll('script[data-assembly-script]');
-        scripts.forEach(script => {
-            if (script.dataset.assemblyScript !== 'loaded') {
-                console.log('[CompilerLoader] Removing failed script tag');
-                script.remove();
-            }
-        });
+        // CDNフォールバックでロード
+        return await loadCompilerWithCDNFallback();
     }
 };
 
@@ -923,7 +882,7 @@ const AppModule = {
 
 ---
 
-## **📝 HTMLテンプレート（v1.3.0 公式互換方式統一版）**
+## **📝 HTMLテンプレート（v1.3.1 動的バージョン対応版）**
 
 ```html
 <!DOCTYPE html>
@@ -1504,7 +1463,7 @@ const AppModule = {
             display: block;
         }
         
-        /* CDN状態インジケーター（v1.3.0新規） */
+        /* CDN状態インジケーター */
         .cdn-status {
             display: inline-block;
             padding: 2px 6px;
@@ -1523,9 +1482,18 @@ const AppModule = {
             color: white;
         }
         
-        .cdn-status.esm {
-            background: #00d4ff;
+        /* バージョンソース表示 */
+        .version-source {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            background: #4ade80;
             color: white;
+        }
+        
+        .version-source.fallback {
+            background: #ffc107;
         }
         
         /* レスポンシブ */
@@ -1838,54 +1806,172 @@ const AppModule = {
     
     <!-- コンパイラ情報パネル -->
     <div class="compiler-info" id="compiler-info">
-        AssemblyScript: <span id="compiler-version">-</span><br>
+        AssemblyScript: <span id="compiler-version">-</span> <span id="version-source" class="version-source">-</span><br>
         CDN Provider: <span id="cdn-provider" class="cdn-status">-</span><br>
         Load Time: <span id="load-time">-</span>ms<br>
         Attempts: <span id="load-attempts">-</span>
     </div>
     
-    <!-- メインスクリプト（v1.3.0 公式互換方式統一版） -->
+    <!-- メインスクリプト（v1.3.1 動的バージョン対応版） -->
     <script type="module">
+        // ============================================
+        // バージョン管理システム（v1.3.1新規）
+        // ============================================
+        const VersionManager = {
+            cache: {
+                get() {
+                    try {
+                        const cached = sessionStorage.getItem('asc_version_cache');
+                        if (cached) {
+                            const data = JSON.parse(cached);
+                            if (Date.now() - data.timestamp < 3600000) {
+                                return data.version;
+                            }
+                        }
+                    } catch (e) {}
+                    return null;
+                },
+                set(version) {
+                    try {
+                        sessionStorage.setItem('asc_version_cache', JSON.stringify({
+                            version,
+                            timestamp: Date.now()
+                        }));
+                    } catch (e) {}
+                }
+            },
+            
+            async getLatestVersion() {
+                const cached = this.cache.get();
+                if (cached) {
+                    console.log(`[Version] Using cached: ${cached}`);
+                    return cached;
+                }
+                
+                const strategies = [
+                    { name: 'jsDelivr API', fn: () => this.fetchFromJsDelivr() },
+                    { name: 'jsDelivr Package', fn: () => this.fetchJsDelivrPackageJson() },
+                    { name: 'Unpkg', fn: () => this.fetchFromUnpkg() }
+                ];
+                
+                for (const strategy of strategies) {
+                    try {
+                        console.log(`[Version] Trying ${strategy.name}...`);
+                        const version = await Promise.race([
+                            strategy.fn(),
+                            this.timeout(3000)
+                        ]);
+                        
+                        if (version && this.isValidStableVersion(version)) {
+                            console.log(`[Version] Success: ${version}`);
+                            this.cache.set(version);
+                            return version;
+                        }
+                    } catch (e) {
+                        console.warn(`[Version] ${strategy.name} failed`);
+                    }
+                }
+                
+                return "0.28.8";
+            },
+            
+            async fetchFromJsDelivr() {
+                const response = await fetch('https://data.jsdelivr.com/v1/package/npm/assemblyscript');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                const stable = data.versions.filter(v => this.isValidStableVersion(v));
+                if (stable.length === 0) throw new Error('No stable versions found');
+                
+                return stable[0];
+            },
+            
+            async fetchJsDelivrPackageJson() {
+                const response = await fetch('https://cdn.jsdelivr.net/npm/assemblyscript@latest/package.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                return data.version;
+            },
+            
+            async fetchFromUnpkg() {
+                const response = await fetch('https://unpkg.com/assemblyscript@latest/package.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                return data.version;
+            },
+            
+            isValidStableVersion(version) {
+                const semverRegex = /^(\d+)\.(\d+)\.(\d+)$/;
+                if (!version.match(semverRegex)) return false;
+                
+                const preRelease = ['alpha', 'beta', 'rc', 'dev', '-'];
+                return !preRelease.some(indicator => 
+                    version.toLowerCase().includes(indicator)
+                );
+            },
+            
+            timeout(ms) {
+                return new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Timeout')), ms)
+                );
+            }
+        };
+        
         // ============================================
         // コンパイラメタデータ
         // ============================================
         const COMPILER_METADATA = {
-            version: "0.28.8",  // GitHubタグから取得した最新安定版
-            fetchedFrom: "GitHub Tags",
+            version: null,
+            versionSource: null,
+            fetchedFrom: "NPM Registry via CDN",
             generatedAt: new Date().toISOString(),
             cdnProvider: null,
             loadTime: null,
-            attempts: 0
+            attempts: 0,
+            
+            async initialize() {
+                const startTime = performance.now();
+                try {
+                    this.version = await VersionManager.getLatestVersion();
+                    this.versionSource = 'Dynamic';
+                    console.log(`[Version] Fetched: v${this.version}`);
+                } catch (error) {
+                    this.version = "0.28.8";
+                    this.versionSource = 'Fallback';
+                    console.warn('[Version] Using fallback version');
+                }
+                const fetchTime = Math.round(performance.now() - startTime);
+                console.log(`[Version] Time: ${fetchTime}ms`);
+            }
         };
         
         // ============================================
-        // CDNプロバイダー定義（v1.3.0）
+        // CDNプロバイダー定義（v1.3.1簡素化版）
         // ============================================
         const CDN_PROVIDERS = [
             {
                 name: 'jsDelivr',
                 baseUrl: 'https://cdn.jsdelivr.net/npm',
-                timeout: 10000
+                timeout: 10000,
+                priority: 1
             },
             {
                 name: 'UNPKG',
                 baseUrl: 'https://unpkg.com',
-                timeout: 10000
-            },
-            {
-                name: 'esm.sh',
-                baseUrl: 'https://esm.sh',
-                timeout: 10000
+                timeout: 10000,
+                priority: 2
             }
         ];
         
         // ============================================
-        // 初期化の安全な遅延実行
+        // 安全な初期化
         // ============================================
         let wasmExports = null;
         let isCompiling = false;
         let menuOpen = false;
-        let statsVisible = false; // デフォルトOFF
+        let statsVisible = false;
         
         // UI制御関数
         function toggleMenu() {
@@ -1930,19 +2016,16 @@ const AppModule = {
                 statusBar.classList.remove('active');
             }
             
-            // 設定を保存
             localStorage.setItem('statsVisible', statsVisible);
         }
         
         function switchTab(tabName) {
-            // タブボタンの更新
             const tabButtons = document.querySelectorAll('.tab-button');
             tabButtons.forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.closest('.tab-button').classList.add('active');
             
-            // タブコンテンツの切り替え
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(content => {
                 content.classList.remove('active');
@@ -1981,18 +2064,22 @@ const AppModule = {
             }
         }
         
-        function updateProgress(percent, message) {
+        function updateProgress(percent, message, detail = null) {
             const progressBar = document.getElementById('progress-bar');
             const statusText = document.getElementById('status-text');
             
             if (progressBar) progressBar.style.width = `${percent}%`;
-            if (statusText) statusText.textContent = message;
+            if (statusText) {
+                let text = message;
+                if (detail) text += ` (${detail})`;
+                statusText.textContent = text;
+            }
             
-            console.log(`[Progress] ${percent}% - ${message}`);
+            console.log(`[Progress] ${percent}% - ${message}${detail ? ` (${detail})` : ''}`);
         }
         
         // ============================================
-        // コンパイラローダー（v1.3.0 公式互換方式統一版）
+        // コンパイラローダー（v1.3.1簡素化版）
         // ============================================
         async function loadCompilerWithCDNFallback() {
             const version = COMPILER_METADATA.version;
@@ -2003,26 +2090,19 @@ const AppModule = {
                 const startTime = performance.now();
                 
                 try {
-                    updateProgress(20 + (i * 25), `コンパイラ読み込み中 (${cdn.name})...`);
+                    updateProgress(30 + (i * 35), 'コンパイラ読み込み中', `${cdn.name} (優先度${cdn.priority})`);
                     
-                    // web.jsのURLを構築
-                    const webJsUrl = buildCDNUrl(cdn, version);
+                    const webJsUrl = `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
                     console.log(`[Loader] Attempting ${cdn.name}: ${webJsUrl}`);
                     
-                    // web.jsを読み込み
                     await loadWebJS(webJsUrl, cdn.timeout);
-                    
-                    // import mapの設定を待機
                     await waitForImportMap();
                     
-                    // assemblyscript/ascをimport
                     const asc = await import("assemblyscript/asc");
                     const compiler = asc.default || asc;
                     
-                    // コンパイラの検証
                     await validateCompiler(compiler);
                     
-                    // メタデータを更新
                     const loadTime = Math.round(performance.now() - startTime);
                     COMPILER_METADATA.cdnProvider = cdn.name;
                     COMPILER_METADATA.loadTime = loadTime;
@@ -2031,18 +2111,14 @@ const AppModule = {
                     console.log(`[Loader] Success with ${cdn.name} in ${loadTime}ms`);
                     updateProgress(100, 'コンパイラ準備完了');
                     
-                    // デバッグ情報の更新
                     updateCompilerInfo();
                     
                     return compiler;
                     
                 } catch (error) {
                     console.error(`[Loader] ${cdn.name} failed:`, error.message);
-                    
-                    // 失敗したスクリプトをクリーンアップ
                     cleanupFailedScripts();
                     
-                    // グローバル変数もクリア
                     delete window.ASSEMBLYSCRIPT_VERSION;
                     delete window.ASSEMBLYSCRIPT_IMPORTMAP;
                 }
@@ -2051,15 +2127,8 @@ const AppModule = {
             throw new Error(`Failed to load AssemblyScript ${version} from all CDN providers`);
         }
         
-        // CDN固有のURL構築
-        function buildCDNUrl(cdn, version) {
-            return `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
-        }
-        
-        // web.jsの読み込み
         function loadWebJS(url, timeout) {
             return new Promise((resolve, reject) => {
-                // 既に読み込まれているかチェック
                 if (window.ASSEMBLYSCRIPT_VERSION) {
                     console.log('[Loader] AssemblyScript already loaded');
                     resolve();
@@ -2070,7 +2139,6 @@ const AppModule = {
                 script.src = url;
                 script.dataset.assemblyScript = 'loading';
                 
-                // タイムアウト設定
                 const timeoutId = setTimeout(() => {
                     script.remove();
                     reject(new Error(`Timeout loading: ${url}`));
@@ -2080,7 +2148,6 @@ const AppModule = {
                     clearTimeout(timeoutId);
                     script.dataset.assemblyScript = 'loaded';
                     console.log('[Loader] Script loaded successfully');
-                    // web.jsがimport mapを設定するのを少し待つ
                     setTimeout(resolve, 300);
                 };
                 
@@ -2094,7 +2161,6 @@ const AppModule = {
             });
         }
         
-        // import mapの待機
         async function waitForImportMap() {
             const maxAttempts = 20;
             const waitTime = 100;
@@ -2110,13 +2176,11 @@ const AppModule = {
             throw new Error('Import map setup timeout');
         }
         
-        // コンパイラの検証
         async function validateCompiler(compiler) {
             if (!compiler || typeof compiler.main !== 'function') {
                 throw new Error('Invalid compiler object structure');
             }
             
-            // 簡単なテストコンパイル
             const testCode = 'export function test(): i32 { return 42; }';
             const { error } = await compiler.main(['test.ts', '--validate'], {
                 readFile: (name) => name === 'test.ts' ? testCode : null,
@@ -2131,7 +2195,6 @@ const AppModule = {
             console.log('[Loader] Compiler validated successfully');
         }
         
-        // 失敗したスクリプトのクリーンアップ
         function cleanupFailedScripts() {
             const scripts = document.querySelectorAll('script[data-assembly-script]');
             scripts.forEach(script => {
@@ -2142,41 +2205,41 @@ const AppModule = {
             });
         }
         
-        // コンパイラ情報の更新
         function updateCompilerInfo() {
             document.getElementById('compiler-version').textContent = COMPILER_METADATA.version;
             
+            const sourceEl = document.getElementById('version-source');
+            sourceEl.textContent = COMPILER_METADATA.versionSource;
+            sourceEl.className = COMPILER_METADATA.versionSource === 'Fallback' ? 
+                'version-source fallback' : 'version-source';
+            
             const cdnEl = document.getElementById('cdn-provider');
             cdnEl.textContent = COMPILER_METADATA.cdnProvider;
-            cdnEl.className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase().replace('.', '')}`;
+            cdnEl.className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase()}`;
             
             document.getElementById('load-time').textContent = COMPILER_METADATA.loadTime;
             document.getElementById('load-attempts').textContent = COMPILER_METADATA.attempts;
         }
         
-        // ============================================
-        // 安全な初期化
-        // ============================================
         async function safeInit() {
             try {
+                console.log('[Init] Starting initialization...');
+                
+                await COMPILER_METADATA.initialize();
                 console.log('[Init] Using AssemblyScript version:', COMPILER_METADATA.version);
                 
-                // CDNフォールバック対応のローダーを使用
                 const asc = await loadCompilerWithCDNFallback();
                 
                 if (!asc) {
                     throw new Error('Failed to load compiler');
                 }
                 
-                // グローバルに設定（互換性のため）
                 window.asc = asc;
                 
-                // デバッグモードの場合は情報パネルを表示
                 if (localStorage.getItem('debug') === 'true') {
                     document.getElementById('compiler-info').classList.add('show');
                 }
                 
-                // メイン処理を開始
                 await initializeApp(asc);
                 
             } catch (error) {
@@ -2294,7 +2357,6 @@ const AppModule = {
             collectFromUI() {
                 const options = {};
                 
-                // Boolean options
                 ['optimize', 'exportRuntime', 'noAssert', 'debug', 'sourceMap',
                  'measure', 'validate', 'importMemory', 'sharedMemory',
                  'exportTable', 'explicitStart', 'lowMemoryLimit'].forEach(opt => {
@@ -2302,7 +2364,6 @@ const AppModule = {
                     if (el && el.checked) options[opt] = true;
                 });
                 
-                // Select options
                 ['optimizeLevel', 'shrinkLevel', 'runtime'].forEach(opt => {
                     const el = document.getElementById(`opt-${opt}`);
                     if (el && el.value) options[opt] = el.value;
@@ -2314,7 +2375,6 @@ const AppModule = {
             },
             
             updateUI() {
-                // Update checkboxes
                 Object.keys(this.current).forEach(key => {
                     const el = document.getElementById(`opt-${key}`);
                     if (el) {
@@ -2566,7 +2626,6 @@ export function reset(): void {
             btn.textContent = originalText;
             btn.disabled = false;
             
-            // メニューを閉じる
             closeMenu();
         }
         
@@ -2619,18 +2678,16 @@ export function reset(): void {
         // ============================================
         async function initializeApp(asc) {
             console.log('[Init] Starting application initialization...');
+            console.log('[Init] Version:', COMPILER_METADATA.version, `(${COMPILER_METADATA.versionSource})`);
             console.log('[Init] Compiler loaded via:', COMPILER_METADATA.cdnProvider);
             console.log('[Init] Load time:', COMPILER_METADATA.loadTime + 'ms');
             console.log('[Init] Attempts:', COMPILER_METADATA.attempts);
             
-            // タイトルと説明を更新
             document.getElementById('app-title').textContent = `🚀 ${AppModule.name}`;
             document.getElementById('app-description').textContent = AppModule.description;
             
-            // ソースコード表示
             document.getElementById('source-code').textContent = AppModule.sourceCode;
             
-            // ソースコード表示トグルの処理
             const showCodeCheckbox = document.getElementById('showCode');
             const sourceContent = document.getElementById('sourceContent');
             
@@ -2640,7 +2697,6 @@ export function reset(): void {
                 });
             }
             
-            // 保存された統計情報表示設定を復元
             const savedStatsVisible = localStorage.getItem('statsVisible');
             if (savedStatsVisible === 'true') {
                 statsVisible = true;
@@ -2648,22 +2704,16 @@ export function reset(): void {
                 document.getElementById('statusBar').classList.add('active');
             }
             
-            // CompilerCoreを初期化
             CompilerCore.init(asc);
-            
-            // オプション初期化
             OptionsManager.init();
             
-            // デフォルトオプション適用
             if (AppModule.defaultOptions) {
                 OptionsManager.current = { ...AppModule.defaultOptions };
                 OptionsManager.updateUI();
             }
             
-            // プログレス更新
             updateStatus('loading', 'コンパイル準備中...');
             
-            // 自動コンパイル・実行
             await compile();
             
             console.log('[Init] Application initialized successfully');
@@ -2673,14 +2723,11 @@ export function reset(): void {
         // エントリーポイント
         // ============================================
         
-        // DOMContentLoadedで最小限のUI準備
         document.addEventListener('DOMContentLoaded', () => {
             console.log('[Init] DOM ready, preparing initialization...');
             document.getElementById('status-text').textContent = 'コンパイラを読み込み中...';
         });
         
-        // 安全な初期化を実行
-        // 環境の安定性のため、わずかな遅延後に開始
         setTimeout(() => {
             safeInit().catch(error => {
                 console.error('[Init] Initialization failed:', error);
@@ -2705,34 +2752,23 @@ export function reset(): void {
 3. **明確な回答を得てから実装を開始**
 4. **デフォルトアプリの自動生成は厳禁**
 
-### **バージョン管理の重要性**
+### **動的バージョン取得の実装**
 
-生成AIがHTMLを生成する際、以下の手順を必ず実行してください：
+生成AIがHTMLを生成する際、以下の手順で最新版を取得してください：
 
-1. **GitHubタグページから最新安定版を確認**
-2. **`@latest`タグは絶対に使用しない**
-3. **具体的なバージョン番号を定数として埋め込む**
-4. **すべてのCDN URLにバージョンを明示**
+1. **VersionManagerを組み込む**
+2. **jsDelivr API優先で試行**
+3. **フォールバックとして0.28.8を使用**
+4. **キャッシュ機構を活用**
 
-### **公式互換方式統一版の重要性（v1.3.0新規）**
+### **公式推奨方式の遵守**
 
 生成AIがHTMLを生成する際、以下の実装方針を厳守してください：
 
 1. **直接importは絶対に使用しない**
-   - `dist/asc/index.js`への直接アクセスは禁止
-   - 必ず`dist/web.js`経由で読み込む
-
-2. **CDNフォールバックの実装**
-   - jsDelivr → UNPKG → esm.shの順で試行
-   - 各CDNに10秒のタイムアウト設定
-
-3. **import map待機処理**
-   - web.js読み込み後、グローバル変数の設定を待つ
-   - 最大2秒の待機時間
-
-4. **エラー時のクリーンアップ**
-   - 失敗したスクリプトタグの削除
-   - グローバル変数のクリア
+2. **必ずweb.js経由でロード**
+3. **CDNはjsDelivrとUNPKGの2つのみ**
+4. **import mapの設定を待機**
 
 ### **実装フローチャート**
 
@@ -2743,7 +2779,7 @@ export function reset(): void {
    ├─ 不明確 → ユーザーに問い合わせ → 回答待ち
    └─ 明確 → 次へ進行
    ↓
-2. GitHubタグから最新安定版を確認（ステップ0.5）
+2. 動的バージョン取得
    ↓
 3. ユースケース判定
    ↓
@@ -2751,7 +2787,7 @@ export function reset(): void {
    ↓
 5. AppModule生成
    ↓
-6. HTMLテンプレートv1.3.0を使用（公式互換方式統一版）
+6. HTMLテンプレートv1.3.1を使用
    ↓
 7. 単一HTMLファイルとして出力
 ```
@@ -2794,7 +2830,6 @@ export function getRadius(): f32 { return ball.radius; }
     `.trim(),
     
     async init(wasmExports) {
-        // Canvas setup
         const viewport = document.getElementById('app-viewport');
         viewport.innerHTML = '<canvas id="canvas" width="600" height="400" style="border: 1px solid #e5e7eb; border-radius: 8px;"></canvas>';
     },
@@ -2869,7 +2904,7 @@ export function applyGrayscale(pixels: Uint8ClampedArray): void {
 
 ### **パフォーマンス指標**
 
-- 初期コンパイル: < 5秒
+- 初回コンパイル: < 5秒
 - 再コンパイル: < 3秒
 - WASMサイズ: 1KB～50KB（オプション依存）
 - 実行速度: JavaScriptの2～10倍（処理内容依存）
@@ -2879,9 +2914,9 @@ export function applyGrayscale(pixels: Uint8ClampedArray): void {
 | 問題 | 原因 | 解決策 |
 |------|------|---------|
 | "import map not found" | web.js読み込み失敗 | CDNフォールバックが自動対応 |
-| コンパイラ読み込み失敗 | CDN障害/ネットワーク | 3つのCDNで自動リトライ |
+| コンパイラ読み込み失敗 | CDN障害/ネットワーク | 2つのCDNで自動リトライ |
 | タイムアウト | 遅いネットワーク | 次のCDNに自動切り替え |
-| バージョン不一致 | 破壊的変更 | GitHubタグから安定版を確認 |
+| バージョン不一致 | 破壊的変更 | 動的バージョン取得が対応 |
 | 低パフォーマンス | 最適化なし | --optimizeオプションを有効化 |
 | 大きなWASMサイズ | デバッグ情報 | --debugを無効化、--shrinkLevelを上げる |
 
@@ -2891,13 +2926,15 @@ export function applyGrayscale(pixels: Uint8ClampedArray): void {
 // ローカルストレージでデバッグモード有効化
 localStorage.setItem('debug', 'true');
 
-// コンパイラ情報パネルが表示される（v1.3.0強化）
+// コンパイラ情報パネルが表示される（v1.3.1強化）
 // - AssemblyScriptバージョン
+// - バージョン取得元（Dynamic/Fallback）
 // - 使用したCDNプロバイダー（色分け表示）
 // - 読み込み時間
 // - 試行回数
 
 // コンソールで詳細ログ確認
+// [Version] タグでバージョン取得状況
 // [Loader] タグで読み込み進行状況
 // [Init] タグで初期化状況
 // [Progress] タグで進捗状況
@@ -2907,9 +2944,8 @@ localStorage.setItem('debug', 'true');
 
 | CDN | URL | 特徴 | 推奨用途 |
 |-----|-----|------|----------|
-| **jsDelivr** | cdn.jsdelivr.net | 最速・グローバルCDN | 第1選択 |
-| **UNPKG** | unpkg.com | npm公式ミラー | 安定性重視 |
-| **esm.sh** | esm.sh | ESモジュール特化 | 最新環境 |
+| **jsDelivr** | cdn.jsdelivr.net | 最速・グローバルCDN・公式推奨 | 第1選択 |
+| **UNPKG** | unpkg.com | npm公式ミラー・完全性保証 | フォールバック |
 
 ---
 
@@ -2919,7 +2955,21 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
 ---
 
-## **🔄 更新履歴**
+## **📄 更新履歴**
+
+### **v1.3.1** (2025-01) - 安定性とシンプル化の向上
+**主な変更内容：**
+- ✅ **動的バージョン取得機能追加**: jsDelivr API優先での最新版取得
+- ✅ **CDN最適化**: esm.shを除外し2プロバイダー体制へ
+- ✅ **キャッシュ機構**: セッションストレージによる高速化
+- ✅ **初期化時間短縮**: 最悪ケース30秒→20秒
+- ✅ **デバッグ情報強化**: バージョン取得元の可視化
+
+**技術的改善：**
+- jsDelivr公式推奨への完全準拠
+- コードのシンプル化による保守性向上
+- エラーハンドリングの改善
+- UIフィードバックの詳細化
 
 ### **v1.3.0** (2024-01) - 公式推奨方式互換への完全移行
 **主な変更内容：**
@@ -2928,17 +2978,6 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 - ✅ **3つのCDNプロバイダー**: jsDelivr → UNPKG → esm.sh
 - ✅ **成功率99.9%**: CDN冗長性による極めて高い信頼性
 - ✅ **実装の簡素化**: 単一パターンで保守性大幅向上
-
-**技術的改善：**
-- import map対応による確実な動作
-- CDNごとのタイムアウト設定（10秒）
-- 失敗時の適切なクリーンアップ処理
-- CDNプロバイダーの視覚的表示
-
-**削除された機能：**
-- 直接import方式（dist/asc/index.js）
-- 複雑な分岐ロジック
-- 不安定な読み込みパターン
 
 ### **v1.2.2** (2024-01) - 公式互換実装フォールバック機能の追加
 **主な変更内容：**
@@ -2976,18 +3015,20 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
 ## **📊 バージョン別機能比較**
 
-| 機能 | v1.0 | v1.1 | v1.2 | v1.2.1 | v1.2.2 | v1.3.0 |
-|------|------|------|------|--------|--------|--------|
-| 基本コンパイル | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| レースコンディション対策 | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| モダンUI | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| ユーザー要求確認 | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| 公式互換フォールバック | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| 動的バージョン管理 | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| 公式方式互換 | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| 機能 | v1.0 | v1.1 | v1.2 | v1.2.1 | v1.2.2 | v1.3.0 | v1.3.1 |
+|------|------|------|------|--------|--------|--------|--------|
+| 基本コンパイル | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| レースコンディション対策 | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| モダンUI | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ユーザー要求確認 | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| 公式互換フォールバック | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| 動的バージョン管理 | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| 公式方式互換 | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| jsDelivr優先 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| 2CDN体制 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
 **生成日**: 2025年9月  
-**レシピバージョン**: 1.3.0  
-**AssemblyScript対応バージョン**: 0.28.8（GitHubタグから動的に更新）
+**レシピバージョン**: 1.3.1  
+**AssemblyScript対応バージョン**: 動的取得（フォールバック: 0.28.8）
