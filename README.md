@@ -1,4 +1,4 @@
-# 🚽Caution! This product is PoC!🚽
+# 💣Caution! This product is PoC!💣
 # 🚽概念実証につき不満は水に流して下さい🚽
 こちらはトイレで思いついたアイデアをAIを用いてとりあえず動く段階まで形にしたものです。現段階でもそれなりに有用とは思いますが使用時は At Your Own Risk でお願いします。
 <BR><BR>
