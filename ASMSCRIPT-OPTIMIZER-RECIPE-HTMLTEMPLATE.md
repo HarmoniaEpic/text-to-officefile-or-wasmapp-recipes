@@ -1,7 +1,7 @@
-# **ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE v1.4.0**
+# **ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE v1.4.1**
 **AssemblyScript WebAssembly HTMLテンプレート**
 
-このファイルは、ASMSCRIPT-OPTIMIZER-RECIPE v1.4.0で使用する完全なHTMLテンプレートコードです。
+このファイルは、ASMSCRIPT-OPTIMIZER-RECIPE v1.4.1で使用する完全なHTMLテンプレートコードです。
 
 ## **HTMLテンプレート全文**
 
@@ -984,7 +984,19 @@
         
         <!-- WebAssembly設定タブ -->
         <div class="tab-content" id="wasmTab">
-            <!-- 実行制御セクション（新規追加） -->
+            <!-- コマンドラインプレビュー（v1.4.1新機能） -->
+            <div class="menu-section">
+                <div class="menu-header">📟 コマンドライン</div>
+                <div class="menu-content">
+                    <div style="background: #1e1e1e; border-radius: 6px; padding: 10px; overflow-x: auto;">
+                        <code id="cmd-preview" style="color: #4ade80; font-family: monospace; font-size: 12px; white-space: nowrap; user-select: text;">
+                            asc main.ts -o main.wasm --runtime minimal
+                        </code>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 実行制御セクション -->
             <div class="menu-section">
                 <div class="menu-header" data-i18n="section.execution">実行制御</div>
                 <div class="menu-content">
@@ -1023,12 +1035,12 @@
                 <div class="menu-header" data-i18n="section.optimization">最適化オプション</div>
                 <div class="menu-content">
                     <div class="option-item">
-                        <input type="checkbox" id="opt-optimize">
+                        <input type="checkbox" id="opt-optimize" onchange="updateCmdPreview()">
                         <label for="opt-optimize">--optimize</label>
                     </div>
                     <div class="option-item">
                         <label>--optimizeLevel</label>
-                        <select id="opt-optimizeLevel">
+                        <select id="opt-optimizeLevel" onchange="updateCmdPreview()">
                             <option value="">Default</option>
                             <option value="0">0</option>
                             <option value="1">1</option>
@@ -1038,7 +1050,7 @@
                     </div>
                     <div class="option-item">
                         <label>--shrinkLevel</label>
-                        <select id="opt-shrinkLevel">
+                        <select id="opt-shrinkLevel" onchange="updateCmdPreview()">
                             <option value="">Default</option>
                             <option value="0">0</option>
                             <option value="1">1</option>
@@ -1053,22 +1065,22 @@
                 <div class="menu-content">
                     <div class="option-item">
                         <label>--runtime</label>
-                        <select id="opt-runtime">
+                        <select id="opt-runtime" onchange="updateCmdPreview()">
                             <option value="stub">stub</option>
                             <option value="minimal" selected>minimal</option>
                             <option value="incremental">incremental</option>
                         </select>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-exportRuntime">
+                        <input type="checkbox" id="opt-exportRuntime" onchange="updateCmdPreview()">
                         <label for="opt-exportRuntime">--exportRuntime</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-importMemory">
+                        <input type="checkbox" id="opt-importMemory" onchange="updateCmdPreview()">
                         <label for="opt-importMemory">--importMemory</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-sharedMemory">
+                        <input type="checkbox" id="opt-sharedMemory" onchange="updateCmdPreview()">
                         <label for="opt-sharedMemory">--sharedMemory</label>
                     </div>
                 </div>
@@ -1078,23 +1090,23 @@
                 <div class="menu-header" data-i18n="section.debug">デバッグオプション</div>
                 <div class="menu-content">
                     <div class="option-item">
-                        <input type="checkbox" id="opt-debug">
+                        <input type="checkbox" id="opt-debug" onchange="updateCmdPreview()">
                         <label for="opt-debug">--debug</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-sourceMap">
+                        <input type="checkbox" id="opt-sourceMap" onchange="updateCmdPreview()">
                         <label for="opt-sourceMap">--sourceMap</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-noAssert">
+                        <input type="checkbox" id="opt-noAssert" onchange="updateCmdPreview()">
                         <label for="opt-noAssert">--noAssert</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-validate">
+                        <input type="checkbox" id="opt-validate" onchange="updateCmdPreview()">
                         <label for="opt-validate">--validate</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-measure">
+                        <input type="checkbox" id="opt-measure" onchange="updateCmdPreview()">
                         <label for="opt-measure">--measure</label>
                     </div>
                 </div>
@@ -1104,15 +1116,15 @@
                 <div class="menu-header" data-i18n="section.advanced">高度なオプション</div>
                 <div class="menu-content">
                     <div class="option-item">
-                        <input type="checkbox" id="opt-exportTable">
+                        <input type="checkbox" id="opt-exportTable" onchange="updateCmdPreview()">
                         <label for="opt-exportTable">--exportTable</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-explicitStart">
+                        <input type="checkbox" id="opt-explicitStart" onchange="updateCmdPreview()">
                         <label for="opt-explicitStart">--explicitStart</label>
                     </div>
                     <div class="option-item">
-                        <input type="checkbox" id="opt-lowMemoryLimit">
+                        <input type="checkbox" id="opt-lowMemoryLimit" onchange="updateCmdPreview()">
                         <label for="opt-lowMemoryLimit">--lowMemoryLimit</label>
                     </div>
                 </div>
@@ -1612,6 +1624,33 @@ function checkForEasterEgg(value: i32): void {
         let menuOpen = false;
         let statsVisible = false;
         
+        // ============================================
+        // コマンドラインプレビュー機能（v1.4.1新機能）
+        // ============================================
+        function updateCmdPreview() {
+            const options = OptionsManager.collectFromUI();
+            const cmd = generateCmdLine(options);
+            
+            const preview = document.getElementById('cmd-preview');
+            if (preview) {
+                preview.textContent = cmd;
+            }
+        }
+        
+        function generateCmdLine(options) {
+            const parts = ['asc', 'main.ts', '-o', 'main.wasm'];
+            
+            Object.entries(options).forEach(([key, value]) => {
+                if (typeof value === 'boolean' && value) {
+                    parts.push(`--${key}`);
+                } else if (typeof value !== 'boolean' && value !== '') {
+                    parts.push(`--${key}`, value.toString());
+                }
+            });
+            
+            return parts.join(' ');
+        }
+        
         // UI制御関数
         function toggleMenu() {
             menuOpen = !menuOpen;
@@ -2052,6 +2091,7 @@ function checkForEasterEgg(value: i32): void {
                 this.current = { runtime: 'minimal' };
                 this.loadFromStorage();
                 this.updateUI();
+                updateCmdPreview();  // v1.4.1: 初期化時にプレビュー更新
             },
             
             apply(preset) {
@@ -2079,6 +2119,9 @@ function checkForEasterEgg(value: i32): void {
                 
                 this.current = options;
                 this.saveToStorage();
+                
+                // v1.4.1: OptionsManager内では呼び出さない（外部から呼ぶ）
+                
                 return options;
             },
             
@@ -2208,6 +2251,7 @@ function checkForEasterEgg(value: i32): void {
         
         window.applyPreset = function(preset) {
             OptionsManager.apply(preset);
+            updateCmdPreview();  // v1.4.1: プリセット適用時もプレビュー更新
             recompile();
         };
         
@@ -2224,6 +2268,8 @@ function checkForEasterEgg(value: i32): void {
                 updateStatus('loading', 'コンパイル中...');
                 
                 const options = OptionsManager.collectFromUI();
+                updateCmdPreview();  // v1.4.1: コンパイル時にもプレビュー更新
+                
                 const { wasmBinary, stats } = await CompilerCore.compile(
                     AppModule.sourceCode, 
                     options
@@ -2399,12 +2445,20 @@ function checkForEasterEgg(value: i32): void {
 ### **カウンターアプリの機能**
 - ➕ **増加**: カウンターを1増やす
 - ➖ **減少**: カウンターを1減らす  
-- 🔄 **リセット**: カウンターを0にリセット
+- 🔄 **リセット**: カウンターを42にリセット
 - メモリサイズの表示（WebAssemblyページ数）
 
 ### **AppModuleの置き換え**
 
 ユースケースに応じて、`AppModule`オブジェクトを別の実装に置き換えることで、様々なアプリケーションを作成できます。また、アプリ設定タブはAppModule用のカスタム設定項目の配置場所として使用します。
+
+## **v1.4.1の新機能**
+
+### **コマンドラインプレビュー**
+- WebAssemblyタブの最上部に表示
+- 現在のオプション設定をCLIコマンドとして表示
+- リアルタイム更新（オプション変更時に即座に反映）
+- テキスト選択可能（Ctrl+C でコピー可能）
 
 ## 実装フロー
 
@@ -2418,6 +2472,6 @@ graph LR
 
 ---
 
-**ファイルサイズ**: 約65KB（HTML形式）  
-**バージョン**: 1.4.0  
-**最終更新**: 2025年9月
+**ファイルサイズ**: 約67KB（HTML形式）  
+**バージョン**: 1.4.1  
+**最終更新**: 2025年1月
