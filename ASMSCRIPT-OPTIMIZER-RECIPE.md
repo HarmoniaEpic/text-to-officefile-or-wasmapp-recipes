@@ -218,7 +218,7 @@ const AppModule = {
 ### **ステップ3: HTMLファイルの組み立て**
 
 1. コア構造テンプレートを読み込み
-2. **動的バージョン取得機能を組み込み**
+2. 動的バージョン取得機能を組み込み
 3. AppModuleを埋め込み
 4. 必要に応じてUIカスタマイズ部分を追加
 5. 単一HTMLファイルとして出力
@@ -318,6 +318,7 @@ WebAssemblyタブの最上部に、現在のオプション設定に対応する
 - 常に可視領域に表示
 
 #### **表示内容**
+例）
 ```bash
 asc main.ts -o main.wasm --runtime minimal --optimize --optimizeLevel 3
 ```
@@ -476,11 +477,7 @@ AssemblyScriptは暗黙的な型変換を許可しないため、明示的なキ
 // ❌ エラー：f64からf32への暗黙的変換
 let value: f32 = 3.14;
 
-// ✅ 正しい：明示的なキャスト
-let value: f32 = <f32>3.14;
-
-// ✅ より明確：f32リテラル（推奨される形式ではないが理解しやすい）
-// 注意: 現在のAssemblyScriptではfサフィックスは非推奨
+// ✅ 正しい：明示的なキャスト（f32リテラル）
 let value: f32 = <f32>3.14;
 ```
 
@@ -1162,7 +1159,7 @@ AppModuleセクションをユースケースに応じて置き換えてくだ�
 
 ### ユーザーがテンプレートファイルを添付し忘れている等により「ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md」を参照できない場合
 
-1. 作業を中断し、「ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md」のファイル添付を促して下さい。
+1. **作業を中断し**、「ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md」のファイル添付を促して下さい。
 2. 「ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md」のファイル添付を確認出来たら作業を再開して下さい。
 
 ---
