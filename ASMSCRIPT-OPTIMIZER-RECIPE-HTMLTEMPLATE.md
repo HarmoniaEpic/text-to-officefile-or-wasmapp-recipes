@@ -11,8 +11,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AssemblyScript WebAssembly Compiler</title>
+    <title>AssemblyScript WebAssembly App</title>
+    
     <style>
+        /* ============================================
+           CSS変数定義（テーマシステム）
+        ============================================ */
+        :root {
+            /* ライトテーマ（デフォルト） */
+            --bg-primary: #f5f7fa;
+            --bg-secondary: white;
+            --bg-tertiary: #f9fafb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --header-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --header-text: white;
+            --sidebar-bg: white;
+            --code-bg: #1e1e1e;
+            --code-text: #e5e7eb;
+            --success-color: #4ade80;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+        }
+        
+        /* ダークテーマ */
+        :root[data-theme="dark"] {
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --bg-tertiary: #4a5568;
+            --text-primary: #e2e8f0;
+            --text-secondary: #a0aec0;
+            --border-color: #4a5568;
+            --sidebar-bg: #2d3748;
+            --code-bg: #1e1e1e;
+            --code-text: #e5e7eb;
+        }
+        
+        /* システムテーマ（ダークモード対応） */
+        @media (prefers-color-scheme: dark) {
+            :root[data-theme="system"] {
+                --bg-primary: #1a202c;
+                --bg-secondary: #2d3748;
+                --bg-tertiary: #4a5568;
+                --text-primary: #e2e8f0;
+                --text-secondary: #a0aec0;
+                --border-color: #4a5568;
+                --sidebar-bg: #2d3748;
+                --code-bg: #1e1e1e;
+                --code-text: #e5e7eb;
+            }
+        }
+        
         /* ============================================
            グローバルスタイル
         ============================================ */
@@ -22,1000 +74,1238 @@
             box-sizing: border-box;
         }
         
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --success-color: #48bb78;
-            --error-color: #f56565;
-            --warning-color: #ed8936;
-            --bg-primary: #1a202c;
-            --bg-secondary: #2d3748;
-            --bg-tertiary: #4a5568;
-            --text-primary: #e2e8f0;
-            --text-secondary: #a0aec0;
-            --border-color: #4a5568;
-            --code-bg: #2d3748;
-            --sidebar-width: 320px;
-            --header-height: 60px;
-        }
-        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica', Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        
-        /* ============================================
-           レイアウト構造
-        ============================================ */
-        .app-container {
-            display: flex;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg-primary);
-        }
-        
-        /* ============================================
-           サイドバー
-        ============================================ */
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
-            position: fixed;
-            height: 100vh;
-            z-index: 1000;
-            overflow-y: auto;
-        }
-        
-        .sidebar.closed {
-            transform: translateX(calc(-1 * var(--sidebar-width)));
-        }
-        
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .sidebar-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: var(--primary-color);
-        }
-        
-        /* ============================================
-           タブシステム
-        ============================================ */
-        .tab-navigation {
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            background: var(--bg-tertiary);
-        }
-        
-        .tab-button {
-            flex: 1;
-            padding: 12px;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        
-        .tab-button.active {
-            color: var(--primary-color);
-            background: var(--bg-secondary);
-            border-bottom: 2px solid var(--primary-color);
-        }
-        
-        .tab-content {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        /* ============================================
-           コンパイルオプション
-        ============================================ */
-        .option-section {
-            margin-bottom: 24px;
-        }
-        
-        .option-section-title {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-        }
-        
-        .option-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        
-        .option-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            background: var(--bg-tertiary);
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-        
-        .option-item:hover {
-            background: rgba(102, 126, 234, 0.1);
-        }
-        
-        .option-item input[type="checkbox"] {
-            margin-right: 10px;
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-        
-        .option-item label {
-            flex: 1;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        
-        .option-item select {
-            background: var(--bg-secondary);
             color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-        
-        /* ============================================
-           プリセットボタン
-        ============================================ */
-        .preset-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-        
-        .preset-button {
-            padding: 10px;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 0.85rem;
-        }
-        
-        .preset-button:hover {
-            background: var(--primary-color);
-            transform: translateY(-1px);
-        }
-        
-        /* ============================================
-           メインコンテンツ
-        ============================================ */
-        .main-content {
-            flex: 1;
-            margin-left: 0;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            transition: margin-left 0.3s ease;
-        }
-        
-        .main-content.sidebar-open {
-            margin-left: var(--sidebar-width);
+            transition: background-color 0.3s, color 0.3s;
         }
         
         /* ============================================
            ヘッダー
         ============================================ */
         .header {
-            height: var(--header-height);
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-color);
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 0;
             display: flex;
             align-items: center;
-            padding: 0 20px;
-            justify-content: space-between;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .hamburger-menu {
-            width: 30px;
-            height: 24px;
-            cursor: pointer;
+        .hamburger {
+            width: 56px;
+            height: 56px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s;
         }
         
-        .hamburger-line {
-            width: 100%;
-            height: 3px;
-            background: var(--text-primary);
+        .hamburger:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            margin: 3px 0;
+            transition: 0.3s;
             border-radius: 2px;
-            transition: all 0.3s;
+        }
+        
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        .header-content {
+            flex: 1;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         
         .header-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        
-        .header-actions {
             display: flex;
-            gap: 12px;
+            flex-direction: column;
         }
         
-        .action-button {
-            padding: 8px 16px;
-            background: var(--primary-color);
-            border: none;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .header-title p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+        
+        .header-controls {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 16px;
         }
         
-        .action-button:hover {
-            background: var(--secondary-color);
-            transform: translateY(-1px);
+        .header-select {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
         
-        .action-button.secondary {
-            background: var(--bg-tertiary);
+        .header-select:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .header-select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.loading {
+            background: var(--warning-color);
+        }
+        
+        .status-dot.error {
+            background: var(--error-color);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         /* ============================================
-           コンテンツエリア
+           サイドメニュー
         ============================================ */
-        .content-area {
-            flex: 1;
+        .side-menu {
+            position: fixed;
+            top: 56px;
+            left: -320px;
+            width: 320px;
+            height: calc(100vh - 56px);
+            background: var(--sidebar-bg);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: left 0.3s;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        
+        .side-menu.active {
+            left: 0;
+        }
+        
+        /* タブナビゲーション */
+        .tab-navigation {
             display: flex;
-            flex-direction: column;
-            padding: 20px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 14px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .tab-button:hover {
+            background: rgba(0,0,0,0.03);
+        }
+        
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: var(--bg-secondary);
+        }
+        
+        .tab-icon {
+            font-size: 16px;
+        }
+        
+        .tab-content {
+            display: none;
+            height: calc(100vh - 56px - 48px);
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .menu-section {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .menu-header {
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: var(--primary-color);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+        
+        .menu-content {
+            padding: 16px;
+        }
+        
+        .presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .preset-btn {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+        
+        .option-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .option-item label {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        
+        .option-item select {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .code-viewer {
+            background: var(--code-bg);
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+        
+        .code-header {
+            color: #9ca3af;
+            font-size: 11px;
+            margin-bottom: 12px;
+            font-family: monospace;
+            text-transform: uppercase;
+        }
+        
+        .code-content {
+            color: var(--code-text);
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            white-space: pre;
+            overflow-x: auto;
+            max-height: 300px;
             overflow-y: auto;
         }
         
         /* ============================================
-           エディターとビューポート
+           メインコンテンツ
         ============================================ */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s;
+        }
+        
+        .main-container.menu-open {
+            margin-left: 320px;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* ワークスペース */
         .workspace {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 20px;
             flex: 1;
-            min-height: 0;
+        }
+        
+        .workspace.single-column {
+            justify-content: center;
         }
         
         .workspace-panel {
             background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+        }
+        
+        .workspace-panel.code-panel {
+            flex: 1;
+            max-width: 50%;
+        }
+        
+        .workspace-panel.app-panel {
+            flex: 1;
+        }
+        
+        .workspace.single-column .app-panel {
+            max-width: 1000px;
+            width: 100%;
         }
         
         .panel-header {
-            padding: 12px 16px;
-            background: var(--bg-tertiary);
-            border-bottom: 1px solid var(--border-color);
-            font-weight: 500;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .panel-content {
-            flex: 1;
-            padding: 16px;
-            overflow: auto;
-        }
-        
-        /* ============================================
-           コードエディター
-        ============================================ */
-        #code-editor {
-            width: 100%;
-            height: 100%;
-            min-height: 400px;
-            background: var(--code-bg);
-            color: var(--text-primary);
-            border: none;
-            outline: none;
-            font-family: 'Fira Code', 'Consolas', monospace;
             font-size: 14px;
-            line-height: 1.6;
-            padding: 16px;
-            resize: none;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
         }
         
-        /* ============================================
-           アプリケーションビューポート
-        ============================================ */
-        #app-viewport {
-            background: #f8f9fa;
-            border-radius: 4px;
-            padding: 20px;
-            min-height: 400px;
+        .source-code-display {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow: auto;
+            flex: 1;
+            white-space: pre;
+        }
+        
+        .app-viewport {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            flex: 1;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: #2d3748;
+            min-height: 400px;
         }
         
-        /* ============================================
-           統計情報パネル
-        ============================================ */
-        .stats-panel {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+        :root[data-theme="dark"] .app-viewport,
+        :root[data-theme="system"] .app-viewport {
+            background: var(--bg-tertiary);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
             border-radius: 8px;
-            padding: 16px;
-            margin-top: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-primary);
+        }
+        
+        /* ステータスバー（画面下部） */
+        .status-bar {
+            position: fixed;
+            bottom: -48px;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            transition: bottom 0.3s, left 0.3s;
+            z-index: 998;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .status-bar.active {
+            bottom: 0;
+        }
+        
+        .status-bar.menu-open {
+            left: 320px;
         }
         
         .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
         }
         
         .stat-item {
-            background: var(--bg-tertiary);
-            padding: 12px;
-            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .stat-label {
-            font-size: 0.85rem;
+            font-size: 12px;
             color: var(--text-secondary);
-            margin-bottom: 4px;
         }
         
         .stat-value {
-            font-size: 1.2rem;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--text-primary);
         }
         
-        /* ============================================
-           プログレスバー
-        ============================================ */
-        .progress-container {
+        /* オーバーレイ */
+        .overlay {
             position: fixed;
-            top: 0;
+            top: 56px;
             left: 0;
             right: 0;
-            height: 4px;
-            background: var(--bg-secondary);
-            z-index: 2000;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
             opacity: 0;
-            transition: opacity 0.3s;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 998;
         }
         
-        .progress-container.active {
+        .overlay.active {
             opacity: 1;
+            visibility: visible;
+        }
+        
+        /* エラーオーバーレイ */
+        .error-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        
+        .error-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .error-title {
+            color: var(--error-color);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .error-content {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text-primary);
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .error-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .error-btn:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .error-btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .error-btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        /* プログレスバー */
+        .progress-container {
+            height: 4px;
+            background: #e9ecef;
+            position: relative;
+            overflow: hidden;
         }
         
         .progress-bar {
             height: 100%;
             background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
             transition: width 0.3s ease;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
         }
         
-        /* ============================================
-           エラーオーバーレイ
-        ============================================ */
-        .error-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 3000;
+        .progress-container.loading .progress-bar {
+            animation: progress-indeterminate 1.5s infinite;
         }
         
-        .error-overlay.active {
-            display: flex;
-        }
-        
-        .error-content {
-            background: var(--bg-secondary);
-            border: 2px solid var(--error-color);
-            border-radius: 8px;
-            padding: 24px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .error-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-            color: var(--error-color);
-        }
-        
-        .error-icon {
-            font-size: 24px;
-            margin-right: 12px;
-        }
-        
-        .error-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-        
-        .error-message {
-            background: var(--code-bg);
-            padding: 16px;
-            border-radius: 4px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 16px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        
-        .error-close {
-            padding: 8px 16px;
-            background: var(--error-color);
-            border: none;
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        
-        /* ============================================
-           アニメーション
-        ============================================ */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        
-        .loading {
-            animation: pulse 1.5s infinite;
-        }
-        
-        /* ============================================
-           レスポンシブデザイン
-        ============================================ */
-        @media (max-width: 1024px) {
-            .workspace {
-                grid-template-columns: 1fr;
+        @keyframes progress-indeterminate {
+            0% {
+                width: 0%;
+                margin-left: 0%;
+            }
+            50% {
+                width: 30%;
+                margin-left: 70%;
+            }
+            100% {
+                width: 0%;
+                margin-left: 100%;
             }
         }
         
-        @media (max-width: 768px) {
-            :root {
-                --sidebar-width: 280px;
-            }
-            
-            .preset-buttons {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        /* ============================================
-           コンパイラ情報パネル
-        ============================================ */
+        /* コンパイラ情報パネル */
         .compiler-info {
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 12px;
             border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 20px;
-            font-size: 0.85rem;
+            font-size: 11px;
+            font-family: monospace;
+            display: none;
+            z-index: 500;
         }
         
-        .compiler-info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
+        .compiler-info.show {
+            display: block;
         }
         
-        .compiler-info-row:last-child {
-            margin-bottom: 0;
-        }
-        
-        .compiler-info-label {
-            color: var(--text-secondary);
-        }
-        
-        .compiler-info-value {
-            color: var(--text-primary);
-            font-weight: 500;
-        }
-        
-        .cdn-badge {
+        /* CDN状態インジケーター */
+        .cdn-status {
             display: inline-block;
             padding: 2px 6px;
             border-radius: 3px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 10px;
+            margin-left: 4px;
         }
         
-        .cdn-badge.jsdelivr {
-            background: #e84d39;
+        .cdn-status.jsdelivr {
+            background: #ff5627;
             color: white;
         }
         
-        .cdn-badge.unpkg {
-            background: #2196f3;
+        .cdn-status.unpkg {
+            background: #000000;
             color: white;
         }
         
-        /* ============================================
-           ユーティリティクラス
-        ============================================ */
+        /* バージョンソース表示 */
+        .version-source {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            background: var(--success-color);
+            color: white;
+        }
+        
+        .version-source.fallback {
+            background: var(--warning-color);
+        }
+        
+        /* イースターエッグ */
+        .easter-egg {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff00;
+            padding: 30px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 10000;
+            display: none;
+            text-align: center;
+            animation: glow 2s ease-in-out infinite;
+            border: 2px solid #00ff00;
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px #00ff00; }
+            50% { box-shadow: 0 0 40px #00ff00, 0 0 60px #00ff00; }
+        }
+        
+        .easter-egg.show {
+            display: block;
+        }
+        
+        .towel-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .main-container.menu-open {
+                margin-left: 0;
+            }
+            
+            .side-menu {
+                width: 280px;
+                left: -280px;
+            }
+            
+            .status-bar.menu-open {
+                left: 0;
+            }
+            
+            .stats-grid {
+                gap: 16px;
+                flex-wrap: wrap;
+            }
+            
+            .workspace {
+                flex-direction: column;
+            }
+            
+            .workspace-panel.code-panel {
+                max-width: 100%;
+            }
+            
+            .header-controls {
+                gap: 8px;
+            }
+            
+            .header-select {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-title p {
+                display: none;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            
+            .stats-grid {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .app-viewport {
+                padding: 24px;
+            }
+        }
+        
+        /* ユーティリティクラス */
         .hidden {
             display: none !important;
+        }
+        
+        .mb-3 {
+            margin-bottom: 12px;
         }
         
         .text-center {
             text-align: center;
         }
-        
-        .mb-2 { margin-bottom: 8px; }
-        .mb-3 { margin-bottom: 12px; }
-        .mb-4 { margin-bottom: 16px; }
     </style>
 </head>
 <body>
-    <!-- プログレスバー -->
-    <div id="progress-container" class="progress-container">
-        <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
-    </div>
-    
-    <!-- エラーオーバーレイ -->
-    <div id="error-overlay" class="error-overlay">
-        <div class="error-content">
-            <div class="error-header">
-                <span class="error-icon">⚠️</span>
-                <h3 class="error-title">コンパイルエラー</h3>
+    <!-- ヘッダー -->
+    <div class="header">
+        <div class="hamburger" onclick="toggleMenu()" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="header-content">
+            <div class="header-title">
+                <h1 id="app-title">🚀 AssemblyScript App</h1>
+                <p id="app-description">WebAssembly Application</p>
             </div>
-            <pre id="error-message" class="error-message"></pre>
-            <button class="error-close" onclick="hideError()">閉じる</button>
+            <div class="header-controls">
+                <select class="header-select" id="theme-select" onchange="changeTheme()">
+                    <option value="system">🌓 システム</option>
+                    <option value="light">☀️ ライト</option>
+                    <option value="dark">🌙 ダーク</option>
+                </select>
+                <select class="header-select" id="language-select" onchange="changeLanguage()">
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="en">🇬🇧 English</option>
+                </select>
+                <div class="status-indicator">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">初期化中...</span>
+                </div>
+            </div>
         </div>
     </div>
     
-    <!-- アプリケーションコンテナ -->
-    <div class="app-container">
-        <!-- サイドバー -->
-        <aside id="sidebar" class="sidebar">
-            <div class="sidebar-header">
-                <h2 class="sidebar-title">⚡ WebAssembly</h2>
-                <span style="cursor: pointer;" onclick="toggleSidebar()">✕</span>
-            </div>
-            
-            <!-- タブナビゲーション -->
-            <div class="tab-navigation">
-                <button class="tab-button active" onclick="switchTab('app')">アプリ設定</button>
-                <button class="tab-button" onclick="switchTab('wasm')">WASM設定</button>
-            </div>
-            
-            <!-- アプリ設定タブ -->
-            <div id="app-tab" class="tab-content active">
-                <div class="option-section">
-                    <h3 class="option-section-title">アプリケーション設定</h3>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <input type="checkbox" id="auto-compile" checked>
-                            <label for="auto-compile">自動コンパイル</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="show-stats" checked>
-                            <label for="show-stats">統計情報を表示</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- コンパイラ情報（デバッグモード時のみ表示） -->
-                <div id="compiler-info" class="compiler-info hidden">
-                    <div class="compiler-info-row">
-                        <span class="compiler-info-label">バージョン:</span>
-                        <span id="compiler-version" class="compiler-info-value">-</span>
-                    </div>
-                    <div class="compiler-info-row">
-                        <span class="compiler-info-label">取得元:</span>
-                        <span id="version-source" class="compiler-info-value">-</span>
-                    </div>
-                    <div class="compiler-info-row">
-                        <span class="compiler-info-label">CDN:</span>
-                        <span id="cdn-provider" class="compiler-info-value">-</span>
-                    </div>
-                    <div class="compiler-info-row">
-                        <span class="compiler-info-label">読み込み時間:</span>
-                        <span id="load-time" class="compiler-info-value">-</span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- WebAssembly設定タブ -->
-            <div id="wasm-tab" class="tab-content">
-                <!-- プリセット -->
-                <div class="option-section">
-                    <h3 class="option-section-title">プリセット</h3>
-                    <div class="preset-buttons">
-                        <button class="preset-button" onclick="applyPreset('simple')">シンプル</button>
-                        <button class="preset-button" onclick="applyPreset('debug')">デバッグ</button>
-                        <button class="preset-button" onclick="applyPreset('release')">リリース</button>
-                        <button class="preset-button" onclick="applyPreset('minimal')">最小サイズ</button>
-                    </div>
-                </div>
-                
-                <!-- 最適化オプション -->
-                <div class="option-section">
-                    <h3 class="option-section-title">最適化</h3>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-optimize">
-                            <label for="opt-optimize">最適化を有効化</label>
-                        </div>
-                        <div class="option-item">
-                            <label for="opt-optimizeLevel">最適化レベル:</label>
-                            <select id="opt-optimizeLevel">
-                                <option value="">デフォルト</option>
-                                <option value="0">0 (なし)</option>
-                                <option value="1">1 (基本)</option>
-                                <option value="2">2 (標準)</option>
-                                <option value="3">3 (最大)</option>
-                            </select>
-                        </div>
-                        <div class="option-item">
-                            <label for="opt-shrinkLevel">縮小レベル:</label>
-                            <select id="opt-shrinkLevel">
-                                <option value="">デフォルト</option>
-                                <option value="0">0 (なし)</option>
-                                <option value="1">1 (標準)</option>
-                                <option value="2">2 (最大)</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- デバッグオプション -->
-                <div class="option-section">
-                    <h3 class="option-section-title">デバッグ</h3>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-debug">
-                            <label for="opt-debug">デバッグ情報</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-sourceMap">
-                            <label for="opt-sourceMap">ソースマップ</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-measure">
-                            <label for="opt-measure">パフォーマンス測定</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-validate">
-                            <label for="opt-validate">バリデーション</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- ランタイムオプション -->
-                <div class="option-section">
-                    <h3 class="option-section-title">ランタイム</h3>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <label for="opt-runtime">ランタイム:</label>
-                            <select id="opt-runtime">
-                                <option value="">デフォルト</option>
-                                <option value="stub">Stub (最小)</option>
-                                <option value="minimal" selected>Minimal (基本)</option>
-                                <option value="incremental">Incremental (GC)</option>
-                            </select>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-exportRuntime">
-                            <label for="opt-exportRuntime">ランタイムエクスポート</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-noAssert">
-                            <label for="opt-noAssert">アサート無効化</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 高度なオプション -->
-                <div class="option-section">
-                    <h3 class="option-section-title">高度な設定</h3>
-                    <div class="option-group">
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-importMemory">
-                            <label for="opt-importMemory">メモリインポート</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-sharedMemory">
-                            <label for="opt-sharedMemory">共有メモリ</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-exportTable">
-                            <label for="opt-exportTable">テーブルエクスポート</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-explicitStart">
-                            <label for="opt-explicitStart">明示的スタート</label>
-                        </div>
-                        <div class="option-item">
-                            <input type="checkbox" id="opt-lowMemoryLimit">
-                            <label for="opt-lowMemoryLimit">低メモリ制限</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </aside>
-        
-        <!-- メインコンテンツ -->
-        <main id="main-content" class="main-content sidebar-open">
-            <!-- ヘッダー -->
-            <header class="header">
-                <div class="hamburger-menu" onclick="toggleSidebar()">
-                    <div class="hamburger-line"></div>
-                    <div class="hamburger-line"></div>
-                    <div class="hamburger-line"></div>
-                </div>
-                
-                <h1 class="header-title">AssemblyScript Compiler</h1>
-                
-                <div class="header-actions">
-                    <button class="action-button secondary" onclick="resetApp()">
-                        🔄 リセット
-                    </button>
-                    <button class="action-button" onclick="compile()">
-                        ⚡ コンパイル
-                    </button>
-                </div>
-            </header>
-            
-            <!-- コンテンツエリア -->
-            <div class="content-area">
-                <!-- ワークスペース -->
-                <div class="workspace">
-                    <!-- コードエディター -->
-                    <div class="workspace-panel">
-                        <div class="panel-header">
-                            <span>📝 AssemblyScript コード</span>
-                            <span id="compile-status"></span>
-                        </div>
-                        <div class="panel-content">
-                            <textarea id="code-editor" spellcheck="false"></textarea>
-                        </div>
-                    </div>
-                    
-                    <!-- アプリケーションビューポート -->
-                    <div class="workspace-panel">
-                        <div class="panel-header">
-                            <span>🚀 アプリケーション</span>
-                        </div>
-                        <div class="panel-content">
-                            <div id="app-viewport">
-                                <p class="loading">初期化中...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 統計情報パネル -->
-                <div id="stats-panel" class="stats-panel">
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-label">コンパイル時間</div>
-                            <div class="stat-value" id="stat-compile-time">-</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">WASMサイズ</div>
-                            <div class="stat-value" id="stat-wasm-size">-</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">実行回数</div>
-                            <div class="stat-value" id="stat-exec-count">0</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">ステータス</div>
-                            <div class="stat-value" id="stat-status">待機中</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
+    <!-- プログレスバー -->
+    <div class="progress-container loading" id="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
     </div>
     
-    <script type="module">
-        // ============================================
-        // アプリケーションモジュール
-        // ============================================
-        const AppModule = {
-            name: "Counter Demo",
-            description: "シンプルなカウンターアプリケーション",
+    <!-- サイドメニュー -->
+    <div class="side-menu" id="sideMenu">
+        <!-- タブナビゲーション -->
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="switchTab('app')">
+                <span class="tab-icon">📱</span>
+                <span data-i18n="tab.app">アプリ設定</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('wasm')">
+                <span class="tab-icon">⚙️</span>
+                <span data-i18n="tab.wasm">WebAssembly</span>
+            </button>
+        </div>
+        
+        <!-- アプリ設定タブ -->
+        <div class="tab-content active" id="appTab">
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.appModule">AppModule設定</div>
+                <div class="menu-content">
+                    <p style="color: var(--text-secondary); font-size: 13px; padding: 10px;" data-i18n="appModule.reserved">
+                        このセクションは、AppModuleが定義するカスタム設定項目用のリザーブエリアです。
+                    </p>
+                </div>
+            </div>
             
-            sourceCode: `
-// カウンターのグローバル変数
-let counter: i32 = 0;
-
-// カウンターを増やす
-export function increment(): i32 {
-    counter++;
-    return counter;
-}
-
-// カウンターを減らす
-export function decrement(): i32 {
-    counter--;
-    return counter;
-}
-
-// 現在の値を取得
-export function getValue(): i32 {
-    return counter;
-}
-
-// カウンターをリセット
-export function reset(): void {
-    counter = 0;
-}
-
-// メモリサイズを取得（デバッグ用）
-export function getMemorySize(): i32 {
-    return memory.size();
-}
-            `.trim(),
-            
-            defaultOptions: {
-                optimize: false,
-                runtime: 'minimal'
-            },
-            
-            async init(wasmExports) {
-                const viewport = document.getElementById('app-viewport');
-                viewport.innerHTML = `
-                    <div style="text-align: center;">
-                        <h2 style="margin-bottom: 20px;">カウンターデモ</h2>
-                        <div style="font-size: 48px; font-weight: bold; margin: 20px 0;" id="counter-value">0</div>
-                        <div style="display: flex; gap: 10px; justify-content: center;">
-                            <button onclick="window.counterOp('increment')" style="padding: 10px 20px; font-size: 18px; cursor: pointer;">➕ 増加</button>
-                            <button onclick="window.counterOp('decrement')" style="padding: 10px 20px; font-size: 18px; cursor: pointer;">➖ 減少</button>
-                            <button onclick="window.counterOp('reset')" style="padding: 10px 20px; font-size: 18px; cursor: pointer;">🔄 リセット</button>
+            <!-- デバッグ時のみ表示されるコンパイラ情報 -->
+            <div class="menu-section hidden" id="compiler-info-section">
+                <div class="menu-header" data-i18n="section.compilerInfo">コンパイラ情報</div>
+                <div class="menu-content">
+                    <div style="font-size: 12px; color: var(--text-secondary);">
+                        <div class="mb-3">
+                            <strong data-i18n="info.version">バージョン:</strong> 
+                            <span id="compiler-version-info">-</span>
                         </div>
-                        <div style="margin-top: 20px; font-size: 14px; color: #666;">
-                            メモリサイズ: <span id="memory-size">0</span> ページ
+                        <div class="mb-3">
+                            <strong data-i18n="info.source">取得元:</strong> 
+                            <span id="version-source-info" class="version-source">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong>CDN:</strong> 
+                            <span id="cdn-provider-info" class="cdn-status">-</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong data-i18n="info.loadTime">読み込み時間:</strong> 
+                            <span id="load-time-info">-</span>ms
+                        </div>
+                        <div>
+                            <strong data-i18n="info.attempts">試行回数:</strong> 
+                            <span id="load-attempts-info">-</span>
                         </div>
                     </div>
-                `;
+                </div>
+            </div>
+        </div>
+        
+        <!-- WebAssembly設定タブ -->
+        <div class="tab-content" id="wasmTab">
+            <!-- 実行制御セクション（新規追加） -->
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.execution">実行制御</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <input type="checkbox" id="auto-compile" checked>
+                        <label for="auto-compile" data-i18n="option.autoAssemble">自動アセンブル</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="show-stats" checked>
+                        <label for="show-stats" data-i18n="option.showStats">統計情報を表示</label>
+                        <div class="toggle-switch" onclick="toggleStats()" id="statsToggle"></div>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="show-code-editor">
+                        <label for="show-code-editor" data-i18n="option.showCodeEditor">コードエディターを表示</label>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="recompile()" id="recompileBtn">
+                        ⟳ <span data-i18n="button.reassemble">再アセンブル</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.presets">コンパイルプリセット</div>
+                <div class="menu-content">
+                    <div class="presets">
+                        <button class="preset-btn" onclick="applyPreset('simple')" data-i18n="preset.simple">シンプル</button>
+                        <button class="preset-btn" onclick="applyPreset('debug')" data-i18n="preset.debug">デバッグ</button>
+                        <button class="preset-btn" onclick="applyPreset('release')" data-i18n="preset.release">リリース</button>
+                        <button class="preset-btn" onclick="applyPreset('minimal')" data-i18n="preset.minimal">最小サイズ</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.optimization">最適化オプション</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-optimize">
+                        <label for="opt-optimize">--optimize</label>
+                    </div>
+                    <div class="option-item">
+                        <label>--optimizeLevel</label>
+                        <select id="opt-optimizeLevel">
+                            <option value="">Default</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <label>--shrinkLevel</label>
+                        <select id="opt-shrinkLevel">
+                            <option value="">Default</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.runtime">ランタイムオプション</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <label>--runtime</label>
+                        <select id="opt-runtime">
+                            <option value="stub">stub</option>
+                            <option value="minimal" selected>minimal</option>
+                            <option value="incremental">incremental</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-exportRuntime">
+                        <label for="opt-exportRuntime">--exportRuntime</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-importMemory">
+                        <label for="opt-importMemory">--importMemory</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-sharedMemory">
+                        <label for="opt-sharedMemory">--sharedMemory</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.debug">デバッグオプション</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-debug">
+                        <label for="opt-debug">--debug</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-sourceMap">
+                        <label for="opt-sourceMap">--sourceMap</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-noAssert">
+                        <label for="opt-noAssert">--noAssert</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-validate">
+                        <label for="opt-validate">--validate</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-measure">
+                        <label for="opt-measure">--measure</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.advanced">高度なオプション</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-exportTable">
+                        <label for="opt-exportTable">--exportTable</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-explicitStart">
+                        <label for="opt-explicitStart">--explicitStart</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-lowMemoryLimit">
+                        <label for="opt-lowMemoryLimit">--lowMemoryLimit</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- オーバーレイ -->
+    <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+    
+    <!-- メインコンテンツ -->
+    <div class="main-container" id="mainContainer">
+        <div class="main-content">
+            <div class="workspace" id="workspace">
+                <!-- コードパネル（条件付き表示） -->
+                <div class="workspace-panel code-panel hidden" id="codePanel">
+                    <div class="panel-header">
+                        <span data-i18n="panel.sourceCode">📝 AssemblyScript ソースコード</span>
+                    </div>
+                    <div class="source-code-display" id="source-code-display"></div>
+                </div>
                 
-                // グローバル関数として登録
-                window.counterOp = (op) => {
-                    let value;
-                    switch(op) {
-                        case 'increment':
-                            value = wasmExports.increment();
-                            break;
-                        case 'decrement':
-                            value = wasmExports.decrement();
-                            break;
-                        case 'reset':
-                            wasmExports.reset();
-                            value = 0;
-                            break;
-                    }
-                    document.getElementById('counter-value').textContent = value;
-                    document.getElementById('memory-size').textContent = wasmExports.getMemorySize();
-                    
-                    // 実行回数を更新
-                    const execCount = parseInt(document.getElementById('stat-exec-count').textContent) + 1;
-                    document.getElementById('stat-exec-count').textContent = execCount;
-                };
-                
-                // 初期メモリサイズを表示
-                document.getElementById('memory-size').textContent = wasmExports.getMemorySize();
+                <!-- アプリケーションビューポート -->
+                <div class="workspace-panel app-panel" id="appPanel">
+                    <div class="panel-header">
+                        <span data-i18n="panel.application">🚀 アプリケーション</span>
+                    </div>
+                    <div class="app-viewport" id="app-viewport">
+                        <div class="text-center" style="color: var(--text-secondary);">
+                            <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
+                            <div data-i18n="status.initializing">アプリケーションを初期化しています...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ステータスバー -->
+    <div class="status-bar" id="statusBar">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label" data-i18n="stat.wasmSize">WASM:</span>
+                <span class="stat-value" id="stat-wasm-size">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label" data-i18n="stat.compileTime">コンパイル:</span>
+                <span class="stat-value" id="stat-compile-time">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label" data-i18n="stat.optimization">最適化:</span>
+                <span class="stat-value" id="stat-opt-level">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label" data-i18n="stat.memory">メモリ:</span>
+                <span class="stat-value" id="stat-memory">-</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- エラーオーバーレイ -->
+    <div class="error-overlay" id="error-overlay">
+        <div class="error-card">
+            <div class="error-title">
+                ⚠️ <span data-i18n="error.title">エラーが発生しました</span>
+            </div>
+            <div class="error-content" id="error-content"></div>
+            <div class="error-actions">
+                <button class="error-btn" onclick="copyError()" data-i18n="button.copyError">エラーをコピー</button>
+                <button class="error-btn error-btn-primary" onclick="closeError()" data-i18n="button.close">閉じる</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- イースターエッグ -->
+    <div class="easter-egg" id="easter-egg">
+        <div class="towel-icon">🏖️</div>
+        <div>DON'T PANIC</div>
+        <div style="font-size: 14px; margin-top: 10px; color: #ffff00;">
+            The Answer to the Ultimate Question of<br>
+            Life, the Universe, and Everything is...<br>
+            <span style="font-size: 48px;">42</span>
+        </div>
+    </div>
+    
+    <!-- コンパイラ情報パネル（デバッグ用） -->
+    <div class="compiler-info" id="compiler-info">
+        AssemblyScript: <span id="compiler-version">-</span> <span id="version-source" class="version-source">-</span><br>
+        CDN Provider: <span id="cdn-provider" class="cdn-status">-</span><br>
+        Load Time: <span id="load-time">-</span>ms<br>
+        Attempts: <span id="load-attempts">-</span>
+    </div>
+    
+    <!-- メインスクリプト -->
+    <script type="module">
+        // ============================================
+        // 国際化（i18n）システム
+        // ============================================
+        const i18n = {
+            ja: {
+                'tab.app': 'アプリ設定',
+                'tab.wasm': 'WebAssembly',
+                'section.appModule': 'AppModule設定',
+                'section.execution': '実行制御',
+                'section.presets': 'コンパイルプリセット',
+                'section.optimization': '最適化オプション',
+                'section.runtime': 'ランタイムオプション',
+                'section.debug': 'デバッグオプション',
+                'section.advanced': '高度なオプション',
+                'section.compilerInfo': 'コンパイラ情報',
+                'option.autoAssemble': '自動アセンブル',
+                'option.showStats': '統計情報を表示',
+                'option.showCodeEditor': 'コードエディターを表示',
+                'button.reassemble': '再アセンブル',
+                'button.copyError': 'エラーをコピー',
+                'button.close': '閉じる',
+                'preset.simple': 'シンプル',
+                'preset.debug': 'デバッグ',
+                'preset.release': 'リリース',
+                'preset.minimal': '最小サイズ',
+                'panel.sourceCode': '📝 AssemblyScript ソースコード',
+                'panel.application': '🚀 アプリケーション',
+                'stat.wasmSize': 'WASM:',
+                'stat.compileTime': 'コンパイル:',
+                'stat.optimization': '最適化:',
+                'stat.memory': 'メモリ:',
+                'status.initializing': 'アプリケーションを初期化しています...',
+                'status.compiling': 'コンパイル中...',
+                'status.ready': '実行中',
+                'error.title': 'エラーが発生しました',
+                'info.version': 'バージョン',
+                'info.source': '取得元',
+                'info.loadTime': '読み込み時間',
+                'info.attempts': '試行回数',
+                'appModule.reserved': 'このセクションは、AppModuleが定義するカスタム設定項目用のリザーブエリアです。'
+            },
+            en: {
+                'tab.app': 'App Settings',
+                'tab.wasm': 'WebAssembly',
+                'section.appModule': 'AppModule Settings',
+                'section.execution': 'Execution Control',
+                'section.presets': 'Compile Presets',
+                'section.optimization': 'Optimization Options',
+                'section.runtime': 'Runtime Options',
+                'section.debug': 'Debug Options',
+                'section.advanced': 'Advanced Options',
+                'section.compilerInfo': 'Compiler Info',
+                'option.autoAssemble': 'Auto Assemble',
+                'option.showStats': 'Show Statistics',
+                'option.showCodeEditor': 'Show Code Editor',
+                'button.reassemble': 'Re-assemble',
+                'button.copyError': 'Copy Error',
+                'button.close': 'Close',
+                'preset.simple': 'Simple',
+                'preset.debug': 'Debug',
+                'preset.release': 'Release',
+                'preset.minimal': 'Minimal',
+                'panel.sourceCode': '📝 AssemblyScript Source Code',
+                'panel.application': '🚀 Application',
+                'stat.wasmSize': 'WASM:',
+                'stat.compileTime': 'Compile:',
+                'stat.optimization': 'Optimize:',
+                'stat.memory': 'Memory:',
+                'status.initializing': 'Initializing application...',
+                'status.compiling': 'Compiling...',
+                'status.ready': 'Running',
+                'error.title': 'An error occurred',
+                'info.version': 'Version',
+                'info.source': 'Source',
+                'info.loadTime': 'Load Time',
+                'info.attempts': 'Attempts',
+                'appModule.reserved': 'This section is reserved for custom settings defined by the AppModule.'
             }
         };
         
-        // ============================================
-        // グローバル変数
-        // ============================================
-        let wasmExports = null;
-        let compilerReady = false;
+        let currentLanguage = 'ja';
+        
+        function updateLanguage(lang) {
+            currentLanguage = lang;
+            const translations = i18n[lang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[key]) {
+                    element.textContent = translations[key];
+                }
+            });
+            
+            localStorage.setItem('language', lang);
+        }
         
         // ============================================
         // バージョン管理とメタデータ
-        // ============================================
-        const COMPILER_METADATA = {
-            version: null,
-            versionSource: null,
-            fetchedFrom: "NPM Registry via CDN",
-            generatedAt: new Date().toISOString(),
-            cdnProvider: null,
-            loadTime: null,
-            attempts: 0,
-            
-            async initialize() {
-                const startTime = performance.now();
-                try {
-                    this.version = await VersionManager.getLatestVersion();
-                    this.versionSource = 'Dynamic fetch';
-                    console.log(`[Version] Fetched: v${this.version}`);
-                } catch (error) {
-                    this.version = "0.28.8";
-                    this.versionSource = 'Hardcoded fallback';
-                    console.warn('[Version] Using fallback version');
-                }
-                const fetchTime = Math.round(performance.now() - startTime);
-                console.log(`[Version] Time: ${fetchTime}ms`);
-            }
-        };
-        
-        // ============================================
-        // CDNプロバイダー定義
-        // ============================================
-        const CDN_PROVIDERS = [
-            {
-                name: 'jsDelivr',
-                baseUrl: 'https://cdn.jsdelivr.net/npm',
-                timeout: 10000,
-                priority: 1
-            },
-            {
-                name: 'UNPKG',
-                baseUrl: 'https://unpkg.com',
-                timeout: 10000,
-                priority: 2
-            }
-        ];
-        
-        // ============================================
-        // バージョン管理システム
         // ============================================
         const VersionManager = {
             cache: {
@@ -1077,19 +1367,27 @@ export function getMemorySize(): i32 {
             
             async fetchFromJsDelivr() {
                 const response = await fetch('https://data.jsdelivr.com/v1/package/npm/assemblyscript');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
                 const data = await response.json();
                 const stable = data.versions.filter(v => this.isValidStableVersion(v));
+                if (stable.length === 0) throw new Error('No stable versions found');
+                
                 return stable[0];
             },
             
             async fetchJsDelivrPackageJson() {
                 const response = await fetch('https://cdn.jsdelivr.net/npm/assemblyscript@latest/package.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
                 const data = await response.json();
                 return data.version;
             },
             
             async fetchFromUnpkg() {
                 const response = await fetch('https://unpkg.com/assemblyscript@latest/package.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
                 const data = await response.json();
                 return data.version;
             },
@@ -1112,32 +1410,376 @@ export function getMemorySize(): i32 {
         };
         
         // ============================================
-        // コンパイラローダー
+        // コンパイラメタデータ
         // ============================================
-        const CompilerLoader = {
-            compiler: null,
+        const COMPILER_METADATA = {
+            version: null,
+            versionSource: null,
+            fetchedFrom: "NPM Registry via CDN",
+            generatedAt: new Date().toISOString(),
+            cdnProvider: null,
+            loadTime: null,
+            attempts: 0,
             
-            async load() {
-                await COMPILER_METADATA.initialize();
-                return await loadCompilerWithCDNFallback();
+            async initialize() {
+                const startTime = performance.now();
+                try {
+                    this.version = await VersionManager.getLatestVersion();
+                    this.versionSource = 'Dynamic';
+                    console.log(`[Version] Fetched: v${this.version}`);
+                } catch (error) {
+                    this.version = "0.28.8";
+                    this.versionSource = 'Fallback';
+                    console.warn('[Version] Using fallback version');
+                }
+                const fetchTime = Math.round(performance.now() - startTime);
+                console.log(`[Version] Time: ${fetchTime}ms`);
             }
         };
         
-        // CDNフォールバック対応ローダー
+        // ============================================
+        // CDNプロバイダー定義
+        // ============================================
+        const CDN_PROVIDERS = [
+            {
+                name: 'jsDelivr',
+                baseUrl: 'https://cdn.jsdelivr.net/npm',
+                timeout: 10000,
+                priority: 1
+            },
+            {
+                name: 'UNPKG',
+                baseUrl: 'https://unpkg.com',
+                timeout: 10000,
+                priority: 2
+            }
+        ];
+        
+        // ============================================
+        // アプリケーションモジュール（Counter Demo）
+        // ============================================
+        const AppModule = {
+            name: "Counter Demo",
+            description: "シンプルなカウンターアプリケーション",
+            
+            sourceCode: `
+// The Ultimate Answer
+let counter: i32 = 42;
+
+// Increment the counter
+export function increment(): i32 {
+    counter++;
+    checkForEasterEgg(counter);
+    return counter;
+}
+
+// Decrement the counter
+export function decrement(): i32 {
+    counter--;
+    checkForEasterEgg(counter);
+    return counter;
+}
+
+// Get current value
+export function getValue(): i32 {
+    return counter;
+}
+
+// Reset to the ultimate answer
+export function reset(): void {
+    counter = 42;
+}
+
+// Memory size for debugging
+export function getMemorySize(): i32 {
+    return memory.size();
+}
+
+// Easter egg check (internal)
+function checkForEasterEgg(value: i32): void {
+    // The answer to life, universe, and everything
+    // DON'T PANIC
+}
+            `.trim(),
+            
+            defaultOptions: {
+                optimize: false,
+                runtime: 'minimal'
+            },
+            
+            getImports() {
+                return {};
+            },
+            
+            async init(wasmExports) {
+                const viewport = document.getElementById('app-viewport');
+                viewport.innerHTML = `
+                    <div style="text-align: center;">
+                        <h2 style="margin-bottom: 20px; color: var(--text-primary);">Counter Demo</h2>
+                        <div style="font-size: 72px; font-weight: 200; color: var(--primary-color); line-height: 1; margin-bottom: 32px; cursor: pointer;" id="counter-display">42</div>
+                        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="appIncrement()">+1</button>
+                            <button class="btn btn-primary" onclick="appDecrement()">-1</button>
+                            <button class="btn btn-secondary" onclick="appReset()">Reset to 42</button>
+                        </div>
+                        <div style="margin-top: 20px; font-size: 12px; color: var(--text-secondary);">
+                            Memory: <span id="memory-size">1</span> pages
+                        </div>
+                    </div>
+                `;
+                
+                // 初期値の表示
+                this.updateDisplay(42, wasmExports);
+                
+                // イースターエッグトリガー
+                this.easterEggCounter = 0;
+                this.lastValue = 42;
+            },
+            
+            execute(wasmExports, operation) {
+                let value = wasmExports.getValue();
+                
+                if (operation === 'increment') {
+                    value = wasmExports.increment();
+                } else if (operation === 'decrement') {
+                    value = wasmExports.decrement();
+                } else if (operation === 'reset') {
+                    wasmExports.reset();
+                    value = 42;
+                }
+                
+                this.updateDisplay(value, wasmExports);
+                this.checkEasterEgg(value);
+            },
+            
+            updateDisplay(value, wasmExports) {
+                const display = document.getElementById('counter-display');
+                if (display) {
+                    display.textContent = value;
+                    
+                    // 42の時に特別な色
+                    if (value === 42) {
+                        display.style.color = '#00ff00';
+                        display.style.textShadow = '0 0 20px #00ff00';
+                    } else {
+                        display.style.color = 'var(--primary-color)';
+                        display.style.textShadow = 'none';
+                    }
+                }
+                
+                const memSize = document.getElementById('memory-size');
+                if (memSize && wasmExports.getMemorySize) {
+                    memSize.textContent = wasmExports.getMemorySize();
+                }
+            },
+            
+            checkEasterEgg(value) {
+                // 42に関連するイースターエッグ
+                if (value === 42) {
+                    this.easterEggCounter++;
+                    
+                    // 3回目に42になったらイースターエッグ表示
+                    if (this.easterEggCounter === 3) {
+                        this.showEasterEgg();
+                        this.easterEggCounter = 0;
+                    }
+                }
+                
+                // 値が大きく変化したらリセット
+                if (Math.abs(value - this.lastValue) > 10) {
+                    this.easterEggCounter = 0;
+                }
+                
+                this.lastValue = value;
+            },
+            
+            showEasterEgg() {
+                const egg = document.getElementById('easter-egg');
+                if (egg) {
+                    egg.classList.add('show');
+                    setTimeout(() => {
+                        egg.classList.remove('show');
+                    }, 5000);
+                }
+            }
+        };
+        
+        // ============================================
+        // 安全な初期化
+        // ============================================
+        let wasmExports = null;
+        let isCompiling = false;
+        let menuOpen = false;
+        let statsVisible = false;
+        
+        // UI制御関数
+        function toggleMenu() {
+            menuOpen = !menuOpen;
+            const hamburger = document.getElementById('hamburger');
+            const sideMenu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('overlay');
+            const mainContainer = document.getElementById('mainContainer');
+            const statusBar = document.getElementById('statusBar');
+            
+            if (menuOpen) {
+                hamburger.classList.add('active');
+                sideMenu.classList.add('active');
+                overlay.classList.add('active');
+                mainContainer.classList.add('menu-open');
+                statusBar.classList.add('menu-open');
+            } else {
+                hamburger.classList.remove('active');
+                sideMenu.classList.remove('active');
+                overlay.classList.remove('active');
+                mainContainer.classList.remove('menu-open');
+                statusBar.classList.remove('menu-open');
+            }
+        }
+        
+        function closeMenu() {
+            if (menuOpen) {
+                toggleMenu();
+            }
+        }
+        
+        function toggleStats() {
+            statsVisible = !statsVisible;
+            const statsToggle = document.getElementById('statsToggle');
+            const statusBar = document.getElementById('statusBar');
+            const showStatsCheckbox = document.getElementById('show-stats');
+            
+            if (statsVisible) {
+                statsToggle.classList.add('active');
+                statusBar.classList.add('active');
+                showStatsCheckbox.checked = true;
+            } else {
+                statsToggle.classList.remove('active');
+                statusBar.classList.remove('active');
+                showStatsCheckbox.checked = false;
+            }
+            
+            localStorage.setItem('statsVisible', statsVisible);
+        }
+        
+        function switchTab(tabName) {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.tab-button').classList.add('active');
+            
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (tabName === 'app') {
+                document.getElementById('appTab').classList.add('active');
+            } else if (tabName === 'wasm') {
+                document.getElementById('wasmTab').classList.add('active');
+            }
+        }
+        
+        // テーマ変更
+        function changeTheme() {
+            const theme = document.getElementById('theme-select').value;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        
+        // 言語変更
+        function changeLanguage() {
+            const lang = document.getElementById('language-select').value;
+            updateLanguage(lang);
+        }
+        
+        // コードエディター表示切り替え
+        function toggleCodeEditor() {
+            const showCode = document.getElementById('show-code-editor').checked;
+            const codePanel = document.getElementById('codePanel');
+            const workspace = document.getElementById('workspace');
+            
+            if (showCode) {
+                codePanel.classList.remove('hidden');
+                workspace.classList.remove('single-column');
+                
+                // ソースコードを表示
+                const sourceDisplay = document.getElementById('source-code-display');
+                if (sourceDisplay) {
+                    sourceDisplay.textContent = AppModule.sourceCode;
+                }
+            } else {
+                codePanel.classList.add('hidden');
+                workspace.classList.add('single-column');
+            }
+            
+            localStorage.setItem('showCodeEditor', showCode);
+        }
+        
+        window.toggleMenu = toggleMenu;
+        window.closeMenu = closeMenu;
+        window.toggleStats = toggleStats;
+        window.switchTab = switchTab;
+        window.changeTheme = changeTheme;
+        window.changeLanguage = changeLanguage;
+        
+        function updateStatus(status, message) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            
+            if (dot) {
+                dot.className = 'status-dot';
+                if (status === 'loading') dot.classList.add('loading');
+                if (status === 'error') dot.classList.add('error');
+            }
+            if (text) {
+                const translations = i18n[currentLanguage];
+                const translationKey = `status.${status}`;
+                text.textContent = translations[translationKey] || message;
+            }
+            
+            const progressContainer = document.getElementById('progress-container');
+            if (progressContainer) {
+                if (status === 'loading') {
+                    progressContainer.classList.add('loading');
+                } else {
+                    progressContainer.classList.remove('loading');
+                }
+            }
+        }
+        
+        function updateProgress(percent, message, detail = null) {
+            const progressBar = document.getElementById('progress-bar');
+            const statusText = document.getElementById('status-text');
+            
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (statusText) {
+                let text = message;
+                if (detail) text += ` (${detail})`;
+                statusText.textContent = text;
+            }
+            
+            console.log(`[Progress] ${percent}% - ${message}${detail ? ` (${detail})` : ''}`);
+        }
+        
+        // ============================================
+        // コンパイラローダー
+        // ============================================
         async function loadCompilerWithCDNFallback() {
             const version = COMPILER_METADATA.version;
+            console.log(`[Loader] Starting load for AssemblyScript ${version}`);
             
             for (let i = 0; i < CDN_PROVIDERS.length; i++) {
                 const cdn = CDN_PROVIDERS[i];
                 const startTime = performance.now();
                 
                 try {
-                    updateProgress(30 + (i * 35), `コンパイラ読み込み中 (${cdn.name})...`);
+                    updateProgress(30 + (i * 35), 'コンパイラ読み込み中', `${cdn.name} (優先度${cdn.priority})`);
                     
                     const webJsUrl = `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
                     console.log(`[Loader] Attempting ${cdn.name}: ${webJsUrl}`);
                     
-                    await loadScriptTag(webJsUrl);
+                    await loadWebJS(webJsUrl, cdn.timeout);
                     await waitForImportMap();
                     
                     const asc = await import("assemblyscript/asc");
@@ -1153,18 +1795,23 @@ export function getMemorySize(): i32 {
                     console.log(`[Loader] Success with ${cdn.name} in ${loadTime}ms`);
                     updateProgress(100, 'コンパイラ準備完了');
                     
+                    updateCompilerInfo();
+                    
                     return compiler;
                     
                 } catch (error) {
                     console.error(`[Loader] ${cdn.name} failed:`, error.message);
                     cleanupFailedScripts();
+                    
+                    delete window.ASSEMBLYSCRIPT_VERSION;
+                    delete window.ASSEMBLYSCRIPT_IMPORTMAP;
                 }
             }
             
-            throw new Error(`All CDN providers failed for AssemblyScript ${version}`);
+            throw new Error(`Failed to load AssemblyScript ${version} from all CDN providers`);
         }
         
-        function loadScriptTag(url) {
+        function loadWebJS(url, timeout) {
             return new Promise((resolve, reject) => {
                 if (window.ASSEMBLYSCRIPT_VERSION) {
                     console.log('[Loader] AssemblyScript already loaded');
@@ -1176,21 +1823,22 @@ export function getMemorySize(): i32 {
                 script.src = url;
                 script.dataset.assemblyScript = 'loading';
                 
-                const timeout = setTimeout(() => {
+                const timeoutId = setTimeout(() => {
                     script.remove();
                     reject(new Error(`Timeout loading: ${url}`));
-                }, 10000);
+                }, timeout);
                 
                 script.onload = () => {
-                    clearTimeout(timeout);
+                    clearTimeout(timeoutId);
                     script.dataset.assemblyScript = 'loaded';
-                    resolve();
+                    console.log('[Loader] Script loaded successfully');
+                    setTimeout(resolve, 300);
                 };
                 
                 script.onerror = () => {
-                    clearTimeout(timeout);
+                    clearTimeout(timeoutId);
                     script.remove();
-                    reject(new Error(`Failed to load: ${url}`));
+                    reject(new Error(`Failed to load script: ${url}`));
                 };
                 
                 document.head.appendChild(script);
@@ -1202,8 +1850,8 @@ export function getMemorySize(): i32 {
             const waitTime = 100;
             
             for (let i = 0; i < maxAttempts; i++) {
-                if (window.ASSEMBLYSCRIPT_VERSION && window.ASSEMBLYSCRIPT_IMPORTMAP) {
-                    console.log('[Loader] Import map ready');
+                if (window.ASSEMBLYSCRIPT_VERSION) {
+                    console.log('[Loader] Import map and globals ready');
                     return;
                 }
                 await new Promise(resolve => setTimeout(resolve, waitTime));
@@ -1214,21 +1862,129 @@ export function getMemorySize(): i32 {
         
         async function validateCompiler(compiler) {
             if (!compiler || typeof compiler.main !== 'function') {
-                throw new Error('Invalid compiler structure');
+                throw new Error('Invalid compiler object structure');
             }
+            
+            const testCode = 'export function test(): i32 { return 42; }';
+            const { error } = await compiler.main(['test.ts', '--validate'], {
+                readFile: (name) => name === 'test.ts' ? testCode : null,
+                writeFile: () => {},
+                listFiles: () => ['test.ts']
+            });
+            
+            if (error) {
+                throw new Error('Compiler validation failed');
+            }
+            
+            console.log('[Loader] Compiler validated successfully');
         }
         
         function cleanupFailedScripts() {
             const scripts = document.querySelectorAll('script[data-assembly-script]');
             scripts.forEach(script => {
                 if (script.dataset.assemblyScript !== 'loaded') {
+                    console.log('[Loader] Removing failed script tag');
                     script.remove();
                 }
             });
-            
-            delete window.ASSEMBLYSCRIPT_VERSION;
-            delete window.ASSEMBLYSCRIPT_IMPORTMAP;
         }
+        
+        function updateCompilerInfo() {
+            // デバッグパネル
+            document.getElementById('compiler-version').textContent = COMPILER_METADATA.version;
+            
+            const sourceEl = document.getElementById('version-source');
+            sourceEl.textContent = COMPILER_METADATA.versionSource;
+            sourceEl.className = COMPILER_METADATA.versionSource === 'Fallback' ? 
+                'version-source fallback' : 'version-source';
+            
+            const cdnEl = document.getElementById('cdn-provider');
+            cdnEl.textContent = COMPILER_METADATA.cdnProvider;
+            cdnEl.className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase()}`;
+            
+            document.getElementById('load-time').textContent = COMPILER_METADATA.loadTime;
+            document.getElementById('load-attempts').textContent = COMPILER_METADATA.attempts;
+            
+            // サイドバー内の情報も更新
+            document.getElementById('compiler-version-info').textContent = `v${COMPILER_METADATA.version}`;
+            document.getElementById('version-source-info').textContent = COMPILER_METADATA.versionSource;
+            document.getElementById('cdn-provider-info').textContent = COMPILER_METADATA.cdnProvider;
+            document.getElementById('cdn-provider-info').className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase()}`;
+            document.getElementById('load-time-info').textContent = COMPILER_METADATA.loadTime;
+            document.getElementById('load-attempts-info').textContent = COMPILER_METADATA.attempts;
+        }
+        
+        async function safeInit() {
+            try {
+                console.log('[Init] Starting initialization...');
+                
+                await COMPILER_METADATA.initialize();
+                console.log('[Init] Using AssemblyScript version:', COMPILER_METADATA.version);
+                
+                const asc = await loadCompilerWithCDNFallback();
+                
+                if (!asc) {
+                    throw new Error('Failed to load compiler');
+                }
+                
+                window.asc = asc;
+                
+                // 保存された設定を復元
+                const savedTheme = localStorage.getItem('theme') || 'system';
+                document.getElementById('theme-select').value = savedTheme;
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                
+                const savedLanguage = localStorage.getItem('language') || 'ja';
+                document.getElementById('language-select').value = savedLanguage;
+                updateLanguage(savedLanguage);
+                
+                const savedShowCode = localStorage.getItem('showCodeEditor') === 'true';
+                document.getElementById('show-code-editor').checked = savedShowCode;
+                toggleCodeEditor();
+                
+                // デバッグモードチェック
+                if (localStorage.getItem('debug') === 'true') {
+                    document.getElementById('compiler-info').classList.add('show');
+                    document.getElementById('compiler-info-section').classList.remove('hidden');
+                }
+                
+                await initializeApp(asc);
+                
+            } catch (error) {
+                console.error('[Init] Failed to initialize:', error);
+                showFatalError(`コンパイラの読み込みに失敗しました（v${COMPILER_METADATA.version}）。ページを再読み込みしてください。`);
+            }
+        }
+        
+        // ============================================
+        // プリセット定義
+        // ============================================
+        const PRESETS = {
+            simple: {
+                optimize: false,
+                runtime: 'minimal'
+            },
+            debug: {
+                optimize: false,
+                optimizeLevel: '0',
+                debug: true,
+                sourceMap: true,
+                measure: true
+            },
+            release: {
+                optimize: true,
+                optimizeLevel: '3',
+                shrinkLevel: '1',
+                noAssert: true
+            },
+            minimal: {
+                optimize: true,
+                optimizeLevel: '3',
+                shrinkLevel: '2',
+                runtime: 'stub',
+                noAssert: true
+            }
+        };
         
         // ============================================
         // コンパイラコア
@@ -1287,7 +2043,7 @@ export function getMemorySize(): i32 {
         };
         
         // ============================================
-        // オプション管理システム
+        // オプション管理
         // ============================================
         const OptionsManager = {
             current: {},
@@ -1407,260 +2163,230 @@ export function getMemorySize(): i32 {
         };
         
         // ============================================
-        // プリセット定義
+        // 統計情報更新
         // ============================================
-        const PRESETS = {
-            simple: {
-                optimize: false,
-                runtime: 'minimal'
-            },
-            debug: {
-                optimize: false,
-                optimizeLevel: '0',
-                debug: true,
-                sourceMap: true,
-                measure: true
-            },
-            release: {
-                optimize: true,
-                optimizeLevel: '3',
-                shrinkLevel: '1',
-                noAssert: true
-            },
-            minimal: {
-                optimize: true,
-                optimizeLevel: '3',
-                shrinkLevel: '2',
-                runtime: 'stub',
-                noAssert: true
-            }
-        };
-        
-        // ============================================
-        // UI関数
-        // ============================================
-        function updateProgress(percent, message = '') {
-            const container = document.getElementById('progress-container');
-            const bar = document.getElementById('progress-bar');
+        function updateStats(compileTime, wasmSize) {
+            document.getElementById('stat-compile-time').textContent = 
+                compileTime ? `${compileTime}ms` : '-';
+            document.getElementById('stat-wasm-size').textContent = 
+                wasmSize ? `${(wasmSize / 1024).toFixed(1)}KB` : '-';
             
-            if (percent > 0 && percent < 100) {
-                container.classList.add('active');
-                bar.style.width = `${percent}%`;
-                
-                if (message) {
-                    document.getElementById('stat-status').textContent = message;
-                    console.log(`[Progress] ${message} (${percent}%)`);
-                }
-            } else if (percent >= 100) {
-                bar.style.width = '100%';
-                setTimeout(() => {
-                    container.classList.remove('active');
-                }, 500);
-                
-                if (message) {
-                    document.getElementById('stat-status').textContent = message;
-                }
+            const optLevel = document.getElementById('opt-optimize').checked ? 
+                (document.getElementById('opt-optimizeLevel').value || 'default') : 'OFF';
+            document.getElementById('stat-opt-level').textContent = optLevel;
+            
+            if (wasmExports && wasmExports.memory) {
+                const pages = wasmExports.memory.buffer.byteLength / (64 * 1024);
+                document.getElementById('stat-memory').textContent = `${pages} page${pages !== 1 ? 's' : ''}`;
             }
         }
         
+        // ============================================
+        // エラー処理
+        // ============================================
         function showError(error) {
-            const overlay = document.getElementById('error-overlay');
-            const message = document.getElementById('error-message');
-            
-            message.textContent = error.message || error.toString();
-            overlay.classList.add('active');
-            
-            console.error('[Error]', error);
+            console.error(error);
+            document.getElementById('error-content').textContent = 
+                error.stack || error.message || String(error);
+            document.getElementById('error-overlay').style.display = 'flex';
+            updateStatus('error', 'エラーが発生しました');
         }
         
-        window.hideError = function() {
-            document.getElementById('error-overlay').classList.remove('active');
+        window.closeError = function() {
+            document.getElementById('error-overlay').style.display = 'none';
         };
         
-        window.toggleSidebar = function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('main-content');
-            
-            sidebar.classList.toggle('closed');
-            mainContent.classList.toggle('sidebar-open');
-        };
-        
-        window.switchTab = function(tabName) {
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            
-            event.target.classList.add('active');
-            document.getElementById(`${tabName}-tab`).classList.add('active');
+        window.copyError = async function() {
+            const content = document.getElementById('error-content').textContent;
+            try {
+                await navigator.clipboard.writeText(content);
+                alert('エラー内容をコピーしました');
+            } catch(e) {
+                console.error('Copy failed:', e);
+            }
         };
         
         window.applyPreset = function(preset) {
             OptionsManager.apply(preset);
-            console.log(`[Options] Applied preset: ${preset}`);
+            recompile();
         };
         
-        window.resetApp = function() {
-            document.getElementById('code-editor').value = AppModule.sourceCode;
-            OptionsManager.init();
-            compile();
-        };
-        
-        function updateStats(compileTime, wasmSize) {
-            document.getElementById('stat-compile-time').textContent = `${compileTime}ms`;
-            document.getElementById('stat-wasm-size').textContent = formatBytes(wasmSize);
-        }
-        
-        function formatBytes(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
-            return (bytes / 1048576).toFixed(2) + ' MB';
-        }
-        
-        function updateCompilerInfo() {
-            if (COMPILER_METADATA.version) {
-                document.getElementById('compiler-version').textContent = `v${COMPILER_METADATA.version}`;
-                document.getElementById('version-source').textContent = COMPILER_METADATA.versionSource;
-                
-                if (COMPILER_METADATA.cdnProvider) {
-                    const cdnEl = document.getElementById('cdn-provider');
-                    cdnEl.innerHTML = `<span class="cdn-badge ${COMPILER_METADATA.cdnProvider.toLowerCase()}">${COMPILER_METADATA.cdnProvider}</span>`;
-                }
-                
-                if (COMPILER_METADATA.loadTime) {
-                    document.getElementById('load-time').textContent = `${COMPILER_METADATA.loadTime}ms`;
-                }
-            }
-        }
-        
         // ============================================
-        // コンパイル関数
+        // コンパイル処理
         // ============================================
-        window.compile = async function() {
-            if (!compilerReady) {
-                console.warn('[Compile] Compiler not ready yet');
-                return;
-            }
+        async function compile() {
+            if (isCompiling) return;
+            isCompiling = true;
             
-            const sourceCode = document.getElementById('code-editor').value;
-            const options = OptionsManager.collectFromUI();
+            const startTime = performance.now();
             
             try {
-                updateProgress(10, 'コンパイル開始...');
-                const startTime = performance.now();
+                updateStatus('loading', 'コンパイル中...');
                 
-                const { wasmBinary, stats } = await CompilerCore.compile(sourceCode, options);
+                const options = OptionsManager.collectFromUI();
+                const { wasmBinary, stats } = await CompilerCore.compile(
+                    AppModule.sourceCode, 
+                    options
+                );
                 
-                updateProgress(50, 'WebAssembly生成完了...');
-                
-                wasmExports = await WasmRunner.instantiate(wasmBinary, AppModule.getImports ? AppModule.getImports() : {});
-                
-                updateProgress(80, '初期化中...');
-                
-                if (AppModule.init) {
-                    await AppModule.init(wasmExports);
-                }
-                
-                if (AppModule.execute) {
-                    AppModule.execute(wasmExports);
-                }
+                const imports = AppModule.getImports();
+                wasmExports = await WasmRunner.instantiate(wasmBinary, imports);
                 
                 const compileTime = Math.round(performance.now() - startTime);
                 const wasmSize = wasmBinary.byteLength || wasmBinary.length;
                 
                 updateStats(compileTime, wasmSize);
-                updateProgress(100, '実行中');
                 
-                console.log('[Compile] Success:', stats);
+                if (AppModule.init) {
+                    await AppModule.init(wasmExports);
+                }
                 
+                updateStatus('ready', '実行中');
+                
+                if (AppModule.execute) {
+                    AppModule.execute(wasmExports);
+                }
+                
+                return true;
             } catch (error) {
-                updateProgress(0);
                 showError(error);
-                document.getElementById('stat-status').textContent = 'エラー';
+                return false;
+            } finally {
+                isCompiling = false;
+            }
+        }
+        
+        async function recompile() {
+            const btn = document.getElementById('recompileBtn');
+            const originalText = btn.innerHTML;
+            const translations = i18n[currentLanguage];
+            btn.innerHTML = '⏳ ' + (translations['status.compiling'] || 'コンパイル中...');
+            btn.disabled = true;
+            
+            await compile();
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            
+            closeMenu();
+        }
+        
+        window.recompile = recompile;
+        
+        // ============================================
+        // グローバル関数（AppModuleから呼び出し可能）
+        // ============================================
+        window.appIncrement = function() {
+            if (wasmExports && wasmExports.increment && AppModule) {
+                AppModule.execute(wasmExports, 'increment');
+            }
+        };
+        
+        window.appDecrement = function() {
+            if (wasmExports && wasmExports.decrement && AppModule) {
+                AppModule.execute(wasmExports, 'decrement');
+            }
+        };
+        
+        window.appReset = function() {
+            if (wasmExports && wasmExports.reset && AppModule) {
+                AppModule.execute(wasmExports, 'reset');
             }
         };
         
         // ============================================
-        // 初期化
+        // Fatal error表示
         // ============================================
-        async function initialize() {
-            console.log('[Init] Starting initialization...');
-            updateProgress(5, '初期化開始...');
-            
-            try {
-                // デバッグモード確認
-                const isDebug = localStorage.getItem('debug') === 'true';
-                if (isDebug) {
-                    document.getElementById('compiler-info').classList.remove('hidden');
-                }
-                
-                // コンパイラ読み込み
-                updateProgress(10, 'コンパイラ読み込み準備...');
-                const compiler = await CompilerLoader.load();
-                
-                CompilerCore.init(compiler);
-                compilerReady = true;
-                
-                // コンパイラ情報更新
-                updateCompilerInfo();
-                
-                // オプション初期化
-                OptionsManager.init();
-                
-                // エディター初期設定
-                const editor = document.getElementById('code-editor');
-                editor.value = AppModule.sourceCode;
-                
-                // AppModule デフォルトオプション適用
-                if (AppModule.defaultOptions) {
-                    Object.entries(AppModule.defaultOptions).forEach(([key, value]) => {
-                        const el = document.getElementById(`opt-${key}`);
-                        if (el) {
-                            if (el.type === 'checkbox') {
-                                el.checked = value === true;
-                            } else {
-                                el.value = value;
-                            }
-                        }
-                    });
-                }
-                
-                // 統計表示設定の確認
-                const showStats = document.getElementById('show-stats');
-                const statsPanel = document.getElementById('stats-panel');
-                if (!showStats.checked) {
-                    statsPanel.style.display = 'none';
-                }
-                
-                showStats.addEventListener('change', (e) => {
-                    statsPanel.style.display = e.target.checked ? 'block' : 'none';
-                });
-                
-                // 自動コンパイル
-                const autoCompile = document.getElementById('auto-compile');
-                if (autoCompile.checked) {
-                    await compile();
-                }
-                
-                console.log('[Init] Initialization complete');
-                
-            } catch (error) {
-                updateProgress(0);
-                showError(error);
-                console.error('[Init] Initialization failed:', error);
-            }
+        function showFatalError(message) {
+            document.getElementById('status-text').textContent = message;
+            document.getElementById('status-dot').className = 'status-dot error';
+            document.getElementById('app-viewport').innerHTML = `
+                <div style="text-align: center; color: var(--error-color);">
+                    <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                    <div style="font-size: 18px; font-weight: bold;">初期化エラー</div>
+                    <div style="margin-top: 12px; color: var(--text-secondary);">${message}</div>
+                    <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        ページを再読み込み
+                    </button>
+                </div>
+            `;
         }
         
         // ============================================
-        // アプリケーション起動
+        // メインアプリケーション初期化
         // ============================================
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log('[App] DOM Content Loaded');
-            console.log('[App] Module:', AppModule.name);
-            initialize();
+        async function initializeApp(asc) {
+            console.log('[Init] Starting application initialization...');
+            console.log('[Init] Version:', COMPILER_METADATA.version, `(${COMPILER_METADATA.versionSource})`);
+            console.log('[Init] Compiler loaded via:', COMPILER_METADATA.cdnProvider);
+            console.log('[Init] Load time:', COMPILER_METADATA.loadTime + 'ms');
+            console.log('[Init] Attempts:', COMPILER_METADATA.attempts);
+            
+            document.getElementById('app-title').textContent = `🚀 ${AppModule.name}`;
+            document.getElementById('app-description').textContent = AppModule.description;
+            
+            // コードエディター表示設定
+            document.getElementById('show-code-editor').addEventListener('change', toggleCodeEditor);
+            
+            // 統計表示設定
+            const showStatsCheckbox = document.getElementById('show-stats');
+            showStatsCheckbox.addEventListener('change', (e) => {
+                statsVisible = e.target.checked;
+                toggleStats();
+            });
+            
+            const savedStatsVisible = localStorage.getItem('statsVisible');
+            if (savedStatsVisible === 'true') {
+                statsVisible = true;
+                document.getElementById('statsToggle').classList.add('active');
+                document.getElementById('statusBar').classList.add('active');
+                showStatsCheckbox.checked = true;
+            }
+            
+            CompilerCore.init(asc);
+            OptionsManager.init();
+            
+            if (AppModule.defaultOptions) {
+                OptionsManager.current = { ...AppModule.defaultOptions };
+                OptionsManager.updateUI();
+            }
+            
+            updateStatus('loading', 'コンパイル準備中...');
+            
+            // 自動コンパイル
+            const autoCompile = document.getElementById('auto-compile');
+            if (autoCompile.checked) {
+                await compile();
+            } else {
+                updateStatus('ready', '待機中');
+                document.getElementById('app-viewport').innerHTML = `
+                    <div class="text-center" style="color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">⏸️</div>
+                        <div>自動アセンブルが無効です</div>
+                        <button class="btn btn-primary" style="margin-top: 20px;" onclick="recompile()">
+                            ⟳ アセンブル開始
+                        </button>
+                    </div>
+                `;
+            }
+            
+            console.log('[Init] Application initialized successfully');
+        }
+        
+        // ============================================
+        // エントリーポイント
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[Init] DOM ready, preparing initialization...');
+            document.getElementById('status-text').textContent = 'コンパイラを読み込み中...';
         });
+        
+        setTimeout(() => {
+            safeInit().catch(error => {
+                console.error('[Init] Initialization failed:', error);
+                showFatalError('初期化に失敗しました: ' + error.message);
+            });
+        }, 100);
     </script>
 </body>
 </html>
