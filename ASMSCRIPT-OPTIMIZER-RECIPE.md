@@ -1,21 +1,21 @@
 # **ASMSCRIPT-OPTIMIZER-RECIPE v1.4.3**
-**AssemblyScript WebAssembly アセンブラ統合型単一HTMLアプリケーション生成レシピ**
+**AssemblyScript WebAssembly コンパイラ統合型単一HTMLアプリケーション生成レシピ**
 
 ---
 
 ## **📌 このレシピについて**
 
-生成AIがユーザーの要求を解釈し、AssemblyScriptコードをブラウザ内でWebAssemblyにアセンブル・実行する**高性能単一HTMLファイル**を自動生成するための汎用指示書です。本レシピは特定のAI環境に依存せず、あらゆる生成AIシステムで利用可能な設計となっています。
+生成AIがユーザーの要求を解釈し、AssemblyScriptコードをブラウザ内でWebAssemblyにコンパイル・実行する**高性能単一HTMLファイル**を自動生成するための汎用指示書です。本レシピは特定のAI環境に依存せず、あらゆる生成AIシステムで利用可能な設計となっています。
 
 ---
 
 ### **基本機能**
-- 🚀 **自動初期化**: ページロード時に自動的にアセンブル・実行開始
-- 🔧 **15種類以上の最適化オプション**: 詳細なアセンブル制御
+- 🚀 **自動初期化**: ページロード時に自動的にコンパイル・実行開始
+- 🔧 **15種類以上の最適化オプション**: 詳細なコンパイル制御
 - 📦 **モジュール化アーキテクチャ**: 多様なユースケースに対応
 - ⚡ **CDNベース**: 外部ツール不要、ブラウザのみで完結
 - 📟 **コマンドラインプレビュー**: CLIコマンドをリアルタイム表示（v1.4.1新機能）
-- ⚠️ **オプション変更通知**: 再アセンブルが必要な時に視覚的フィードバック（v1.4.2新機能）
+- ⚠️ **オプション変更通知**: 再コンパイルが必要な時に視覚的フィードバック（v1.4.2新機能）
 
 ---
 
@@ -210,7 +210,7 @@ AIは以下の手順でユーザーの要求を処理します：
 const AppModule = {
     name: "ユースケース名",
     sourceCode: `AssemblyScriptコード`,
-    defaultOptions: { /* 最適なアセンブルオプション */ },
+    defaultOptions: { /* 最適なコンパイルオプション */ },
     execute: (exports) => { /* 実行ロジック */ },
     render: (data) => { /* 表示更新 */ }
 };
@@ -291,9 +291,9 @@ const AppModule = {
    - 全オプション反映
 
 7. **オプション変更の視覚的フィードバック**（v1.4.2新規）
-   - 再アセンブルボタンの強調表示
+   - 再コンパイルボタンの強調表示
    - メニューを開いたままプリセット変更可能
-   - UI操作とアセンブル処理の分離
+   - UI操作とコンパイル処理の分離
 
 ### **🟢 推奨事項**
 
@@ -338,7 +338,7 @@ asc main.ts -o main.wasm --runtime minimal --optimize --optimizeLevel 3
 
 #### **v1.4.2の改善点**
 - 副作用のないオプション収集
-- 再アセンブルボタンの視覚的強調
+- 再コンパイルボタンの視覚的強調
 - メニューが閉じない安定したUX
 
 ### **実装詳細（v1.4.3）**
@@ -383,7 +383,7 @@ function markOptionsChanged() {
         if (btn) {
             btn.classList.add('options-changed');
             // アイコンを変更
-            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再アセンブル</span>';
+            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再コンパイル</span>';
         }
     }
 }
@@ -593,7 +593,7 @@ AssemblyScriptは**暗黙的な型変換を一切許可しない**厳格な型�
 ### **実装フローチャート**
 
 ```
-AssemblyScriptアセンブラ読み込み開始
+AssemblyScriptコンパイラ読み込み開始
     ↓
 バージョン動的取得
     ├─ キャッシュ確認 → あれば使用
@@ -654,7 +654,7 @@ async function loadCompilerWithCDNFallback() {
         const startTime = performance.now();
         
         try {
-            updateProgress(30 + (i * 23), `アセンブラ読み込み中 (${cdn.name})...`);
+            updateProgress(30 + (i * 23), `コンパイラ読み込み中 (${cdn.name})...`);
             
             // web.jsのURLを構築
             const webJsUrl = `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
@@ -670,7 +670,7 @@ async function loadCompilerWithCDNFallback() {
             const asc = await import("assemblyscript/asc");
             const compiler = asc.default || asc;
             
-            // アセンブラの検証
+            // コンパイラの検証
             await validateCompiler(compiler);
             
             // メタデータを更新
@@ -681,7 +681,7 @@ async function loadCompilerWithCDNFallback() {
             COMPILER_METADATA.versionSource = 'Dynamic fetch';
             
             console.log(`[Loader] Success with ${cdn.name} in ${loadTime}ms`);
-            updateProgress(100, 'アセンブラ準備完了');
+            updateProgress(100, 'コンパイラ準備完了');
             
             return compiler;
             
@@ -765,7 +765,7 @@ function cleanupFailedScripts() {
 
 ---
 
-## **🔧 アセンブルオプション仕様**
+## **🔧 コンパイルオプション仕様**
 
 ### **基本オプション**
 
@@ -887,7 +887,7 @@ const VersionManager = {
 };
 
 // ============================================
-// アセンブラローダー（公式互換方式統一版）
+// コンパイラローダー（公式互換方式統一版）
 // ============================================
 const CompilerLoader = {
     compiler: null,
@@ -902,7 +902,7 @@ const CompilerLoader = {
 };
 
 // ============================================
-// アセンブラコア
+// コンパイラコア
 // ============================================
 const CompilerCore = {
     compiler: null,
@@ -1070,7 +1070,7 @@ function markOptionsChanged() {
         if (btn) {
             btn.classList.add('options-changed');
             // アイコンを変更
-            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再アセンブル</span>';
+            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再コンパイル</span>';
         }
     }
 }
@@ -1190,7 +1190,7 @@ const AppModule = {
         }
     `,
     
-    // 推奨アセンブルオプション
+    // 推奨コンパイルオプション
     defaultOptions: {
         optimize: false,
         runtime: 'minimal'
@@ -1286,7 +1286,7 @@ AppModuleセクションをユースケースに応じて置き換えてくだ�
 生成AIがHTMLを生成する際、以下のUX改善を必ず実装してください：
 
 1. **オプション変更時にボタンを視覚的に強調**
-2. **プリセット適用時に自動アセンブルしない**
+2. **プリセット適用時に自動コンパイルしない**
 3. **メニューはユーザー操作でのみ開閉**
 4. **updateCmdPreview()の副作用を除去**
 
@@ -1569,8 +1569,8 @@ export function getBufferSize(): i32 {
 
 ### **パフォーマンス指標**
 
-- 初回アセンブル: < 5秒
-- 再アセンブル: < 3秒
+- 初回コンパイル: < 5秒
+- 再コンパイル: < 3秒
 - WASMサイズ: 1KB～50KB（オプション依存）
 - 実行速度: JavaScriptの2～10倍（処理内容依存）
 
@@ -1579,7 +1579,7 @@ export function getBufferSize(): i32 {
 | 問題 | 原因 | 解決策 |
 |------|------|---------|
 | "import map not found" | web.js読み込み失敗 | CDNフォールバックが自動対応 |
-| アセンブラ読み込み失敗 | CDN障害/ネットワーク | 3つのCDNで自動リトライ |
+| コンパイラ読み込み失敗 | CDN障害/ネットワーク | 3つのCDNで自動リトライ |
 | タイムアウト | 遅いネットワーク | 次のCDNに自動切り替え |
 | バージョン不一致 | 破壊的変更 | 動的バージョン取得が対応 |
 | 低パフォーマンス | 最適化なし | --optimizeオプションを有効化 |
@@ -1594,7 +1594,7 @@ export function getBufferSize(): i32 {
 // ローカルストレージでデバッグモード有効化
 localStorage.setItem('debug', 'true');
 
-// アセンブラ情報パネルが表示される（v1.3.1強化）
+// コンパイラ情報パネルが表示される（v1.3.1強化）
 // - AssemblyScriptバージョン
 // - バージョン取得元（Dynamic/Fallback）
 // - 使用したCDNプロバイダー（色分け表示）
@@ -1643,15 +1643,15 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 ### **v1.4.2** (2025-09) - UX改善とバグ修正
 **修正内容：**
 - ✅ コマンドプレビュー更新時の副作用を除去（パフォーマンス改善）
-- ✅ プリセット適用時の自動アセンブルを削除
-- ✅ 再アセンブル時にメニューが閉じないよう修正
-- ✅ オプション変更時に再アセンブルボタンを視覚的に強調
+- ✅ プリセット適用時の自動コンパイルを削除
+- ✅ 再コンパイル時にメニューが閉じないよう修正
+- ✅ オプション変更時に再コンパイルボタンを視覚的に強調
 - ✅ メニューの開閉を完全にユーザー制御に変更
 
 **技術的改善：**
 - updateCmdPreview()が状態を変更しないよう修正
 - optionsChangedフラグによる変更追跡
-- UI操作とアセンブル処理の責務分離
+- UI操作とコンパイル処理の責務分離
 - OptionsManager.collectFromUI()の呼び出し頻度削減
 
 ### **v1.4.1** (2025-09) - コマンドラインプレビュー機能追加
@@ -1722,12 +1722,12 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 **主な変更内容：**
 - ✅ **Dynamic Import採用**: スクリプトタグによる直接読み込みを削除
 - ✅ **リトライメカニズム追加**: 自動リトライとExponential Backoff
-- ✅ **タイムアウト保護**: アセンブラ読み込みに上限設定
+- ✅ **タイムアウト保護**: コンパイラ読み込みに上限設定
 
 ### **v1.0** (2025-09) - 初版リリース
 - モジュール化アーキテクチャ採用
 - 自動初期化機能
-- 15種類のアセンブルオプション
+- 15種類のコンパイルオプション
 - エラーオーバーレイ機能
 
 ---
@@ -1736,7 +1736,7 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
 | 機能 | v1.0 | v1.1 | v1.2 | v1.2.1 | v1.2.2 | v1.3.0 | v1.3.1 | v1.4.0 | v1.4.1 | v1.4.2 | v1.4.3 |
 |------|------|------|------|--------|--------|--------|--------|--------|--------|--------|--------|
-| 基本アセンブル | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 基本コンパイル | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | レースコンディション対策 | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | モダンUI | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | ユーザー要求確認 | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
