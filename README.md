@@ -18,9 +18,11 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 </details>
 
 ## 現時点で出来るようになったこと
+### ブラウザサンドボックス+Python（Pyodide使用）
 - Office系ファイルの生成（docx,xlsx,pptx,pdf）
 - 数式PNG画像の生成
-- WASMで最適化した単体HTMLwebアプリ（AssemblyScript使用）
+### ブラウザサンドボックス+WASM（AssemblyScript使用）
+- WASMで最適化した単体HTMLwebアプリ
 
 # 🎉 Office文書自動生成レシピシステム
 
