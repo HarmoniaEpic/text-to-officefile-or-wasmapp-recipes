@@ -67,13 +67,20 @@
 ## 🎬 デモ
 ### Claude
 ![Claude](examples/screenshot_claude.png)
+[プレゼンダウンロード用HTML](examples/maougun_reportgenerator_claude.html)
+[生成されたプレゼンテーション](examples/maougun_report_claude.pptx)
 ### ChatGPT
 ![ChatGPT](examples/screenshot_chatgpt.png)
+[プレゼンダウンロード用HTML](examples/maougun_reportgenerator_chatgpt.html)
+[生成されたプレゼンテーション](examples/maougun_report_chatgpt.pptx)
 ### Gemini
 ![Claude](examples/screenshot_gemini.png)
+[プレゼンダウンロード用HTML](examples/maougun_reportgenerator_gemini.html)
+[生成されたプレゼンテーション](examples/maougun_report_gemini.pptx)
 ### Perplexity
 ![Claude](examples/screenshot_perplexity.png)
-
+[プレゼンダウンロード用HTML](examples/maougun_reportgenerator_perplexity.html)
+[生成されたプレゼンテーション](examples/maougun_report_perplexity.pptx)
 ### 基本的な使い方
 ```
 1. レシピファイルを選択（例：PPTX-RECIPE.md）
