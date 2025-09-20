@@ -1,7 +1,7 @@
-# **ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE v1.4.1**
+# **ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE v1.4.2**
 **AssemblyScript WebAssembly HTMLテンプレート**
 
-このファイルは、ASMSCRIPT-OPTIMIZER-RECIPE v1.4.1で使用する完全なHTMLテンプレートコードです。
+このファイルは、ASMSCRIPT-OPTIMIZER-RECIPE v1.4.2で使用する完全なHTMLテンプレートコードです。
 
 ## **HTMLテンプレート全文**
 
@@ -538,6 +538,29 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+        }
+        
+        /* v1.4.2: オプション変更時のボタン強調 */
+        .btn-primary.options-changed {
+            background: linear-gradient(45deg, #f59e0b, #ef4444);
+            animation: pulse-attention 1.5s ease-in-out infinite;
+            font-weight: 600;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-primary.options-changed:hover {
+            background: linear-gradient(45deg, #dc2626, #ea580c);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.5);
+        }
+        
+        @keyframes pulse-attention {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
         }
         
         .btn-secondary {
@@ -1623,17 +1646,49 @@ function checkForEasterEgg(value: i32): void {
         let isCompiling = false;
         let menuOpen = false;
         let statsVisible = false;
+        let optionsChanged = false;  // v1.4.2: オプション変更フラグ追加
         
         // ============================================
-        // コマンドラインプレビュー機能（v1.4.1新機能）
+        // コマンドラインプレビュー機能（v1.4.2修正版）
         // ============================================
         function updateCmdPreview() {
-            const options = OptionsManager.collectFromUI();
-            const cmd = generateCmdLine(options);
+            // 副作用なしでオプションを収集（OptionsManagerの状態を変更しない）
+            const options = {};
             
+            // チェックボックス
+            ['optimize', 'exportRuntime', 'noAssert', 'debug', 'sourceMap',
+             'measure', 'validate', 'importMemory', 'sharedMemory',
+             'exportTable', 'explicitStart', 'lowMemoryLimit'].forEach(opt => {
+                const el = document.getElementById(`opt-${opt}`);
+                if (el && el.checked) options[opt] = true;
+            });
+            
+            // セレクトボックス  
+            ['optimizeLevel', 'shrinkLevel', 'runtime'].forEach(opt => {
+                const el = document.getElementById(`opt-${opt}`);
+                if (el && el.value) options[opt] = el.value;
+            });
+            
+            const cmd = generateCmdLine(options);
             const preview = document.getElementById('cmd-preview');
             if (preview) {
                 preview.textContent = cmd;
+            }
+            
+            // v1.4.2: オプション変更を記録し、ボタンを強調
+            markOptionsChanged();
+        }
+        
+        // v1.4.2: オプション変更時の視覚的フィードバック
+        function markOptionsChanged() {
+            if (!optionsChanged) {
+                optionsChanged = true;
+                const btn = document.getElementById('recompileBtn');
+                if (btn) {
+                    btn.classList.add('options-changed');
+                    // アイコンを変更
+                    btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再アセンブル</span>';
+                }
             }
         }
         
@@ -2120,7 +2175,7 @@ function checkForEasterEgg(value: i32): void {
                 this.current = options;
                 this.saveToStorage();
                 
-                // v1.4.1: OptionsManager内では呼び出さない（外部から呼ぶ）
+                // v1.4.2: collectFromUI内ではupdateCmdPreviewを呼ばない
                 
                 return options;
             },
@@ -2251,8 +2306,8 @@ function checkForEasterEgg(value: i32): void {
         
         window.applyPreset = function(preset) {
             OptionsManager.apply(preset);
-            updateCmdPreview();  // v1.4.1: プリセット適用時もプレビュー更新
-            recompile();
+            updateCmdPreview();  // v1.4.2: プレビュー更新とオプション変更フラグ設定
+            // recompile();      // v1.4.2: 自動再コンパイルは削除
         };
         
         // ============================================
@@ -2268,7 +2323,7 @@ function checkForEasterEgg(value: i32): void {
                 updateStatus('loading', 'コンパイル中...');
                 
                 const options = OptionsManager.collectFromUI();
-                updateCmdPreview();  // v1.4.1: コンパイル時にもプレビュー更新
+                // v1.4.2: updateCmdPreview()の呼び出しを削除
                 
                 const { wasmBinary, stats } = await CompilerCore.compile(
                     AppModule.sourceCode, 
@@ -2293,6 +2348,14 @@ function checkForEasterEgg(value: i32): void {
                     AppModule.execute(wasmExports);
                 }
                 
+                // v1.4.2: コンパイル成功後、変更フラグをリセット
+                optionsChanged = false;
+                const btn = document.getElementById('recompileBtn');
+                if (btn) {
+                    btn.classList.remove('options-changed');
+                    btn.innerHTML = '⟳ <span data-i18n="button.reassemble">再アセンブル</span>';
+                }
+                
                 return true;
             } catch (error) {
                 showError(error);
@@ -2314,7 +2377,7 @@ function checkForEasterEgg(value: i32): void {
             btn.innerHTML = originalText;
             btn.disabled = false;
             
-            closeMenu();
+            // closeMenu(); // v1.4.2: メニューは開いたままにする
         }
         
         window.recompile = recompile;
@@ -2463,6 +2526,21 @@ graph LR
 ```
 
 ## 更新履歴
+
+### **v1.4.2** (2025-09) - UX改善とバグ修正
+**修正内容：**
+- ✅ コマンドプレビュー更新時の副作用を除去（パフォーマンス改善）
+- ✅ プリセット適用時の自動コンパイルを削除
+- ✅ 再コンパイル時にメニューが閉じないよう修正
+- ✅ オプション変更時に再アセンブルボタンを視覚的に強調
+- ✅ メニューの開閉を完全にユーザー制御に変更
+
+**技術的改善：**
+- updateCmdPreview()が状態を変更しないよう修正
+- optionsChangedフラグによる変更追跡
+- UI操作とコンパイル処理の責務分離
+- OptionsManager.collectFromUI()の呼び出し頻度削減
+
 ### **v1.4.1**
 #### **コマンドラインプレビューの追加**
 - WebAssemblyタブの最上部に表示
@@ -2472,6 +2550,6 @@ graph LR
 
 ---
 
-**ファイルサイズ**: 約67KB（HTML形式）  
-**バージョン**: 1.4.1  
-**最終更新**: 2025年1月
+**ファイルサイズ**: 約68KB（HTML形式）  
+**バージョン**: 1.4.2  
+**最終更新**: 2025年9月

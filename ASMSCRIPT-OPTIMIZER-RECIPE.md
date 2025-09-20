@@ -1,4 +1,4 @@
-# **ASMSCRIPT-OPTIMIZER-RECIPE v1.4.1**
+# **ASMSCRIPT-OPTIMIZER-RECIPE v1.4.2**
 **AssemblyScript WebAssembly コンパイラ統合型単一HTMLアプリケーション生成レシピ**
 
 ---
@@ -15,6 +15,7 @@
 - 📦 **モジュール化アーキテクチャ**: 多様なユースケースに対応
 - ⚡ **CDNベース**: 外部ツール不要、ブラウザのみで完結
 - 📟 **コマンドラインプレビュー**: CLIコマンドをリアルタイム表示（v1.4.1新機能）
+- ⚠️ **オプション変更通知**: 再アセンブルが必要な時に視覚的フィードバック（v1.4.2新機能）
 
 ---
 
@@ -225,7 +226,7 @@ const AppModule = {
 
 ---
 
-## **🚨 実装ルール（v1.4.1 コマンドラインプレビュー追加版）**
+## **🚨 実装ルール（v1.4.2 UX改善版）**
 
 ### **🔴 絶対禁止事項**
 
@@ -258,7 +259,7 @@ const AppModule = {
    const cdnProviders = ['jsDelivr', 'UNPKG'];
    ```
 
-### **🟡 必須ルール（v1.4.1）**
+### **🟡 必須ルール（v1.4.2）**
 
 1. **公式互換のweb.js方式の使用**
    - web.jsスクリプトタグを動的に挿入
@@ -283,10 +284,15 @@ const AppModule = {
    - 試行回数
    - バージョン取得元
 
-6. **コマンドラインプレビュー表示**（v1.4.1新規）
+6. **コマンドラインプレビュー表示**
    - WebAssemblyタブ最上部に配置
    - リアルタイム更新
    - 全オプション反映
+
+7. **オプション変更の視覚的フィードバック**（v1.4.2新規）
+   - 再アセンブルボタンの強調表示
+   - メニューを開いたままプリセット変更可能
+   - UI操作とコンパイル処理の分離
 
 ### **🟢 推奨事項**
 
@@ -302,14 +308,15 @@ const AppModule = {
 3. **ユーザーへのフィードバック**
    - プログレスバーの更新
    - 現在試行中のCDN表示
+   - オプション変更時の通知
 
 ---
 
-## **📟 コマンドラインプレビュー機能（v1.4.1新機能）**
+## **📟 コマンドラインプレビュー機能（v1.4.2改善版）**
 
 ### **概要**
 
-WebAssemblyタブの最上部に、現在のオプション設定に対応するCLIコマンドをリアルタイムで表示します。これにより、ブラウザ環境での設定をそのままローカル開発環境で再現できます。
+WebAssemblyタブの最上部に、現在のオプション設定に対応するCLIコマンドをリアルタイムで表示します。v1.4.2では副作用を除去し、パフォーマンスを改善しました。
 
 ### **機能仕様**
 
@@ -328,24 +335,55 @@ asc main.ts -o main.wasm --runtime minimal --optimize --optimizeLevel 3
 - プリセット適用時
 - 初期化完了時
 
-#### **対応オプション**
-すべてのUIオプションが自動的にコマンドライン引数に変換されます：
-- 最適化オプション（--optimize, --optimizeLevel, --shrinkLevel）
-- ランタイムオプション（--runtime, --exportRuntime, --importMemory等）
-- デバッグオプション（--debug, --sourceMap, --noAssert等）
-- 高度なオプション（--exportTable, --explicitStart等）
+#### **v1.4.2の改善点**
+- 副作用のないオプション収集
+- 再アセンブルボタンの視覚的強調
+- メニューが閉じない安定したUX
 
-### **実装詳細**
+### **実装詳細（v1.4.2）**
 
 ```javascript
-// コマンドラインプレビュー機能
+// ============================================
+// コマンドラインプレビュー機能（v1.4.2修正版）
+// ============================================
 function updateCmdPreview() {
-    const options = OptionsManager.collectFromUI();
-    const cmd = generateCmdLine(options);
+    // 副作用なしでオプションを収集（OptionsManagerの状態を変更しない）
+    const options = {};
     
+    // チェックボックス
+    ['optimize', 'exportRuntime', 'noAssert', 'debug', 'sourceMap',
+     'measure', 'validate', 'importMemory', 'sharedMemory',
+     'exportTable', 'explicitStart', 'lowMemoryLimit'].forEach(opt => {
+        const el = document.getElementById(`opt-${opt}`);
+        if (el && el.checked) options[opt] = true;
+    });
+    
+    // セレクトボックス  
+    ['optimizeLevel', 'shrinkLevel', 'runtime'].forEach(opt => {
+        const el = document.getElementById(`opt-${opt}`);
+        if (el && el.value) options[opt] = el.value;
+    });
+    
+    const cmd = generateCmdLine(options);
     const preview = document.getElementById('cmd-preview');
     if (preview) {
         preview.textContent = cmd;
+    }
+    
+    // v1.4.2: オプション変更を記録し、ボタンを強調
+    markOptionsChanged();
+}
+
+// v1.4.2: オプション変更時の視覚的フィードバック
+function markOptionsChanged() {
+    if (!optionsChanged) {
+        optionsChanged = true;
+        const btn = document.getElementById('recompileBtn');
+        if (btn) {
+            btn.classList.add('options-changed');
+            // アイコンを変更
+            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再アセンブル</span>';
+        }
     }
 }
 
@@ -775,7 +813,7 @@ const PRESETS = {
 
 ## **📦 モジュールアーキテクチャ**
 
-### **Layer 1: コアインフラ（v1.4.1 コマンドプレビュー対応版）**
+### **Layer 1: コアインフラ（v1.4.2 UX改善版）**
 
 ```javascript
 // ============================================
@@ -903,7 +941,7 @@ const CompilerCore = {
 };
 
 // ============================================
-// オプション管理システム（v1.4.1 プレビュー対応）
+// オプション管理システム
 // ============================================
 const OptionsManager = {
     current: {},
@@ -912,6 +950,7 @@ const OptionsManager = {
         this.current = { runtime: 'minimal' };
         this.loadFromStorage();
         this.updateUI();
+        updateCmdPreview();  // v1.4.1: 初期化時にプレビュー更新
     },
     
     apply(preset) {
@@ -942,8 +981,8 @@ const OptionsManager = {
         this.current = options;
         this.saveToStorage();
         
-        // ⭐ コマンドラインプレビュー更新（v1.4.1）
-        updateCmdPreview();
+        // v1.4.2: collectFromUI内ではupdateCmdPreviewを呼ばない
+        // （compile時の一度だけ呼ばれるため不要）
         
         return options;
     },
@@ -976,15 +1015,46 @@ const OptionsManager = {
 };
 
 // ============================================
-// コマンドラインプレビュー機能（v1.4.1新規）
+// コマンドラインプレビュー機能（v1.4.2修正版）
 // ============================================
 function updateCmdPreview() {
-    const options = OptionsManager.collectFromUI();
-    const cmd = generateCmdLine(options);
+    // 副作用なしでオプションを収集（OptionsManagerの状態を変更しない）
+    const options = {};
     
+    // チェックボックス
+    ['optimize', 'exportRuntime', 'noAssert', 'debug', 'sourceMap',
+     'measure', 'validate', 'importMemory', 'sharedMemory',
+     'exportTable', 'explicitStart', 'lowMemoryLimit'].forEach(opt => {
+        const el = document.getElementById(`opt-${opt}`);
+        if (el && el.checked) options[opt] = true;
+    });
+    
+    // セレクトボックス  
+    ['optimizeLevel', 'shrinkLevel', 'runtime'].forEach(opt => {
+        const el = document.getElementById(`opt-${opt}`);
+        if (el && el.value) options[opt] = el.value;
+    });
+    
+    const cmd = generateCmdLine(options);
     const preview = document.getElementById('cmd-preview');
     if (preview) {
         preview.textContent = cmd;
+    }
+    
+    // v1.4.2: オプション変更を記録し、ボタンを強調
+    markOptionsChanged();
+}
+
+// v1.4.2: オプション変更時の視覚的フィードバック
+function markOptionsChanged() {
+    if (!optionsChanged) {
+        optionsChanged = true;
+        const btn = document.getElementById('recompileBtn');
+        if (btn) {
+            btn.classList.add('options-changed');
+            // アイコンを変更
+            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再アセンブル</span>';
+        }
     }
 }
 
@@ -1140,7 +1210,7 @@ const AppModule = {
 
 ---
 
-## **📝 HTMLテンプレート（v1.4.1）**
+## **📝 HTMLテンプレート（v1.4.2）**
 
 HTMLテンプレートの完全なコードは、別ファイルで提供されています：
 
@@ -1152,7 +1222,8 @@ HTMLテンプレートの完全なコードは、別ファイルで提供され�
 - すべてのUIコンポーネント
 - CDNフォールバック機構
 - 動的バージョン取得システム
-- コマンドラインプレビュー機能（v1.4.1新機能）
+- コマンドラインプレビュー機能
+- オプション変更時の視覚的フィードバック（v1.4.2新機能）
 
 実装時は、HTMLテンプレートファイルのコードをそのまま使用し、
 AppModuleセクションをユースケースに応じて置き換えてください。
@@ -1193,14 +1264,14 @@ AppModuleセクションをユースケースに応じて置き換えてくだ�
 3. **CDNはjsDelivrとUNPKGの2つのみ**
 4. **import mapの設定を待機**
 
-### **コマンドラインプレビューの実装（v1.4.1）**
+### **UXの改善（v1.4.2）**
 
-生成AIがHTMLを生成する際、以下を必ず実装してください：
+生成AIがHTMLを生成する際、以下のUX改善を必ず実装してください：
 
-1. **WebAssemblyタブ最上部にプレビューセクション追加**
-2. **updateCmdPreview()関数の実装**
-3. **各オプション要素にonchange属性追加**
-4. **OptionsManager.collectFromUI()に更新呼び出し追加**
+1. **オプション変更時にボタンを視覚的に強調**
+2. **プリセット適用時に自動コンパイルしない**
+3. **メニューはユーザー操作でのみ開閉**
+4. **updateCmdPreview()の副作用を除去**
 
 ### **実装フローチャート**
 
@@ -1219,7 +1290,7 @@ AppModuleセクションをユースケースに応じて置き換えてくだ�
    ↓
 5. AppModule生成
    ↓
-6. HTMLテンプレートv1.4.1を使用
+6. HTMLテンプレートv1.4.2を使用
    ↓
 7. 単一HTMLファイルとして出力
 ```
@@ -1498,6 +1569,7 @@ export function getBufferSize(): i32 {
 | 大きなWASMサイズ | デバッグ情報 | --debugを無効化、--shrinkLevelを上げる |
 | フィルタが適用されない | メモリ管理の誤り | TypedArrayとuncheckedを使用 |
 | 型変換エラー | 暗黙的型変換 | 明示的な<f32>キャストを追加 |
+| プレビューが更新されない | updateCmdPreviewの副作用 | v1.4.2で修正済み |
 
 ### **デバッグのヒント**
 
@@ -1537,6 +1609,20 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 ---
 
 ## **📄 更新履歴**
+
+### **v1.4.2** (2025-09) - UX改善とバグ修正
+**修正内容：**
+- ✅ コマンドプレビュー更新時の副作用を除去（パフォーマンス改善）
+- ✅ プリセット適用時の自動コンパイルを削除
+- ✅ 再コンパイル時にメニューが閉じないよう修正
+- ✅ オプション変更時に再アセンブルボタンを視覚的に強調
+- ✅ メニューの開閉を完全にユーザー制御に変更
+
+**技術的改善：**
+- updateCmdPreview()が状態を変更しないよう修正
+- optionsChangedフラグによる変更追跡
+- UI操作とコンパイル処理の責務分離
+- OptionsManager.collectFromUI()の呼び出し頻度削減
 
 ### **v1.4.1** (2025-01) - コマンドラインプレビュー機能追加
 **主な変更内容：**
@@ -1618,24 +1704,25 @@ MITライセンス - 自由に使用・改変・再配布・商用利用可能
 
 ## **📊 バージョン別機能比較**
 
-| 機能 | v1.0 | v1.1 | v1.2 | v1.2.1 | v1.2.2 | v1.3.0 | v1.3.1 | v1.4.0 | v1.4.1 |
-|------|------|------|------|--------|--------|--------|--------|--------|--------|
-| 基本コンパイル | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| レースコンディション対策 | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| モダンUI | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| ユーザー要求確認 | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 公式互換フォールバック | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| 動的バージョン管理 | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 公式方式互換 | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| jsDelivr優先 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| 2CDN体制 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
-| メモリ管理説明 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| 正常動作サンプル | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| HTMLテンプレート分離 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-| コマンドラインプレビュー | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
+| 機能 | v1.0 | v1.1 | v1.2 | v1.2.1 | v1.2.2 | v1.3.0 | v1.3.1 | v1.4.0 | v1.4.1 | v1.4.2 |
+|------|------|------|------|--------|--------|--------|--------|--------|--------|--------|
+| 基本コンパイル | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| レースコンディション対策 | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| モダンUI | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| ユーザー要求確認 | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 公式互換フォールバック | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| 動的バージョン管理 | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 公式方式互換 | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| jsDelivr優先 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| 2CDN体制 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| メモリ管理説明 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| 正常動作サンプル | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| HTMLテンプレート分離 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ |
+| コマンドラインプレビュー | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
+| オプション変更時強調 | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
-**生成日**: 2025年1月  
-**レシピバージョン**: 1.4.1  
+**生成日**: 2025年9月  
+**レシピバージョン**: 1.4.2  
 **AssemblyScript対応バージョン**: 動的取得（フォールバック: 0.28.8）
