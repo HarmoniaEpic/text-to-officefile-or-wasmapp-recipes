@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>魔王軍営業報告 プレゼンDL</title>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+</head>
+<body>
+  <div style="text-align:center; margin-top:40px;">
+    <h1>魔王軍営業報告プレゼン</h1>
+    <p id="status-message">プレゼンファイルを生成中…</p>
+    <button id="download-button" disabled>営業報告プレゼンをダウンロード</button>
+  </div>
+<script type="text/python" id="python-code">
+from pptx import Presentation
+from io import BytesIO
+import base64
+import js
+
+slides_config = [
+    {"type": "title", "title": "魔王軍営業報告会", "subtitle": "第十三期 下半期ダイジェスト"},
+    {"type": "content", "title": "売上実績の概要", "content": "・目標対比118％で達成\n・主要地域：人間界でのシェア拡大\n・主力商品『魔石』が好調"},
+    {"type": "content", "title": "主な成功事例", "content": "・人間王国東部への営業拠点新設\n・新規大型契約 4件受注\n・飛竜部隊による高速輸送の成功"},
+    {"type": "content", "title": "課題と今後の戦略", "content": "・勇者対策（リスク管理）強化\n・人材育成・士気向上策の強化\n・新商品（『魔杖』『魔導書』）の投入計画"},
+    {"type": "content", "title": "まとめ・次期目標", "content": "・売上130％を目指す\n・他世界への進出計画\n・全軍一致で取り組み推進！"},
+]
+
+prs = Presentation()
+for slide_conf in slides_config:
+    if slide_conf["type"] == "title":
+        slide = prs.slides.add_slide(prs.slide_layouts[0])
+        slide.shapes.title.text = slide_conf["title"]
+        slide.placeholders[1].text = slide_conf["subtitle"]
+    elif slide_conf["type"] == "content":
+        slide = prs.slides.add_slide(prs.slide_layouts[1])
+        slide.shapes.title.text = slide_conf["title"]
+        slide.placeholders[1].text = slide_conf["content"]
+
+pptx_io = BytesIO()
+prs.save(pptx_io)
+pptx_io.seek(0)
+js.pptxbase64data = base64.b64encode(pptx_io.read()).decode("utf-8")
+</script>
+<script>
+async function main() {
+  const pyodide = await loadPyodide();
+  await pyodide.loadPackage('micropip');
+  await pyodide.runPythonAsync('import micropip; await micropip.install(\"python-pptx\")');
+  const pythonCode = document.getElementById('python-code').textContent;
+  window.pptxbase64data = null;
+  await pyodide.runPythonAsync(pythonCode);
+  const base64Data = window.pptxbase64data;
+  document.getElementById('status-message').textContent = 'プレゼンが生成されました。';
+  const downloadButton = document.getElementById('download-button');
+  downloadButton.disabled = false;
+  downloadButton.onclick = function () {
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], {
+      type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = '魔王軍_営業報告プレゼン.pptx';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    }, 100);
+  };
+}
+window.onload = main;
+</script>
+</body>
+</html>

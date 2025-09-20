@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>魔王軍営業報告 - プレゼンテーションのダウンロード</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        button:disabled { cursor: not-allowed; opacity: 0.6; }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #09f;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* エラーオーバーレイ（変更禁止） */
+        .error-overlay { position: fixed; inset: 0; background: rgba(17,24,39,0.25); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 9999; }
+        .error-card { width: 100%; max-width: 880px; background: rgba(255,255,255,0.96); border: 1px solid rgba(55,65,81,0.25); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); padding: 20px; }
+        .error-title { display:flex; align-items:center; gap:8px; font-weight:800; font-size:18px; color:#991b1b; }
+        .error-subtitle { margin-top:6px; color:#374151; line-height:1.55; }
+        .error-actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
+        .copy-btn { border:1px solid rgba(55,65,81,.3); padding:8px 12px; border-radius:10px; font-weight:600; background:#fff; cursor: pointer; }
+        .copy-btn:hover { background: #f3f4f6; }
+        .error-pre { margin-top:12px; background:#0b1020; color:#e5e7eb; border-radius:12px; padding:12px 14px; max-height:320px; overflow:auto; white-space:pre-wrap; word-break:break-word; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace; font-size:13px; line-height:1.45; }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+
+    <div class="bg-gray-800 rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-md w-full border border-purple-500">
+        <h1 class="text-2xl sm:text-3xl font-bold text-purple-300 mb-4">
+            魔王軍営業報告書
+        </h1>
+
+        <p id="status-message" class="text-gray-400 mb-6 h-12 flex items-center justify-center">
+            ファイルの準備をしています...
+        </p>
+
+        <div id="loading-spinner" class="spinner mx-auto mb-6"></div>
+
+        <button id="download-button" class="w-full bg-purple-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-purple-700 transition duration-300 transform hover:scale-105" disabled>
+            営業報告書をダウンロード
+        </button>
+    </div>
+
+    <script type="text/python" id="python-code">
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.dml.color import RGBColor
+from pptx.enum.text import PP_ALIGN
+from io import BytesIO
+import base64
+import js
+
+# プレゼンテーションの作成
+prs = Presentation()
+
+# スライド1: タイトルスライド
+slide_layout = prs.slide_layouts[0]
+slide = prs.slides.add_slide(slide_layout)
+title = slide.shapes.title
+subtitle = slide.placeholders[1]
+
+title.text = "魔王軍 第666期 営業報告書"
+subtitle.text = "～暗黒の世界征服に向けた取り組み～\n\n報告者：魔王軍営業本部\n日付：魔暦999年 闇の月"
+
+# スライド2: 今期の業績概要
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "今期の業績概要"
+content = slide.placeholders[1]
+content.text = """【全体実績】
+• 勇者撃退数：前年比 150% 達成（目標120%）
+• 領土拡大面積：3,000平方キロメートル（東の森、西の荒野を制圧）
+• 恐怖度指数：平均8.5/10（前期7.2から大幅改善）
+• 魔物採用数：新規500体（うちSランク魔物20体）
+
+【特筆すべき成果】
+• 伝説の勇者パーティー3組の撃退に成功
+• 聖剣の封印に成功（3本）
+• 四天王全員がKPI達成"""
+
+# スライド3: 部門別成果
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "部門別成果報告"
+content = slide.placeholders[1]
+content.text = """【攻撃部門】
+• ダンジョン防衛率：95%（前期88%）
+• 罠の改良により勇者の侵入を効果的に阻止
+• 中ボス生存率が40%向上
+
+【諜報部門】
+• 人間界への潜入工作員：50名配置完了
+• 勇者情報の事前入手率：80%達成
+• 内通者獲得：王国騎士団に3名
+
+【兵站部門】
+• 魔力供給の安定化（稼働率99.8%）
+• 新型魔法陣の開発・配備（効率30%向上）
+• 魔物用食料の備蓄3ヶ月分確保"""
+
+# スライド4: 課題と対策
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "現状の課題と対策"
+content = slide.placeholders[1]
+content.text = """【主要課題】
+• 勇者のレベル上昇速度が想定以上（平均Lv.65→Lv.78）
+• 聖職者による結界の強化（破壊に時間がかかる）
+• 四天王の1名が勇者に寝返る事案発生
+• 魔王城の維持費が予算超過（120%）
+
+【対策案】
+• レベル制限ダンジョンの新設（Lv.50以下専用）
+• 呪術師部隊の増強（結界破壊専門チーム）
+• 四天王への忠誠心教育プログラムの実施
+• 魔王城の省エネ化（魔力消費30%削減目標）
+• 勇者育成妨害工作の強化（冒険者ギルドへの潜入）"""
+
+# スライド5: 来期の目標
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "第667期 目標設定"
+content = slide.placeholders[1]
+content.text = """【定量目標】
+• 世界征服進捗率：現在35% → 目標50%
+• 勇者撃退数：年間100パーティー以上
+• 領土拡大：5,000平方キロメートル
+• 恐怖度指数：9.0以上を維持
+• 魔王軍総戦力：10万体突破
+
+【重点施策】
+• 最終決戦用魔王城の建設開始
+• 伝説級魔物の召喚儀式実施（年4回）
+• 人間界との和平交渉（表向き）による時間稼ぎ
+• 次世代魔王候補の育成プログラム開始
+
+「全ては偉大なる魔王様の御為に！」"""
+
+# BytesIOに保存
+pptx_io = BytesIO()
+prs.save(pptx_io)
+pptx_io.seek(0)
+
+# Base64エンコード
+pptx_bytes = pptx_io.read()
+pptx_base64 = base64.b64encode(pptx_bytes).decode('utf-8')
+
+# JavaScriptに渡す（必須）
+js.pptx_base64_data = pptx_base64
+
+print("魔王軍営業報告書が生成されました。")
+    </script>
+
+    <!-- エラーオーバーレイ（変更禁止） -->
+    <div id="error-overlay" class="error-overlay" role="dialog" aria-modal="true" aria-labelledby="error-title">
+        <div class="error-card">
+            <div class="error-title" id="error-title">エラーが発生しました：AIのチャットエリアに以下のエラーメッセージを貼り付けて修正を依頼して下さい</div>
+            <div class="error-subtitle">エラーの全文をコピーして、そのままAIに投げてください。原因の特定とパッチを提案します。</div>
+            <div class="error-actions">
+                <button id="copy-error" class="copy-btn" aria-label="エラーメッセージをコピーする">エラー全文をコピー</button>
+                <button id="close-error" class="copy-btn" aria-label="このエラー表示を閉じる">閉じる</button>
+            </div>
+            <pre id="error-text" class="error-pre" tabindex="0" aria-live="polite"></pre>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+    <script type="module">
+        const statusMessage = document.getElementById('status-message');
+        const downloadButton = document.getElementById('download-button');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const overlay = document.getElementById('error-overlay');
+        const errorText = document.getElementById('error-text');
+        const copyBtn = document.getElementById('copy-error');
+        const closeBtn = document.getElementById('close-error');
+
+        // エラーUI用イベントリスナー
+        copyBtn?.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(errorText.textContent || '');
+                copyBtn.textContent = 'コピーしました';
+                setTimeout(() => (copyBtn.textContent = 'エラー全文をコピー'), 1200);
+            } catch (_) {
+                const r = document.createRange(); 
+                r.selectNodeContents(errorText);
+                const sel = window.getSelection(); 
+                sel.removeAllRanges(); 
+                sel.addRange(r);
+            }
+        });
+
+        closeBtn?.addEventListener('click', () => { 
+            overlay.style.display = 'none'; 
+        });
+
+        async function main() {
+            try {
+                statusMessage.textContent = '魔王軍システムを起動中...';
+                const pyodide = await loadPyodide({
+                    indexURL: "https://cdn.jsdelivr.net/pyodide/v0.25.0/full/",
+                });
+
+                // python-pptxのインストール（削除禁止）
+                statusMessage.textContent = '魔法のライブラリを召喚中...';
+                await pyodide.loadPackage("micropip");
+                await pyodide.runPythonAsync(`
+                    import micropip
+                    await micropip.install('python-pptx')
+                `);
+
+                statusMessage.textContent = '営業報告書を作成中...';
+                const pythonCode = document.getElementById('python-code').textContent;
+                window.pptx_base64_data = null; 
+                await pyodide.runPythonAsync(pythonCode);
+                const base64Data = window.pptx_base64_data;
+
+                if (!base64Data) {
+                    throw new Error("Python code did not produce any data.");
+                }
+
+                statusMessage.textContent = '報告書の準備が完了しました！';
+                loadingSpinner.style.display = 'none';
+                downloadButton.disabled = false;
+                downloadButton.addEventListener('click', () => downloadFile(base64Data, '魔王軍_営業報告_第666期.pptx'));
+
+            } catch (error) {
+                console.error("An error occurred:", error);
+                
+                try {
+                    const details = (error && (error.stack || error.message || String(error))) || 'Unknown error';
+                    errorText.textContent = details.trim();
+                } catch(_) {
+                    errorText.textContent = 'Unknown error';
+                }
+                
+                overlay.style.display = 'flex';
+                statusMessage.textContent = '処理を中断しました。';
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function downloadFile(base64Data, fileName) {
+            try {
+                const byteCharacters = atob(base64Data);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                }, 100);
+
+            } catch (error) {
+                console.error("Download failed:", error);
+                statusMessage.textContent = 'ダウンロードに失敗しました。';
+            }
+        }
+
+        window.onload = main;
+    </script>
+</body>
+</html>

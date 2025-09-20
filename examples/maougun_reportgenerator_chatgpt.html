@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>魔王軍・営業報告（第七期）— PPTX ダウンロード</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; }
+    button:disabled { cursor: not-allowed; opacity: 0.6; }
+    .spinner{border:4px solid rgba(0,0,0,.1);width:36px;height:36px;border-radius:50%;border-left-color:#09f;animation:spin 1s ease infinite}
+    @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+    /* エラーオーバーレイ（変更禁止） */
+    .error-overlay{position:fixed;inset:0;background:rgba(17,24,39,.25);display:none;align-items:center;justify-content:center;padding:16px;z-index:9999}
+    .error-card{width:100%;max-width:880px;background:rgba(255,255,255,.96);border:1px solid rgba(55,65,81,.25);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25);padding:20px}
+    .error-title{display:flex;align-items:center;gap:8px;font-weight:800;font-size:18px;color:#991b1b}
+    .error-subtitle{margin-top:6px;color:#374151;line-height:1.55}
+    .error-actions{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .copy-btn{border:1px solid rgba(55,65,81,.3);padding:8px 12px;border-radius:10px;font-weight:600;background:#fff;cursor:pointer}
+    .copy-btn:hover{background:#f3f4f6}
+    .error-pre{margin-top:12px;background:#0b1020;color:#e5e7eb;border-radius:12px;padding:12px 14px;max-height:320px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Courier New',monospace;font-size:13px;line-height:1.45}
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white rounded-2xl shadow-lg p-8 sm:p-12 text-center max-w-md w-full">
+    <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4">魔王軍・営業報告（第七期）</h1>
+    <p id="status-message" class="text-gray-600 mb-6 h-12 flex items-center justify-center">ファイルの準備をしています...</p>
+    <div id="loading-spinner" class="spinner mx-auto mb-6"></div>
+    <button id="download-button" class="w-full bg-violet-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-violet-700 transition duration-300 transform hover:scale-105" disabled>
+      プレゼンファイルをダウンロード
+    </button>
+    <p class="text-xs text-gray-500 mt-3">Pyodide + python-pptx によりブラウザ内で生成します</p>
+  </div>
+
+  <!-- Python（左端から開始／インデント厳守） -->
+  <script type="text/python" id="python-code">
+from pptx import Presentation
+from io import BytesIO
+import base64
+import js
+
+prs = Presentation()
+
+# 1) タイトル
+slide = prs.slides.add_slide(prs.slide_layouts[0])
+slide.shapes.title.text = "魔王軍 営業報告（第七期）"
+slide.placeholders[1].text = "魔王直轄営業部／報告者：オーク課長（2025-09-20）"
+
+# 2) ハイライト
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "四半期ハイライト"
+slide.placeholders[1].text = (
+    "• 総売上（魔晶石）: 128,000（YoY +24%）\n"
+    "• 受注件数: 312（大型契約 27）\n"
+    "• 平均契約単価: +11%\n"
+    "• CAC: -9%／LTV/CAC: 4.2x"
+)
+
+# 3) エリア別実績
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "エリア別実績"
+slide.placeholders[1].text = (
+    "• 北方領: +31%（要塞3拠点と包括契約）\n"
+    "• 砂海連合: +12%（大口1件失注）\n"
+    "• 人間界沿岸: +6%（禁呪規制で遅延）\n"
+    "• 冥界: +48%（新規チャネル成功）"
+)
+
+# 4) パイプライン / 予測
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "パイプラインと予測"
+slide.placeholders[1].text = (
+    "• ステージ: Discovery 96 / Proposal 58 / Negotiate 21 / Commit 14\n"
+    "• 今四半期予測: 46,500（達成確度 78%）\n"
+    "• 主なリスク: 聖騎士団包囲網、為替（銀貨⇔魔晶）変動"
+)
+
+# 5) 次の一手
+slide = prs.slides.add_slide(prs.slide_layouts[1])
+slide.shapes.title.text = "次の一手"
+slide.placeholders[1].text = (
+    "1) 冥界チャネルの拡大と共同販促\n"
+    "2) 価格表を三段階（スライム／ワイバーン／ドラゴン）へ\n"
+    "3) アップセル強化（呪具保守SLA・監視ゴーレム）\n"
+    "4) 反乱対応で解約率<3%維持（占星予兆連携）\n"
+    "5) 文化施策：“やさしい侵略”キャンペーン"
+)
+
+# メモリ上に保存 → Base64 で JS へ
+pptx_io = BytesIO()
+prs.save(pptx_io)
+pptx_io.seek(0)
+js.pptx_base64_data = base64.b64encode(pptx_io.read()).decode('utf-8')
+
+print("PPTX generated: Maou_Army_Sales_Report_v1.pptx")
+  </script>
+
+  <!-- エラーオーバーレイ（変更禁止） -->
+  <div id="error-overlay" class="error-overlay" role="dialog" aria-modal="true" aria-labelledby="error-title">
+    <div class="error-card">
+      <div class="error-title" id="error-title">エラーが発生しました：下の全文をコピーしてAIに渡してください</div>
+      <div class="error-subtitle">エラーメッセージを貼り付けると、原因特定と修正版をご案内します。</div>
+      <div class="error-actions">
+        <button id="copy-error" class="copy-btn" aria-label="エラーをコピー">エラー全文をコピー</button>
+        <button id="close-error" class="copy-btn" aria-label="閉じる">閉じる</button>
+      </div>
+      <pre id="error-text" class="error-pre" tabindex="0" aria-live="polite"></pre>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <script type="module">
+    const statusMessage = document.getElementById('status-message');
+    const downloadButton = document.getElementById('download-button');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const overlay = document.getElementById('error-overlay');
+    const errorText = document.getElementById('error-text');
+    const copyBtn = document.getElementById('copy-error');
+    const closeBtn = document.getElementById('close-error');
+
+    copyBtn?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(errorText.textContent || '');
+        copyBtn.textContent = 'コピーしました';
+        setTimeout(() => (copyBtn.textContent = 'エラー全文をコピー'), 1200);
+      } catch (_) {
+        const r = document.createRange(); r.selectNodeContents(errorText);
+        const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      }
+    });
+    closeBtn?.addEventListener('click', () => { overlay.style.display = 'none'; });
+
+    async function main(){
+      try{
+        statusMessage.textContent = '実行環境を読み込んでいます...';
+        const pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/' });
+
+        statusMessage.textContent = 'ライブラリをインストール中...';
+        await pyodide.loadPackage('micropip');
+        await pyodide.runPythonAsync(`
+import micropip
+await micropip.install('python-pptx')
+`);
+
+        statusMessage.textContent = 'ファイルを生成しています...';
+        const pythonCode = document.getElementById('python-code').textContent;
+        window.pptx_base64_data = null;
+        await pyodide.runPythonAsync(pythonCode);
+        const base64Data = window.pptx_base64_data;
+        if(!base64Data){ throw new Error('Python code did not produce any data.'); }
+
+        statusMessage.textContent = '準備が完了しました！';
+        loadingSpinner.style.display = 'none';
+        downloadButton.disabled = false;
+        downloadButton.addEventListener('click', () => downloadFile(base64Data, 'Maou_Army_Sales_Report_v1.pptx'));
+      } catch (error){
+        console.error(error);
+        try { errorText.textContent = (error && (error.stack || error.message || String(error)))?.trim() || 'Unknown error'; }
+        catch(_) { errorText.textContent = 'Unknown error'; }
+        overlay.style.display = 'flex';
+        statusMessage.textContent = '処理を中断しました。';
+        loadingSpinner.style.display = 'none';
+      }
+    }
+
+    function downloadFile(base64Data, fileName){
+      try{
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for(let i=0;i<byteCharacters.length;i++){ byteNumbers[i] = byteCharacters.charCodeAt(i); }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.style.display='none'; a.href=url; a.download=fileName; document.body.appendChild(a); a.click();
+        setTimeout(()=>{ URL.revokeObjectURL(url); document.body.removeChild(a); },100);
+      } catch (error){
+        console.error('Download failed:', error);
+        statusMessage.textContent = 'ダウンロードに失敗しました。';
+      }
+    }
+
+    window.onload = main;
+  </script>
+</body>
+</html>
