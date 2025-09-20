@@ -1,7 +1,7 @@
 # 💣Caution! This product is still PoC!💣
 # 🚽概念実証につき不満は水に流して下さい🚽
 # これは何？
-DockerのDockfileみたいなものを用意して、ブラウザのサンドボックス上で望み通りのファイルを作成させられたなら、きっと便利ですよね。[SLM](https://atmarkit.itmedia.co.jp/ait/articles/2508/22/news016.html)の進歩次第ではエッジデバイスでも動かせるはず。
+DockerのDockfileみたいなものを用意して、ブラウザのサンドボックス上で望み通りのファイルを作成させられたなら、きっと便利ですよね。[SLM](https://atmarkit.itmedia.co.jp/ait/articles/2508/22/news016.html)の進歩とコンテキストウィンドウサイズ次第ではエッジデバイスでも動かせるはず。
 <BR><BR>
 本リポジトリは上記の思いつきをAIを用いてとりあえず動く段階まで形にしたものです。現段階でもそれなりに有用とは思いますが用途と必要に応じて適宜手直ししてお使いください。
 <BR><BR>
