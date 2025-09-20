@@ -1,7 +1,7 @@
-# **ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE v1.4.2**
+# **ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE v1.4.3**
 **AssemblyScript WebAssembly HTMLテンプレート**
 
-このファイルは、ASMSCRIPT-OPTIMIZER-RECIPE v1.4.2で使用する完全なHTMLテンプレートコードです。
+このファイルは、ASMSCRIPT-OPTIMIZER-RECIPE v1.4.3で使用する完全なHTMLテンプレートコードです。
 
 ## **HTMLテンプレート全文**
 
@@ -790,6 +790,11 @@
             color: white;
         }
         
+        .cdn-status.esm-sh {
+            background: #41b883;
+            color: white;
+        }
+        
         /* バージョンソース表示 */
         .version-source {
             display: inline-block;
@@ -1487,6 +1492,12 @@
                 baseUrl: 'https://unpkg.com',
                 timeout: 10000,
                 priority: 2
+            },
+            {
+                name: 'esm.sh',
+                baseUrl: 'https://esm.sh',
+                timeout: 10000,
+                priority: 3
             }
         ];
         
@@ -1868,7 +1879,7 @@ function checkForEasterEgg(value: i32): void {
                 const startTime = performance.now();
                 
                 try {
-                    updateProgress(30 + (i * 35), 'コンパイラ読み込み中', `${cdn.name} (優先度${cdn.priority})`);
+                    updateProgress(30 + (i * 23), 'コンパイラ読み込み中', `${cdn.name} (優先度${cdn.priority})`);
                     
                     const webJsUrl = `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
                     console.log(`[Loader] Attempting ${cdn.name}: ${webJsUrl}`);
@@ -1994,7 +2005,7 @@ function checkForEasterEgg(value: i32): void {
             
             const cdnEl = document.getElementById('cdn-provider');
             cdnEl.textContent = COMPILER_METADATA.cdnProvider;
-            cdnEl.className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase()}`;
+            cdnEl.className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase().replace('.', '-')}`;
             
             document.getElementById('load-time').textContent = COMPILER_METADATA.loadTime;
             document.getElementById('load-attempts').textContent = COMPILER_METADATA.attempts;
@@ -2003,7 +2014,7 @@ function checkForEasterEgg(value: i32): void {
             document.getElementById('compiler-version-info').textContent = `v${COMPILER_METADATA.version}`;
             document.getElementById('version-source-info').textContent = COMPILER_METADATA.versionSource;
             document.getElementById('cdn-provider-info').textContent = COMPILER_METADATA.cdnProvider;
-            document.getElementById('cdn-provider-info').className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase()}`;
+            document.getElementById('cdn-provider-info').className = `cdn-status ${COMPILER_METADATA.cdnProvider.toLowerCase().replace('.', '-')}`;
             document.getElementById('load-time-info').textContent = COMPILER_METADATA.loadTime;
             document.getElementById('load-attempts-info').textContent = COMPILER_METADATA.attempts;
         }
@@ -2527,6 +2538,12 @@ graph LR
 
 ## 更新履歴
 
+### **v1.4.3** (2025-09) - CDNフォールバック強化
+**主な変更内容：**
+- ✅ **esm.sh追加**: 第3のCDNとして最終フォールバックに配置
+- ✅ **信頼性向上**: 3段階フォールバックで接続成功率改善
+- ✅ **最小限の変更**: 既存ロジックを維持したまま配列追加のみ
+
 ### **v1.4.2** (2025-09) - UX改善とバグ修正
 **修正内容：**
 - ✅ コマンドプレビュー更新時の副作用を除去（パフォーマンス改善）
@@ -2551,5 +2568,5 @@ graph LR
 ---
 
 **ファイルサイズ**: 約68KB（HTML形式）  
-**バージョン**: 1.4.2  
+**バージョン**: 1.4.3  
 **最終更新**: 2025年9月
