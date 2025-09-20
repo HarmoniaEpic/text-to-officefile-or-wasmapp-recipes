@@ -1030,7 +1030,7 @@
                 <div class="menu-content">
                     <div class="option-item">
                         <input type="checkbox" id="auto-compile" checked>
-                        <label for="auto-compile" data-i18n="option.autoAssemble">自動コンパイル</label>
+                        <label for="auto-compile" data-i18n="option.autoCompile">自動コンパイル</label>
                     </div>
                     <div class="option-item">
                         <input type="checkbox" id="show-stats" checked>
@@ -1042,7 +1042,7 @@
                         <label for="show-code-editor" data-i18n="option.showCodeEditor">コードエディターを表示</label>
                     </div>
                     <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="recompile()" id="recompileBtn">
-                        ⟳ <span data-i18n="button.reassemble">再コンパイル</span>
+                        ⟳ <span data-i18n="button.recompile">再コンパイル</span>
                     </button>
                 </div>
             </div>
@@ -1263,10 +1263,10 @@
                 'section.debug': 'デバッグオプション',
                 'section.advanced': '高度なオプション',
                 'section.compilerInfo': 'コンパイラ情報',
-                'option.autoAssemble': '自動コンパイル',
+                'option.autoCompile': '自動コンパイル',
                 'option.showStats': '統計情報を表示',
                 'option.showCodeEditor': 'コードエディターを表示',
-                'button.reassemble': '再コンパイル',
+                'button.recompile': '再コンパイル',
                 'button.copyError': 'エラーをコピー',
                 'button.close': '閉じる',
                 'preset.simple': 'シンプル',
@@ -1300,10 +1300,10 @@
                 'section.debug': 'Debug Options',
                 'section.advanced': 'Advanced Options',
                 'section.compilerInfo': 'Compiler Info',
-                'option.autoAssemble': 'Auto Assemble',
+                'option.autoCompile': 'Auto Compile',
                 'option.showStats': 'Show Statistics',
                 'option.showCodeEditor': 'Show Code Editor',
-                'button.reassemble': 'Re-assemble',
+                'button.recompile': 'Re-compile',
                 'button.copyError': 'Copy Error',
                 'button.close': 'Close',
                 'preset.simple': 'Simple',
@@ -1698,7 +1698,7 @@ function checkForEasterEgg(value: i32): void {
                 if (btn) {
                     btn.classList.add('options-changed');
                     // アイコンを変更
-                    btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再コンパイル</span>';
+                    btn.innerHTML = '⚠️ <span data-i18n="button.recompile">再コンパイル</span>';
                 }
             }
         }
@@ -2365,7 +2365,7 @@ function checkForEasterEgg(value: i32): void {
                 const btn = document.getElementById('recompileBtn');
                 if (btn) {
                     btn.classList.remove('options-changed');
-                    btn.innerHTML = '⟳ <span data-i18n="button.reassemble">再コンパイル</span>';
+                    btn.innerHTML = '⟳ <span data-i18n="button.recompile">再コンパイル</span>';
                 }
                 
                 return true;
