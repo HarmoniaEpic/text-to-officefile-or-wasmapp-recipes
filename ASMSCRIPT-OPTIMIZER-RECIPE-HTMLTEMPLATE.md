@@ -1827,6 +1827,7 @@ function checkForEasterEgg(value: i32): void {
         window.switchTab = switchTab;
         window.changeTheme = changeTheme;
         window.changeLanguage = changeLanguage;
+        window.updateCmdPreview = updateCmdPreview;
         
         function updateStatus(status, message) {
             const dot = document.getElementById('status-dot');
