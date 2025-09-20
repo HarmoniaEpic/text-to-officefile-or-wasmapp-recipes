@@ -89,8 +89,8 @@
 - 対応ブラウザ（Chrome、Firefox、Edge、Safari）
 - レシピファイル（本プロジェクトに含まれる）
 - AIアシスタント（以下から選択）：
-  - **高セキュリティ**: [Ollama](https://ollama.ai/)、[Jan](https://jan.ai/)、[Docker Model Runner](https://www.docker.com/ja-jp/blog/introducing-docker-model-runner/)（ローカルAI）
-  - **高利便性**: Claude、ChatGPT、Gemini（クラウドAI）
+  - **データ主権重視**: [Ollama](https://ollama.ai/)、[Jan](https://jan.ai/)、[Docker Model Runner](https://www.docker.com/ja-jp/blog/introducing-docker-model-runner/)、[LM Studio](https://lmstudio.ai/) 等（ローカルAI）
+  - **高利便性**: [Claude](https://claude.ai/)、[ChatGPT](https://chatgpt.com/)、[Gemini](https://https://gemini.google.com/)、[Perplexity](https://www.perplexity.ai/) 等（クラウドAI）
 
 ### 30秒で始める（クラウドAI使用）
 
