@@ -152,13 +152,13 @@ graph LR
 - [生成されたプレゼンテーション](examples/maougun_report_perplexity.pptx)
 ### WASM アプリ
 #### 「Counter Demoを作成して」
-[生成されたカウンターデモファイル](examples/assemblyscript-counter-demo.html)
+[生成されたカウンターデモHTMLファイル](examples/assemblyscript-counter-demo.html)
 ![assemblyscript-counter-demo](examples/assemblyscript-counter-demo.jpeg)
 #### 「Ball Physics Demoを作成して」
-[生成されたボール物理演算デモファイル](examples/assemblyscript-ball-physics-demo.html)
+[生成されたボール物理演算デモHTMLファイル](examples/assemblyscript-ball-physics-demo.html)
 ![assemblyscript-ball-physics-demo](examples/assemblyscript-ball-physics-demo.jpeg)
 #### 「Image Filter Processorを作成して」
-[生成された画像フィルターデモファイル](examples/assemblyscript-image-filter-processor.html)
+[生成された画像フィルターデモHTMLファイル](examples/assemblyscript-image-filter-processor.html)
 ![assemblyscript-image-filter-processor.jpeg](examples/assemblyscript-image-filter-processor.jpeg)
 ### 基本的な使い方
 ```
