@@ -1030,7 +1030,7 @@
                 <div class="menu-content">
                     <div class="option-item">
                         <input type="checkbox" id="auto-compile" checked>
-                        <label for="auto-compile" data-i18n="option.autoAssemble">自動アセンブル</label>
+                        <label for="auto-compile" data-i18n="option.autoAssemble">自動コンパイル</label>
                     </div>
                     <div class="option-item">
                         <input type="checkbox" id="show-stats" checked>
@@ -1042,13 +1042,13 @@
                         <label for="show-code-editor" data-i18n="option.showCodeEditor">コードエディターを表示</label>
                     </div>
                     <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="recompile()" id="recompileBtn">
-                        ⟳ <span data-i18n="button.reassemble">再アセンブル</span>
+                        ⟳ <span data-i18n="button.reassemble">再コンパイル</span>
                     </button>
                 </div>
             </div>
             
             <div class="menu-section">
-                <div class="menu-header" data-i18n="section.presets">アセンブルプリセット</div>
+                <div class="menu-header" data-i18n="section.presets">コンパイルプリセット</div>
                 <div class="menu-content">
                     <div class="presets">
                         <button class="preset-btn" onclick="applyPreset('simple')" data-i18n="preset.simple">シンプル</button>
@@ -1199,7 +1199,7 @@
                 <span class="stat-value" id="stat-wasm-size">-</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label" data-i18n="stat.compileTime">アセンブル:</span>
+                <span class="stat-label" data-i18n="stat.compileTime">コンパイル:</span>
                 <span class="stat-value" id="stat-compile-time">-</span>
             </div>
             <div class="stat-item">
@@ -1257,16 +1257,16 @@
                 'tab.wasm': 'WebAssembly',
                 'section.appModule': 'AppModule設定',
                 'section.execution': '実行制御',
-                'section.presets': 'アセンブルプリセット',
+                'section.presets': 'コンパイルプリセット',
                 'section.optimization': '最適化オプション',
                 'section.runtime': 'ランタイムオプション',
                 'section.debug': 'デバッグオプション',
                 'section.advanced': '高度なオプション',
                 'section.compilerInfo': 'コンパイラ情報',
-                'option.autoAssemble': '自動アセンブル',
+                'option.autoAssemble': '自動コンパイル',
                 'option.showStats': '統計情報を表示',
                 'option.showCodeEditor': 'コードエディターを表示',
-                'button.reassemble': '再アセンブル',
+                'button.reassemble': '再コンパイル',
                 'button.copyError': 'エラーをコピー',
                 'button.close': '閉じる',
                 'preset.simple': 'シンプル',
@@ -1276,11 +1276,11 @@
                 'panel.sourceCode': '📝 AssemblyScript ソースコード',
                 'panel.application': '🚀 アプリケーション',
                 'stat.wasmSize': 'WASM:',
-                'stat.compileTime': 'アセンブル:',
+                'stat.compileTime': 'コンパイル:',
                 'stat.optimization': '最適化:',
                 'stat.memory': 'メモリ:',
                 'status.initializing': 'アプリケーションを初期化しています...',
-                'status.compiling': 'アセンブル中...',
+                'status.compiling': 'コンパイル中...',
                 'status.ready': '実行中',
                 'error.title': 'エラーが発生しました',
                 'info.version': 'バージョン',
@@ -1698,7 +1698,7 @@ function checkForEasterEgg(value: i32): void {
                 if (btn) {
                     btn.classList.add('options-changed');
                     // アイコンを変更
-                    btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再アセンブル</span>';
+                    btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再コンパイル</span>';
                 }
             }
         }
@@ -2319,11 +2319,11 @@ function checkForEasterEgg(value: i32): void {
         window.applyPreset = function(preset) {
             OptionsManager.apply(preset);
             updateCmdPreview();  // v1.4.2: プレビュー更新とオプション変更フラグ設定
-            // recompile();      // v1.4.2: 自動再アセンブルは削除
+            // recompile();      // v1.4.2: 自動再コンパイルは削除
         };
         
         // ============================================
-        // アセンブル処理
+        // コンパイル処理
         // ============================================
         async function compile() {
             if (isCompiling) return;
@@ -2332,7 +2332,7 @@ function checkForEasterEgg(value: i32): void {
             const startTime = performance.now();
             
             try {
-                updateStatus('loading', 'アセンブル中...');
+                updateStatus('loading', 'コンパイル中...');
                 
                 const options = OptionsManager.collectFromUI();
                 // v1.4.2: updateCmdPreview()の呼び出しを削除
@@ -2360,12 +2360,12 @@ function checkForEasterEgg(value: i32): void {
                     AppModule.execute(wasmExports);
                 }
                 
-                // v1.4.2: アセンブル成功後、変更フラグをリセット
+                // v1.4.2: コンパイル成功後、変更フラグをリセット
                 optionsChanged = false;
                 const btn = document.getElementById('recompileBtn');
                 if (btn) {
                     btn.classList.remove('options-changed');
-                    btn.innerHTML = '⟳ <span data-i18n="button.reassemble">再アセンブル</span>';
+                    btn.innerHTML = '⟳ <span data-i18n="button.reassemble">再コンパイル</span>';
                 }
                 
                 return true;
@@ -2381,7 +2381,7 @@ function checkForEasterEgg(value: i32): void {
             const btn = document.getElementById('recompileBtn');
             const originalText = btn.innerHTML;
             const translations = i18n[currentLanguage];
-            btn.innerHTML = '⏳ ' + (translations['status.compiling'] || 'アセンブル中...');
+            btn.innerHTML = '⏳ ' + (translations['status.compiling'] || 'コンパイル中...');
             btn.disabled = true;
             
             await compile();
@@ -2472,9 +2472,9 @@ function checkForEasterEgg(value: i32): void {
                 OptionsManager.updateUI();
             }
             
-            updateStatus('loading', 'アセンブル準備中...');
+            updateStatus('loading', 'コンパイル準備中...');
             
-            // 自動アセンブル
+            // 自動コンパイル
             const autoCompile = document.getElementById('auto-compile');
             if (autoCompile.checked) {
                 await compile();
@@ -2483,9 +2483,9 @@ function checkForEasterEgg(value: i32): void {
                 document.getElementById('app-viewport').innerHTML = `
                     <div class="text-center" style="color: var(--text-secondary);">
                         <div style="font-size: 48px; margin-bottom: 16px;">⏸️</div>
-                        <div>自動アセンブルが無効です</div>
+                        <div>自動コンパイルが無効です</div>
                         <button class="btn btn-primary" style="margin-top: 20px;" onclick="recompile()">
-                            ⟳ アセンブル開始
+                            ⟳ コンパイル開始
                         </button>
                     </div>
                 `;
@@ -2548,15 +2548,15 @@ graph LR
 ### **v1.4.2** (2025-09) - UX改善とバグ修正
 **修正内容：**
 - ✅ コマンドプレビュー更新時の副作用を除去（パフォーマンス改善）
-- ✅ プリセット適用時の自動アセンブルを削除
-- ✅ 再アセンブル時にメニューが閉じないよう修正
-- ✅ オプション変更時に再アセンブルボタンを視覚的に強調
+- ✅ プリセット適用時の自動コンパイルを削除
+- ✅ 再コンパイル時にメニューが閉じないよう修正
+- ✅ オプション変更時に再コンパイルボタンを視覚的に強調
 - ✅ メニューの開閉を完全にユーザー制御に変更
 
 **技術的改善：**
 - updateCmdPreview()が状態を変更しないよう修正
 - optionsChangedフラグによる変更追跡
-- UI操作とアセンブル処理の責務分離
+- UI操作とコンパイル処理の責務分離
 - OptionsManager.collectFromUI()の呼び出し頻度削減
 
 ### **v1.4.1**
