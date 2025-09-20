@@ -969,15 +969,26 @@ const OptionsManager = {
         this.updateUI();
         updateCmdPreview();  // v1.4.1: 初期化時にプレビュー更新
     },
-    
+
     apply(preset) {
         if (PRESETS[preset]) {
+            // First, reset all UI options to their default state.
+            document.querySelectorAll('[id^="opt-"]').forEach(el => {
+                if (el.type === 'checkbox') {
+                    el.checked = false;
+                } else if (el.tagName === 'SELECT') {
+                    const defaultOption = el.querySelector('option[selected]');
+                    el.value = defaultOption ? defaultOption.value : (el.options[0] ? el.options[0].value : '');
+                }
+            });
+   
+            // Now, apply the new preset.
             this.current = { ...PRESETS[preset] };
             this.updateUI();
             this.saveToStorage();
         }
     },
-    
+
     collectFromUI() {
         const options = {};
         
