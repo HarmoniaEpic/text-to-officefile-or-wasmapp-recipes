@@ -1048,7 +1048,7 @@
             </div>
             
             <div class="menu-section">
-                <div class="menu-header" data-i18n="section.presets">コンパイルプリセット</div>
+                <div class="menu-header" data-i18n="section.presets">アセンブルプリセット</div>
                 <div class="menu-content">
                     <div class="presets">
                         <button class="preset-btn" onclick="applyPreset('simple')" data-i18n="preset.simple">シンプル</button>
@@ -1199,7 +1199,7 @@
                 <span class="stat-value" id="stat-wasm-size">-</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label" data-i18n="stat.compileTime">コンパイル:</span>
+                <span class="stat-label" data-i18n="stat.compileTime">アセンブル:</span>
                 <span class="stat-value" id="stat-compile-time">-</span>
             </div>
             <div class="stat-item">
@@ -1257,7 +1257,7 @@
                 'tab.wasm': 'WebAssembly',
                 'section.appModule': 'AppModule設定',
                 'section.execution': '実行制御',
-                'section.presets': 'コンパイルプリセット',
+                'section.presets': 'アセンブルプリセット',
                 'section.optimization': '最適化オプション',
                 'section.runtime': 'ランタイムオプション',
                 'section.debug': 'デバッグオプション',
@@ -1276,11 +1276,11 @@
                 'panel.sourceCode': '📝 AssemblyScript ソースコード',
                 'panel.application': '🚀 アプリケーション',
                 'stat.wasmSize': 'WASM:',
-                'stat.compileTime': 'コンパイル:',
+                'stat.compileTime': 'アセンブル:',
                 'stat.optimization': '最適化:',
                 'stat.memory': 'メモリ:',
                 'status.initializing': 'アプリケーションを初期化しています...',
-                'status.compiling': 'コンパイル中...',
+                'status.compiling': 'アセンブル中...',
                 'status.ready': '実行中',
                 'error.title': 'エラーが発生しました',
                 'info.version': 'バージョン',
@@ -2318,11 +2318,11 @@ function checkForEasterEgg(value: i32): void {
         window.applyPreset = function(preset) {
             OptionsManager.apply(preset);
             updateCmdPreview();  // v1.4.2: プレビュー更新とオプション変更フラグ設定
-            // recompile();      // v1.4.2: 自動再コンパイルは削除
+            // recompile();      // v1.4.2: 自動再アセンブルは削除
         };
         
         // ============================================
-        // コンパイル処理
+        // アセンブル処理
         // ============================================
         async function compile() {
             if (isCompiling) return;
@@ -2331,7 +2331,7 @@ function checkForEasterEgg(value: i32): void {
             const startTime = performance.now();
             
             try {
-                updateStatus('loading', 'コンパイル中...');
+                updateStatus('loading', 'アセンブル中...');
                 
                 const options = OptionsManager.collectFromUI();
                 // v1.4.2: updateCmdPreview()の呼び出しを削除
@@ -2359,7 +2359,7 @@ function checkForEasterEgg(value: i32): void {
                     AppModule.execute(wasmExports);
                 }
                 
-                // v1.4.2: コンパイル成功後、変更フラグをリセット
+                // v1.4.2: アセンブル成功後、変更フラグをリセット
                 optionsChanged = false;
                 const btn = document.getElementById('recompileBtn');
                 if (btn) {
@@ -2380,7 +2380,7 @@ function checkForEasterEgg(value: i32): void {
             const btn = document.getElementById('recompileBtn');
             const originalText = btn.innerHTML;
             const translations = i18n[currentLanguage];
-            btn.innerHTML = '⏳ ' + (translations['status.compiling'] || 'コンパイル中...');
+            btn.innerHTML = '⏳ ' + (translations['status.compiling'] || 'アセンブル中...');
             btn.disabled = true;
             
             await compile();
@@ -2471,9 +2471,9 @@ function checkForEasterEgg(value: i32): void {
                 OptionsManager.updateUI();
             }
             
-            updateStatus('loading', 'コンパイル準備中...');
+            updateStatus('loading', 'アセンブル準備中...');
             
-            // 自動コンパイル
+            // 自動アセンブル
             const autoCompile = document.getElementById('auto-compile');
             if (autoCompile.checked) {
                 await compile();
@@ -2547,15 +2547,15 @@ graph LR
 ### **v1.4.2** (2025-09) - UX改善とバグ修正
 **修正内容：**
 - ✅ コマンドプレビュー更新時の副作用を除去（パフォーマンス改善）
-- ✅ プリセット適用時の自動コンパイルを削除
-- ✅ 再コンパイル時にメニューが閉じないよう修正
+- ✅ プリセット適用時の自動アセンブルを削除
+- ✅ 再アセンブル時にメニューが閉じないよう修正
 - ✅ オプション変更時に再アセンブルボタンを視覚的に強調
 - ✅ メニューの開閉を完全にユーザー制御に変更
 
 **技術的改善：**
 - updateCmdPreview()が状態を変更しないよう修正
 - optionsChangedフラグによる変更追跡
-- UI操作とコンパイル処理の責務分離
+- UI操作とアセンブル処理の責務分離
 - OptionsManager.collectFromUI()の呼び出し頻度削減
 
 ### **v1.4.1**
