@@ -22,7 +22,7 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 - Office系ファイルの生成（docx,xlsx,pptx,pdf）
 - 数式PNG画像の生成（matplotlibによるTeX風描画）
 ### ブラウザサンドボックス+WASM（AssemblyScript使用）
-- WASMで最適化した単体HTML型webアプリ
+- WASMで最適化した単体HTML型webアプリの生成
 
 # 🎉 Office文書自動生成レシピシステム
 
