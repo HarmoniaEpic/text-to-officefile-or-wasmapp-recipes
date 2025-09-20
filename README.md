@@ -153,12 +153,15 @@ graph LR
 ### WASM アプリ
 #### 「Counter Demoを作成して」
 [生成されたカウンターデモHTMLファイル](examples/assemblyscript-counter-demo.html)
+<BR><BR>
 ![assemblyscript-counter-demo](examples/assemblyscript-counter-demo.jpeg)
 #### 「Ball Physics Demoを作成して」
 [生成されたボール物理演算デモHTMLファイル](examples/assemblyscript-ball-physics-demo.html)
+<BR><BR>
 ![assemblyscript-ball-physics-demo](examples/assemblyscript-ball-physics-demo.jpeg)
 #### 「Image Filter Processorを作成して」
 [生成された画像フィルターデモHTMLファイル](examples/assemblyscript-image-filter-processor.html)
+<BR><BR>
 ![assemblyscript-image-filter-processor.jpeg](examples/assemblyscript-image-filter-processor.jpeg)
 ### 基本的な使い方
 ```
