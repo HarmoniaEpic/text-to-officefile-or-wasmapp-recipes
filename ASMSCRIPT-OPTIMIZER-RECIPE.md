@@ -383,7 +383,7 @@ function markOptionsChanged() {
         if (btn) {
             btn.classList.add('options-changed');
             // アイコンを変更
-            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再コンパイル</span>';
+            btn.innerHTML = '⚠️ <span data-i18n="button.recompile">再コンパイル</span>';
         }
     }
 }
@@ -1070,7 +1070,7 @@ function markOptionsChanged() {
         if (btn) {
             btn.classList.add('options-changed');
             // アイコンを変更
-            btn.innerHTML = '⚠️ <span data-i18n="button.reassemble">再コンパイル</span>';
+            btn.innerHTML = '⚠️ <span data-i18n="button.recompile">再コンパイル</span>';
         }
     }
 }
