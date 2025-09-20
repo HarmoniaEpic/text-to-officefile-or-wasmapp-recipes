@@ -969,7 +969,7 @@ const OptionsManager = {
         this.updateUI();
         updateCmdPreview();  // v1.4.1: 初期化時にプレビュー更新
     },
-
+    
     apply(preset) {
         if (PRESETS[preset]) {
             // First, reset all UI options to their default state.
@@ -988,7 +988,7 @@ const OptionsManager = {
             this.saveToStorage();
         }
     },
-
+    
     collectFromUI() {
         const options = {};
         
