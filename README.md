@@ -66,13 +66,13 @@
 
 ## 🎬 デモ
 ### Claude
-[Claude](examples/screenshot_claude.png)
+![Claude](examples/screenshot_claude.png)
 ### ChatGPT
-[ChatGPT](examples/screenshot_chatgpt.png)
+![ChatGPT](examples/screenshot_chatgpt.png)
 ### Gemini
-[Claude](examples/screenshot_gemini.png)
+![Claude](examples/screenshot_gemini.png)
 ### Perplexity
-[Claude](examples/screenshot_perplexity.png)
+![Claude](examples/screenshot_perplexity.png)
 
 ### 基本的な使い方
 ```
