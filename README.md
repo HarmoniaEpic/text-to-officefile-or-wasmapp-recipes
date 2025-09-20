@@ -17,6 +17,11 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 
 </details>
 
+## 現時点で出来るようになったこと
+- Office系ファイルの生成（docx,xlsx,pptx,pdf）
+- 数式PNG画像の生成
+- WASMで最適化した単体HTMLwebアプリ（AssemblyScript使用）
+
 # 🎉 Office文書自動生成レシピシステム
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
