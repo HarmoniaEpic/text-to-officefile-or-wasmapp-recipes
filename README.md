@@ -135,21 +135,25 @@ graph LR
 
 ## 🎬 デモ
 ### Claude
-![Claude](examples/screenshot_claude.png)
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_claude.html)
 - [生成されたプレゼンテーション](examples/maougun_report_claude.pptx)
+<br><br>
+![Claude](examples/screenshot_claude.png)
 ### ChatGPT
-![ChatGPT](examples/screenshot_chatgpt.png)
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_chatgpt.html)
 - [生成されたプレゼンテーション](examples/maougun_report_chatgpt.pptx)
+<br><br>
+![ChatGPT](examples/screenshot_chatgpt.png)
 ### Gemini
-![Claude](examples/screenshot_gemini.png)
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_gemini.html)
 - [生成されたプレゼンテーション](examples/maougun_report_gemini.pptx)
+<br><br>
+![Claude](examples/screenshot_gemini.png)
 ### Perplexity
-![Claude](examples/screenshot_perplexity.png)
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_perplexity.html)
 - [生成されたプレゼンテーション](examples/maougun_report_perplexity.pptx)
+<br><br>
+![Claude](examples/screenshot_perplexity.png)
 ### WASM アプリ
 #### 「Counter Demoを作成して」
 [生成されたカウンターデモHTMLファイル](examples/assemblyscript-counter-demo.html)
