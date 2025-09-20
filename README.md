@@ -24,6 +24,59 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 ### ブラウザサンドボックス+WASM（AssemblyScript使用）
 - WASMで最適化した単体HTML型webアプリの生成
 
+## Docker とのプロセスフロー比較
+###### 📄 レシピシステムのフロー
+```mermaid
+graph LR
+    RS1[📝 レシピ作成] --> RS2[🤖 AI処理]
+    RS2 --> RS3[📄 HTML生成]
+    RS3 --> RS4[🌐 ブラウザ実行]
+    RS4 --> RS5[⚡ WASM処理]
+    RS5 --> RS6[📊 文書出力]
+    
+    style RS1 fill:#e1f5fe
+    style RS2 fill:#c5e1a5
+    style RS3 fill:#fff9c4
+    style RS4 fill:#ffccbc
+    style RS5 fill:#d1c4e9
+    style RS6 fill:#b2dfdb
+```
+###### 🐳 Dockerシステムのフロー
+```mermaid
+graph LR
+    DS1[📝 Dockerfile作成] --> DS2[🏗️ イメージビルド]
+    DS2 --> DS3[📚 レイヤー構築]
+    DS3 --> DS4[🚀 コンテナ起動]
+    DS4 --> DS5[⚙️ プロセス実行]
+    DS5 --> DS6[🌐 サービス提供]
+    
+    style DS1 fill:#ffecb3
+    style DS2 fill:#dcedc8
+    style DS3 fill:#f8bbd0
+    style DS4 fill:#e1bee7
+    style DS5 fill:#c5cae9
+    style DS6 fill:#b3e5fc
+```
+###### レシピシステムとDockerシステムの比較表
+**📊 比較表**
+| 観点 | レシピシステム | Docker |
+|------|--------------|---------|
+| **レシピファイル** | MDファイル（Markdown） | Dockerfile（専用DSL） |
+| **実行プロセス** | AI → HTML → ブラウザ → WASM | ビルド → イメージ → コンテナ |
+| **実行場所** | クライアント（ブラウザ） | サーバー/ローカル（OS） |
+| **処理エンジン** | WebAssembly（Pyodide） | ネイティブプロセス |
+| **配布単位** | 単一HTMLファイル | コンテナイメージ |
+| **依存関係** | CDN動的読込 | イメージビルド時包含 |
+| **隔離方式** | ブラウザサンドボックス | Namespace/Cgroup |
+| **ネットワーク** | CORS制限あり | フルアクセス可能 |
+| **データ永続化** | ファイルダウンロード | Volume/Bind Mount |
+| **適用分野** | 文書やWebアプリの生成 | 汎用アプリケーション |
+## レシピ+AI+WebAssemblyの可能性
+レシピシステムは、
+- Dockerがサーバーサイドでやったことを、ブラウザ側で実現する
+- AIにやりたいことを自然言語で指示することで、ブラウザ上に解決策を構築する
+上記2点に特徴があります。AI単体で実現不可能な機能がブラウザサンドボックス向けにHTMLを出力するだけで実現出来るので非常に手軽です。
+
 # 🎉 Office文書自動生成レシピシステム
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
