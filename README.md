@@ -33,7 +33,7 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 
 **AIとレシピファイルで、PowerPoint・Word・Excel・PDF・数式PNGを手軽に自動生成出来ます**
 
-ローカルAI対応・MITライセンス・選択可能なデータ主権レベルを実現したオフィス系文書ファイル生成レシピ
+ローカルAI対応・MITライセンス・選択可能なプライバシーレベルを実現したオフィス系文書ファイル生成レシピ
 
 ---
 
@@ -118,7 +118,7 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 - 対応ブラウザ（Chrome、Firefox、Edge、Safari）
 - レシピファイル（本プロジェクトに含まれる）
 - AIアシスタント（以下から選択）：
-  - **データ主権重視**: [Ollama](https://ollama.ai/)、[Jan](https://jan.ai/)、[Docker Model Runner](https://www.docker.com/ja-jp/blog/introducing-docker-model-runner/)、[LM Studio](https://lmstudio.ai/) 等（ローカルAI）
+  - **プライバシー重視**: [Ollama](https://ollama.ai/)、[Jan](https://jan.ai/)、[Docker Model Runner](https://www.docker.com/ja-jp/blog/introducing-docker-model-runner/)、[LM Studio](https://lmstudio.ai/) 等（ローカルAI）
   - **利便性重視**: [Claude](https://claude.ai/)、[ChatGPT](https://chatgpt.com/)、[Gemini](https://https://gemini.google.com/)、[Perplexity](https://www.perplexity.ai/) 等（クラウドAI）
 
 ### 30秒で始める（クラウドAI使用）
