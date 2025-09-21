@@ -700,7 +700,7 @@ flowchart TD
 curl -fsSL https://ollama.ai/install.sh | sh
 
 # モデルのダウンロード
-ollama pull llama2
+ollama pull gemma3
 
 # 使用開始
 ollama serve
@@ -743,6 +743,7 @@ ollama serve
 | 見積書作成 | 「Webサイト制作の見積書を作って」 | PDF | Claude/ChatGPT |
 | 機密契約書 | 「業務委託契約書のテンプレートを作成」 | DOCX | Ollama/Jan |
 | 人事評価書 | 「従業員評価フォームを作成」 | XLSX | Ollama/Jan |
+| 社内ツール | 「ベンチマークソフトを作って」 | WASMAPP | Ollama/Jan |
 
 ### 🎓 **教育・学習**
 
@@ -754,6 +755,7 @@ ollama serve
 | 修了証発行 | 「プログラミング講座の修了証を作成」 | PDF | Claude/ChatGPT |
 | 個人情報含む名簿 | 「生徒の連絡先リストを作成」 | XLSX | Ollama/Jan |
 | 数学教材 | 「二次方程式の解の公式を画像化」 | Math | Claude/ChatGPT |
+| データ可視化 | 「グラフ計算機を作って」 | WASMAPP | Claude/ChatGPT |
 
 ### 🏠 **プライベート**
 
@@ -763,6 +765,7 @@ ollama serve
 | 旅行計画 | 「3泊4日の京都旅行プランを作成」 | DOCX | Claude/ChatGPT |
 | イベント案内 | 「誕生日パーティーの招待状を作って」 | PDF | Claude/ChatGPT |
 | 医療記録管理 | 「家族の健康記録表を作成」 | XLSX | Ollama/Jan |
+| レトロゲーム | 「Breakout clone を作って」 | WASMAPP | Claude/ChatGPT |
 
 **🔐 セキュリティの目安**：
 - 個人情報・機密情報を含む → **Ollama/Jan**
