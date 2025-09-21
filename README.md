@@ -398,14 +398,15 @@ CSVファイルの例：
 #### WASMで最適化されたWebアプリを作りたいとき
 ```
 【手順】
-1. XLSX-RECIPE.mdを添付
-2. CSVファイルも添付
+1. ASMSCRIPT-OPTIMIZER-RECIPE.mdを添付
+2. ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.mdも添付
 3. 以下のメッセージを送信
 
-添付したCSVデータから月次レポートを作成してください。
-・グラフを追加
-・合計と平均を計算
-・見やすく整形
+Pongクローンを作成してください。
+・シングルユーザーモード
+・2ユーザー対戦モード
+・キーボード及びJoystickに対応
+・レトロなオープニング画面及び8bitサウンド風効果音
 ```
 
 ---
