@@ -490,7 +490,7 @@ flowchart TD
 
 ### 主要技術
 
-- **実行環境**: [Pyodide](https://pyodide.org/) (WebAssembly版Python)
+- **実行環境**: [Pyodide](https://pyodide.org/) (WebAssembly版Python)／[AssemblyScript](https://www.assemblyscript.org/) (WebAssembly向け高級言語)
 - **UIフレームワーク**: Tailwind CSS
 - **文書生成ライブラリ**:
   - `python-docx`: Word文書生成
@@ -498,7 +498,8 @@ flowchart TD
   - `python-pptx`: PowerPoint生成
   - `reportlab`: PDF生成
   - `matplotlib`: 数式PNG生成
-
+- **アプリ生成ライブラリ**
+  - `AssemblyScript`: アプリのエンジン生成
 ### システム要件（クラウドAI使用時）
 
 | 項目 | 最小要件 | 推奨要件 |
