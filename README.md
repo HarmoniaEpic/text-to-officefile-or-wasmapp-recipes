@@ -33,7 +33,7 @@ graph LR
     RS2 --> RS3[📄 HTML生成]
     RS3 --> RS4[🌐 ブラウザ実行]
     RS4 --> RS5[⚡ WASM処理]
-    RS5 --> RS6[📊 文書出力]
+    RS5 --> RS6[📊 文書出力<br/>アプリ実行]
     
     style RS1 fill:#e1f5fe
     style RS2 fill:#c5e1a5
