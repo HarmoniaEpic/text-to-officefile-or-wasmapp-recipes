@@ -284,7 +284,7 @@ ollama serve
 cat PPTX-RECIPE.md | ollama run gemma3 "このレシピを使って営業報告のプレゼンを作成するHTMLを生成してください"
 ```
 
-これでにオフラインで文書生成が可能です！
+これでオフラインで文書生成が可能です！
 </details>
 
 ---
