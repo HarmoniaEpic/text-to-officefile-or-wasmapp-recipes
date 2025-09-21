@@ -507,7 +507,7 @@ flowchart TD
   - `reportlab`: PDF生成
   - `matplotlib`: 数式PNG生成
 - **アプリ生成ライブラリ**
-  - `AssemblyScript`: アプリのエンジン生成
+  - `asc`: アプリのエンジン生成
 ### システム要件（クラウドAI使用時）
 
 | 項目 | 最小要件 | 推奨要件 |
