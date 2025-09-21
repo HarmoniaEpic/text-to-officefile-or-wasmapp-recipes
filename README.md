@@ -1019,13 +1019,14 @@ SOFTWARE.
 - [python-pptx](https://python-pptx.readthedocs.io/) - PowerPoint生成
 - [ReportLab](https://www.reportlab.com/) - PDF生成
 - [Matplotlib](https://matplotlib.org/) - 数式PNG生成
+- [AssemblyScript](https://www.assemblyscript.org/) - WASM最適化Webアプリ生成
 - [Tailwind CSS](https://tailwindcss.com/) - UIフレームワーク
 
 ---
 
 <div align="center">
 
-**楽しいOffice文書作成ライフを！** 🎊
+**楽しいOffice文書とWebアプリの作成ライフを！** 🎊
 
 Made with Claude and ChatGPT
 
