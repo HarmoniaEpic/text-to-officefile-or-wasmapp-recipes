@@ -463,21 +463,28 @@ flowchart TD
     D2 --> E
     D3 --> E
     
-    E --> F[Pyodide WASM<br/>🐍Python実行環境🐍<br/>ライブラリ管理]
-    F --> G[文書生成ライブラリ]
+    E --> E1[Pyodide WASM<br/>🐍Python実行環境🐍<br/>ライブラリ管理]
+    E --> E2[AssemblyScript<br/>]
+
+    E1 --> F[文書生成ライブラリ]
+    E2 --> G[アプリ生成ライブラリ]
     
-    G --> G1[python-docx<br/>Word文書生成]
-    G --> G2[openpyxl<br/>Excel表計算生成]
-    G --> G3[python-pptx<br/>PowerPoint生成]
-    G --> G4[reportlab<br/>PDF生成]
-    G --> G5[matplotlib<br/>数式PNG生成]
-    
-    G1 --> H[📄 Office文書<br/>ローカル保存]
-    G2 --> H
-    G3 --> H
-    G4 --> H
-    G5 --> H
-    
+    F --> F1[python-docx<br/>Word文書生成]
+    F --> F2[openpyxl<br/>Excel表計算生成]
+    F --> F3[python-pptx<br/>PowerPoint生成]
+    F --> F4[reportlab<br/>PDF生成]
+    F --> F5[matplotlib<br/>数式PNG生成]
+
+    G --> G1[asc<br/>AssemblyScriptコンパイラ]
+
+    F1 --> H[📄 Office文書<br/>ローカル保存]
+    F2 --> H
+    F3 --> H
+    F4 --> H
+    F5 --> H
+
+    G1 --> I[🌐 WASM最適化WebApp<br/>ローカル保存]
+
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style B fill:#fff,stroke:#333,stroke-width:2px
     style C fill:#9f9,stroke:#333,stroke-width:2px
@@ -486,6 +493,7 @@ flowchart TD
     style F fill:#f96,stroke:#333,stroke-width:2px
     style G fill:#f96,stroke:#333,stroke-width:2px
     style H fill:#9ff,stroke:#333,stroke-width:2px
+    style I fill:#9ff,stroke:#333,stroke-width:2px
 ```
 
 ### 主要技術
