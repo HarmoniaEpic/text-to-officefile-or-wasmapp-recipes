@@ -300,12 +300,15 @@ cat PPTX-RECIPE.md | ollama run gemma3 "このレシピを使って営業報告�
 - ✅ 日本語フォント対応
 - 📄 レシピ: `PDF-RECIPE.md`
 
-### 🔢 **数式PNG（.png）** - v2.0 ※NEW
+### 🔢 **数式PNG（.png）** - v2.0
 数式画像の自動生成
 - ✅ TeX形式の数式をPNG画像に変換
 - ✅ フォント・色・サイズのカスタマイズ
 - ✅ 透明背景対応
 - 📄 レシピ: `Math-RECIPE.md`
+
+### 🔢 **WASM最適化Webアプリ（.html）** - v1.4.3
+Webアプリの自動生成
 
 ---
 
@@ -330,6 +333,7 @@ graph LR
 | 表・グラフ | Excelレシピ | `XLSX-RECIPE.md` | CSVファイル（任意） |
 | 請求書・証明書 | PDFレシピ | `PDF-RECIPE.md` | 不要 |
 | 数式・数学記号 | 数式PNGレシピ | `Math-RECIPE.md` | 不要 |
+|WASMで最適化したWebアプリ| Webアプリレシピ | `ASMSCRIPT-OPTIMIZER-RECIPE.md` | `ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md` |
 
 ### 💬 AIへの依頼例（コピペOK）
 
