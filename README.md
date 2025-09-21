@@ -233,7 +233,7 @@ graph LR
 - レシピファイル（本プロジェクトに含まれる）
 - AIアシスタント（以下から選択）：
   - **プライバシー重視**: [Ollama](https://ollama.ai/)、[Jan](https://jan.ai/)、[Docker Model Runner](https://www.docker.com/ja-jp/blog/introducing-docker-model-runner/)、[LM Studio](https://lmstudio.ai/) 等（ローカルAI）
-  - **利便性重視**: [Claude](https://claude.ai/)、[ChatGPT](https://chatgpt.com/)、[Gemini](https://https://gemini.google.com/)、[Perplexity](https://www.perplexity.ai/) 等（クラウドAI）
+  - **利便性重視**: [Claude](https://claude.ai/)、[ChatGPT](https://chatgpt.com/)、[Gemini](https://gemini.google.com/)、[Perplexity](https://www.perplexity.ai/) 等（クラウドAI）
 <br>
 ※ コンシューマー向けGPUでレシピが実行できるというのはハルシネーションのようです。
 
