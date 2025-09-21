@@ -18,14 +18,14 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 
 </details>
 
-### 現時点で出来るようになったこと
-#### ブラウザサンドボックス+Python（Pyodide使用）
+## 現時点で出来るようになったこと
+### ブラウザサンドボックス+Python（Pyodide使用）
 - Office系ファイルの生成（docx, xlsx, pptx, pdf）
 - 数式PNG画像の生成（matplotlibによるTeX風描画の数式）
-#### ブラウザサンドボックス+WASM（AssemblyScript使用）
+### ブラウザサンドボックス+WASM（AssemblyScript使用）
 - WASMで最適化した単体HTML型webアプリの生成
 
-### Docker とのプロセスフロー比較
+## Docker とのプロセスフロー比較
 ###### 📄 レシピシステムのフロー
 ```mermaid
 graph LR
@@ -58,7 +58,7 @@ graph LR
     style DS5 fill:#c5cae9
     style DS6 fill:#b3e5fc
 ```
-### レシピシステムとDockerシステムの構成比較
+## レシピシステムとDockerシステムの構成比較
 **📊 比較表**
 | 観点 | レシピシステム | Docker |
 |------|--------------|---------|
@@ -72,7 +72,7 @@ graph LR
 | **ネットワーク** | CORS制限あり | フルアクセス可能 |
 | **データ永続化** | ファイルダウンロード | Volume/Bind Mount |
 | **適用分野** | 文書やWebアプリの生成、他多数 | 汎用アプリケーション |
-### レシピ+AI+WebAssemblyの可能性
+## レシピ+AI+WebAssemblyの可能性
 今回のレシピシステムは、
 <br>
 - Dockerがサーバーサイドでやったことを、ブラウザ側で実現する
