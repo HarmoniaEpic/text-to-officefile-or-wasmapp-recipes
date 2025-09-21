@@ -175,6 +175,9 @@ graph LR
 ![assemblyscript-image-filter-processor.jpeg](examples/assemblyscript-image-filter-processor.jpeg)
 
 #### 「Pongのパチモンを作成して」
+[生成されたゲームのHTMLファイル](examples/pongu-championship.html)
+<BR><BR>
+![pongu-championship](examples/pongu-championship.jpeg)
 ##### プロンプト詳細
 ```
 以下の要件を満たすPongクローンを作成してください。
