@@ -268,7 +268,7 @@ cat PPTX-RECIPE.md | ollama run gemma3 "このレシピを使って営業報告�
 | XLSX-RECIPE | v2.0 | 2025-09-17 | ✅ 最新 |
 | PDF-RECIPE | v2.0 | 2025-09-17 | ✅ 最新 |
 | Math-RECIPE | v2.0 | 2025-09-17 | ✅ 最新 |
-| ASMSCRIPT-OPTIMIZER-RECIPE | v1.4.3 | 2025-9-21 | ✅ 最新 |
+| ASMSCRIPT-OPTIMIZER-RECIPE | v1.4.3 | 2025-09-21 | ✅ 最新 |
 
 ---
 
