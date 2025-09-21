@@ -173,6 +173,20 @@ graph LR
 [生成された画像フィルターデモHTMLファイル](examples/assemblyscript-image-filter-processor.html)
 <BR><BR>
 ![assemblyscript-image-filter-processor.jpeg](examples/assemblyscript-image-filter-processor.jpeg)
+
+#### 「Pongのパチモンを作成して」
+##### プロンプト詳細
+```
+以下の要件を満たすPongクローンを作成してください。
+・添付レシピに基づくWASM製ゲームエンジン
+・Pongをもじったパチモン感溢れるゲームタイトル
+・シングルユーザーモード
+・2ユーザー対戦モード
+・キーボード及びJoystickに対応
+・レトロなオープニング画面と一人プレイ・二人プレイ選択画面、及び8bitサウンド風効果音&BGM
+・レスポンシブ対応
+```
+
 ### 基本的な使い方
 ```
 1. レシピファイルを選択（例：PPTX-RECIPE.md）
