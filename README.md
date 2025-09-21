@@ -171,13 +171,13 @@ graph LR
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_gemini.html)
 - [生成されたプレゼンテーション](examples/maougun_report_gemini.pptx)
 <br><br>
-![Claude](examples/screenshot_gemini.png)
+![Gemini](examples/screenshot_gemini.png)
 ### Perplexity
 「魔王軍の営業報告のプレゼンを5枚で作って。」
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_perplexity.html)
 - [生成されたプレゼンテーション](examples/maougun_report_perplexity.pptx)
 <br><br>
-![Claude](examples/screenshot_perplexity.png)
+![Perplexity](examples/screenshot_perplexity.png)
 ### WASM アプリ
 #### 「Counter Demoを作成して」
 [生成されたカウンターデモHTMLファイル](examples/assemblyscript-counter-demo.html)
