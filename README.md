@@ -1,6 +1,7 @@
-# 💣Caution! This product is still PoC!💣
-# 🚽概念実証につき不満は水に流して下さい🚽
-# これは何？
+# まえがき
+## 💣Caution! This product is still PoC!💣
+## 🚽概念実証につき不満は水に流して下さい🚽
+## これは何？
 DockerのDockfileみたいなものを用意して、ブラウザのサンドボックス上で望み通りのファイルを作成させられたなら、きっと便利ですよね。[SLM](https://atmarkit.itmedia.co.jp/ait/articles/2508/22/news016.html)の進歩とコンテキストウィンドウサイズ次第ではエッジデバイスでも動かせるはず。
 <BR><BR>
 本リポジトリは上記の思いつきをAIを用いてとりあえず動く段階まで形にしたものです。現段階でもそれなりに有用とは思いますが、用途と必要に応じて適宜手直ししてお使いください。
@@ -17,14 +18,14 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 
 </details>
 
-## 現時点で出来るようになったこと
-### ブラウザサンドボックス+Python（Pyodide使用）
+### 現時点で出来るようになったこと
+#### ブラウザサンドボックス+Python（Pyodide使用）
 - Office系ファイルの生成（docx, xlsx, pptx, pdf）
 - 数式PNG画像の生成（matplotlibによるTeX風描画の数式）
-### ブラウザサンドボックス+WASM（AssemblyScript使用）
+#### ブラウザサンドボックス+WASM（AssemblyScript使用）
 - WASMで最適化した単体HTML型webアプリの生成
 
-## Docker とのプロセスフロー比較
+### Docker とのプロセスフロー比較
 ###### 📄 レシピシステムのフロー
 ```mermaid
 graph LR
@@ -57,7 +58,7 @@ graph LR
     style DS5 fill:#c5cae9
     style DS6 fill:#b3e5fc
 ```
-## レシピシステムとDockerシステムの構成比較
+### レシピシステムとDockerシステムの構成比較
 **📊 比較表**
 | 観点 | レシピシステム | Docker |
 |------|--------------|---------|
@@ -71,7 +72,7 @@ graph LR
 | **ネットワーク** | CORS制限あり | フルアクセス可能 |
 | **データ永続化** | ファイルダウンロード | Volume/Bind Mount |
 | **適用分野** | 文書やWebアプリの生成、他多数 | 汎用アプリケーション |
-## レシピ+AI+WebAssemblyの可能性
+### レシピ+AI+WebAssemblyの可能性
 今回のレシピシステムは、
 <br>
 - Dockerがサーバーサイドでやったことを、ブラウザ側で実現する
