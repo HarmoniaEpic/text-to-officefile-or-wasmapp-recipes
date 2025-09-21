@@ -209,6 +209,8 @@ Word → DOCX-RECIPE.md
 Excel → XLSX-RECIPE.md
 PDF → PDF-RECIPE.md
 数式PNG → Math-RECIPE.md
+WASM使用Webアプリ → ASMSCRIPT-OPTIMIZER-RECIPE.md
+                   + ASMSCRIPT-OPTIMIZER-RECIPE-HTMLTEMPLATE.md
 ```
 
 #### 3️⃣ **AIに依頼（コピペOK）**
