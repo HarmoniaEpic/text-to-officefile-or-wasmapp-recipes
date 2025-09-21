@@ -477,13 +477,13 @@ flowchart TD
 
     K --> G1[asc<br/>AssemblyScriptコンパイラ]
 
-    F2 --> H[📄 Office文書<br/>ローカル保存]
+    F1 --> H[📄 Office文書<br/>ローカル保存]
+    F2 --> H
     F3 --> H
     F4 --> H
     F5 --> H
-    F6 --> H
 
-    G2 --> I[🌐 WASM最適化WebApp<br/>ローカル保存]
+    G1 --> I[🌐 WASM最適化WebApp<br/>ローカル保存]
 
     style A fill:#f9f,stroke:#333,stroke-width:2px
     style B fill:#fff,stroke:#333,stroke-width:2px
