@@ -1,0 +1,2899 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PONGU CHAMPIONSHIP - Retro Arcade Game</title>
+    
+    <style>
+        /* ============================================
+           CSS変数定義（テーマシステム）
+        ============================================ */
+        :root {
+            /* ライトテーマ（デフォルト） */
+            --bg-primary: #f5f7fa;
+            --bg-secondary: white;
+            --bg-tertiary: #f9fafb;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --border-color: #e5e7eb;
+            --header-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --header-text: white;
+            --sidebar-bg: white;
+            --code-bg: #1e1e1e;
+            --code-text: #e5e7eb;
+            --success-color: #4ade80;
+            --error-color: #dc3545;
+            --warning-color: #ffc107;
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            
+            /* レトロゲーム用カラー */
+            --retro-green: #00ff00;
+            --retro-amber: #ffb000;
+            --retro-cyan: #00ffff;
+            --retro-magenta: #ff00ff;
+        }
+        
+        /* ダークテーマ */
+        :root[data-theme="dark"] {
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --bg-tertiary: #4a5568;
+            --text-primary: #e2e8f0;
+            --text-secondary: #a0aec0;
+            --border-color: #4a5568;
+            --sidebar-bg: #2d3748;
+            --code-bg: #1e1e1e;
+            --code-text: #e5e7eb;
+        }
+        
+        /* システムテーマ（ダークモード対応） */
+        @media (prefers-color-scheme: dark) {
+            :root[data-theme="system"] {
+                --bg-primary: #1a202c;
+                --bg-secondary: #2d3748;
+                --bg-tertiary: #4a5568;
+                --text-primary: #e2e8f0;
+                --text-secondary: #a0aec0;
+                --border-color: #4a5568;
+                --sidebar-bg: #2d3748;
+                --code-bg: #1e1e1e;
+                --code-text: #e5e7eb;
+            }
+        }
+        
+        /* ============================================
+           グローバルスタイル
+        ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        
+        /* ============================================
+           ヘッダー
+        ============================================ */
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            padding: 0;
+            display: flex;
+            align-items: center;
+            height: 56px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .hamburger {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .hamburger:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .hamburger span {
+            width: 24px;
+            height: 2px;
+            background: white;
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+        
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        .header-content {
+            flex: 1;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-title {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header-title h1 {
+            font-size: 20px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+        }
+        
+        .header-title p {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .header-select {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .header-select:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .header-select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.loading {
+            background: var(--warning-color);
+        }
+        
+        .status-dot.error {
+            background: var(--error-color);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* ============================================
+           サイドメニュー
+        ============================================ */
+        .side-menu {
+            position: fixed;
+            top: 56px;
+            left: -320px;
+            width: 320px;
+            height: calc(100vh - 56px);
+            background: var(--sidebar-bg);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: left 0.3s;
+            z-index: 999;
+            overflow-y: auto;
+        }
+        
+        .side-menu.active {
+            left: 0;
+        }
+        
+        /* タブナビゲーション */
+        .tab-navigation {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 14px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .tab-button:hover {
+            background: rgba(0,0,0,0.03);
+        }
+        
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: var(--bg-secondary);
+        }
+        
+        .tab-icon {
+            font-size: 16px;
+        }
+        
+        .tab-content {
+            display: none;
+            height: calc(100vh - 56px - 48px);
+            overflow-y: auto;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .menu-section {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .menu-header {
+            padding: 16px 20px;
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .toggle-switch.active {
+            background: var(--primary-color);
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+        
+        .menu-content {
+            padding: 16px;
+        }
+        
+        .presets {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .preset-btn {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 13px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .preset-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+        
+        .option-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        
+        .option-item label {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        
+        .option-item select {
+            padding: 4px 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        /* ============================================
+           メインコンテンツ
+        ============================================ */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s;
+        }
+        
+        .main-container.menu-open {
+            margin-left: 320px;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* ワークスペース */
+        .workspace {
+            display: flex;
+            gap: 20px;
+            flex: 1;
+        }
+        
+        .workspace.single-column {
+            justify-content: center;
+        }
+        
+        .workspace-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .workspace-panel.code-panel {
+            flex: 1;
+            max-width: 40%;
+        }
+        
+        .workspace-panel.app-panel {
+            flex: 2;
+        }
+        
+        .workspace.single-column .app-panel {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .panel-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .source-code-display {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow: auto;
+            flex: 1;
+            white-space: pre;
+        }
+        
+        .app-viewport {
+            background: #000;
+            border-radius: 8px;
+            border: 4px solid #333;
+            padding: 0;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+            position: relative;
+            box-shadow: inset 0 0 30px rgba(0,255,0,0.1);
+        }
+        
+        /* ゲーム専用スタイル */
+        .game-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: black;
+            position: relative;
+        }
+        
+        #game-canvas {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+        }
+        
+        .retro-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 255, 0, 0.03),
+                    rgba(0, 255, 0, 0.03) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            animation: scanlines 8s linear infinite;
+        }
+        
+        @keyframes scanlines {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 10px; }
+        }
+        
+        .retro-title {
+            font-family: 'Courier New', monospace;
+            font-size: 48px;
+            font-weight: bold;
+            color: var(--retro-green);
+            text-shadow: 
+                0 0 10px var(--retro-green),
+                0 0 20px var(--retro-green),
+                0 0 30px var(--retro-green);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { text-shadow: 0 0 10px var(--retro-green), 0 0 20px var(--retro-green); }
+            to { text-shadow: 0 0 20px var(--retro-green), 0 0 30px var(--retro-green), 0 0 40px var(--retro-green); }
+        }
+        
+        .retro-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            margin-top: 40px;
+        }
+        
+        .retro-button {
+            padding: 15px 30px;
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            font-weight: bold;
+            background: transparent;
+            color: var(--retro-cyan);
+            border: 2px solid var(--retro-cyan);
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .retro-button:hover {
+            color: black;
+            background: var(--retro-cyan);
+            box-shadow: 
+                0 0 20px var(--retro-cyan),
+                inset 0 0 20px rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+        
+        .retro-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .retro-button:hover::before {
+            left: 100%;
+        }
+        
+        .score-display {
+            position: absolute;
+            top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--retro-green);
+            text-shadow: 0 0 10px var(--retro-green);
+        }
+        
+        .score-display.left {
+            left: 25%;
+        }
+        
+        .score-display.right {
+            right: 25%;
+        }
+        
+        .game-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 30px;
+            font-family: 'Courier New', monospace;
+            color: var(--retro-amber);
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .control-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .control-info kbd {
+            background: #222;
+            border: 1px solid #444;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* ステータスバー（画面下部） */
+        .status-bar {
+            position: fixed;
+            bottom: -48px;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            transition: bottom 0.3s, left 0.3s;
+            z-index: 998;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .status-bar.active {
+            bottom: 0;
+        }
+        
+        .status-bar.menu-open {
+            left: 320px;
+        }
+        
+        .stats-grid {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .stat-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* オーバーレイ */
+        .overlay {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 998;
+        }
+        
+        .overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* エラーオーバーレイ */
+        .error-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+        
+        .error-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .error-title {
+            color: var(--error-color);
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .error-content {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            color: var(--text-primary);
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .error-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .error-btn:hover {
+            background: var(--bg-tertiary);
+        }
+        
+        .error-btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .error-btn-primary:hover {
+            background: #5a67d8;
+        }
+        
+        /* プログレスバー */
+        .progress-container {
+            height: 4px;
+            background: #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-container.loading .progress-bar {
+            animation: progress-indeterminate 1.5s infinite;
+        }
+        
+        @keyframes progress-indeterminate {
+            0% {
+                width: 0%;
+                margin-left: 0%;
+            }
+            50% {
+                width: 30%;
+                margin-left: 70%;
+            }
+            100% {
+                width: 0%;
+                margin-left: 100%;
+            }
+        }
+        
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .main-container.menu-open {
+                margin-left: 0;
+            }
+            
+            .side-menu {
+                width: 280px;
+                left: -280px;
+            }
+            
+            .status-bar.menu-open {
+                left: 0;
+            }
+            
+            .stats-grid {
+                gap: 16px;
+                flex-wrap: wrap;
+            }
+            
+            .workspace {
+                flex-direction: column;
+            }
+            
+            .workspace-panel.code-panel {
+                max-width: 100%;
+            }
+            
+            .header-controls {
+                gap: 8px;
+            }
+            
+            .header-select {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+            
+            .retro-title {
+                font-size: 32px;
+            }
+            
+            .game-controls {
+                font-size: 12px;
+                gap: 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-title p {
+                display: none;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 13px;
+            }
+            
+            .stats-grid {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .main-content {
+                padding: 16px;
+            }
+            
+            .retro-title {
+                font-size: 24px;
+            }
+            
+            .retro-button {
+                font-size: 16px;
+                padding: 12px 24px;
+            }
+        }
+        
+        /* ユーティリティクラス */
+        .hidden {
+            display: none !important;
+        }
+        
+        .mb-3 {
+            margin-bottom: 12px;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <div class="header">
+        <div class="hamburger" onclick="toggleMenu()" id="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="header-content">
+            <div class="header-title">
+                <h1 id="app-title">🕹️ PONGU CHAMPIONSHIP</h1>
+                <p id="app-description">レトロアーケードゲーム</p>
+            </div>
+            <div class="header-controls">
+                <select class="header-select" id="theme-select" onchange="changeTheme()">
+                    <option value="system">🌓 システム</option>
+                    <option value="light">☀️ ライト</option>
+                    <option value="dark" selected>🌙 ダーク</option>
+                </select>
+                <select class="header-select" id="language-select" onchange="changeLanguage()">
+                    <option value="ja">🇯🇵 日本語</option>
+                    <option value="en">🇬🇧 English</option>
+                </select>
+                <div class="status-indicator">
+                    <div class="status-dot" id="status-dot"></div>
+                    <span id="status-text">初期化中...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- プログレスバー -->
+    <div class="progress-container loading" id="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <!-- サイドメニュー -->
+    <div class="side-menu" id="sideMenu">
+        <!-- タブナビゲーション -->
+        <div class="tab-navigation">
+            <button class="tab-button active" onclick="switchTab('app')">
+                <span class="tab-icon">🎮</span>
+                <span data-i18n="tab.app">ゲーム設定</span>
+            </button>
+            <button class="tab-button" onclick="switchTab('wasm')">
+                <span class="tab-icon">⚙️</span>
+                <span data-i18n="tab.wasm">WebAssembly</span>
+            </button>
+        </div>
+        
+        <!-- アプリ設定タブ -->
+        <div class="tab-content active" id="appTab">
+            <div class="menu-section">
+                <div class="menu-header">ゲーム設定</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <label>難易度</label>
+                        <select id="difficulty-select" onchange="changeDifficulty()">
+                            <option value="easy">かんたん</option>
+                            <option value="normal" selected>ふつう</option>
+                            <option value="hard">むずかしい</option>
+                            <option value="extreme">エクストリーム</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <label>ボール速度</label>
+                        <select id="ball-speed" onchange="changeBallSpeed()">
+                            <option value="slow">ゆっくり</option>
+                            <option value="normal" selected>ふつう</option>
+                            <option value="fast">はやい</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="enable-sound" checked>
+                        <label for="enable-sound">サウンド有効</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="enable-particles" checked>
+                        <label for="enable-particles">パーティクル効果</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="enable-scanlines" checked>
+                        <label for="enable-scanlines">走査線エフェクト</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="enable-joystick">
+                        <label for="enable-joystick">ゲームパッド使用</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header">操作方法</div>
+                <div class="menu-content">
+                    <div style="font-size: 13px; line-height: 1.8;">
+                        <strong>プレイヤー1（左）:</strong><br>
+                        W - 上移動<br>
+                        S - 下移動<br>
+                        <br>
+                        <strong>プレイヤー2（右）:</strong><br>
+                        ↑ - 上移動<br>
+                        ↓ - 下移動<br>
+                        <br>
+                        <strong>その他:</strong><br>
+                        SPACE - ゲーム開始/一時停止<br>
+                        ESC - メニューに戻る<br>
+                        R - リセット
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WebAssembly設定タブ -->
+        <div class="tab-content" id="wasmTab">
+            <!-- コマンドラインプレビュー -->
+            <div class="menu-section">
+                <div class="menu-header">📟 コマンドライン</div>
+                <div class="menu-content">
+                    <div style="background: #1e1e1e; border-radius: 6px; padding: 10px; overflow-x: auto;">
+                        <code id="cmd-preview" style="color: #4ade80; font-family: monospace; font-size: 12px; white-space: nowrap; user-select: text;">
+                            asc main.ts -o main.wasm --runtime minimal --optimize --optimizeLevel 3
+                        </code>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 実行制御セクション -->
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.execution">実行制御</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <input type="checkbox" id="auto-compile" checked>
+                        <label for="auto-compile" data-i18n="option.autoCompile">自動コンパイル</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="show-stats" checked>
+                        <label for="show-stats" data-i18n="option.showStats">統計情報を表示</label>
+                        <div class="toggle-switch" onclick="toggleStats()" id="statsToggle"></div>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="show-code-editor">
+                        <label for="show-code-editor" data-i18n="option.showCodeEditor">コードエディターを表示</label>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="recompile()" id="recompileBtn">
+                        ⟳ <span data-i18n="button.recompile">再コンパイル</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.presets">コンパイルプリセット</div>
+                <div class="menu-content">
+                    <div class="presets">
+                        <button class="preset-btn" onclick="applyPreset('simple')" data-i18n="preset.simple">シンプル</button>
+                        <button class="preset-btn" onclick="applyPreset('debug')" data-i18n="preset.debug">デバッグ</button>
+                        <button class="preset-btn" onclick="applyPreset('release')" data-i18n="preset.release">リリース</button>
+                        <button class="preset-btn" onclick="applyPreset('minimal')" data-i18n="preset.minimal">最小サイズ</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.optimization">最適化オプション</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-optimize" checked onchange="updateCmdPreview()">
+                        <label for="opt-optimize">--optimize</label>
+                    </div>
+                    <div class="option-item">
+                        <label>--optimizeLevel</label>
+                        <select id="opt-optimizeLevel" onchange="updateCmdPreview()">
+                            <option value="">Default</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3" selected>3</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <label>--shrinkLevel</label>
+                        <select id="opt-shrinkLevel" onchange="updateCmdPreview()">
+                            <option value="" selected>Default</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="menu-section">
+                <div class="menu-header" data-i18n="section.runtime">ランタイムオプション</div>
+                <div class="menu-content">
+                    <div class="option-item">
+                        <label>--runtime</label>
+                        <select id="opt-runtime" onchange="updateCmdPreview()">
+                            <option value="stub">stub</option>
+                            <option value="minimal" selected>minimal</option>
+                            <option value="incremental">incremental</option>
+                        </select>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-exportRuntime" onchange="updateCmdPreview()">
+                        <label for="opt-exportRuntime">--exportRuntime</label>
+                    </div>
+                    <div class="option-item">
+                        <input type="checkbox" id="opt-noAssert" checked onchange="updateCmdPreview()">
+                        <label for="opt-noAssert">--noAssert</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- オーバーレイ -->
+    <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+    
+    <!-- メインコンテンツ -->
+    <div class="main-container" id="mainContainer">
+        <div class="main-content">
+            <div class="workspace" id="workspace">
+                <!-- コードパネル（条件付き表示） -->
+                <div class="workspace-panel code-panel hidden" id="codePanel">
+                    <div class="panel-header">
+                        <span data-i18n="panel.sourceCode">📝 AssemblyScript ソースコード</span>
+                    </div>
+                    <div class="source-code-display" id="source-code-display"></div>
+                </div>
+                
+                <!-- アプリケーションビューポート -->
+                <div class="workspace-panel app-panel" id="appPanel">
+                    <div class="panel-header">
+                        <span data-i18n="panel.application">🕹️ ゲーム</span>
+                    </div>
+                    <div class="app-viewport" id="app-viewport">
+                        <div class="text-center" style="color: var(--text-secondary);">
+                            <div style="font-size: 48px; margin-bottom: 16px;">⚙️</div>
+                            <div data-i18n="status.initializing">ゲームを初期化しています...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ステータスバー -->
+    <div class="status-bar" id="statusBar">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label" data-i18n="stat.wasmSize">WASM:</span>
+                <span class="stat-value" id="stat-wasm-size">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label" data-i18n="stat.compileTime">コンパイル:</span>
+                <span class="stat-value" id="stat-compile-time">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">FPS:</span>
+                <span class="stat-value" id="stat-fps">60</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">ゲームモード:</span>
+                <span class="stat-value" id="stat-game-mode">待機中</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- エラーオーバーレイ -->
+    <div class="error-overlay" id="error-overlay">
+        <div class="error-card">
+            <div class="error-title">
+                ⚠️ <span data-i18n="error.title">エラーが発生しました</span>
+            </div>
+            <div class="error-content" id="error-content"></div>
+            <div class="error-actions">
+                <button class="error-btn" onclick="copyError()" data-i18n="button.copyError">エラーをコピー</button>
+                <button class="error-btn error-btn-primary" onclick="closeError()" data-i18n="button.close">閉じる</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- メインスクリプト -->
+    <script type="module">
+        // ============================================
+        // 国際化（i18n）システム
+        // ============================================
+        const i18n = {
+            ja: {
+                'tab.app': 'ゲーム設定',
+                'tab.wasm': 'WebAssembly',
+                'section.execution': '実行制御',
+                'section.presets': 'コンパイルプリセット',
+                'section.optimization': '最適化オプション',
+                'section.runtime': 'ランタイムオプション',
+                'option.autoCompile': '自動コンパイル',
+                'option.showStats': '統計情報を表示',
+                'option.showCodeEditor': 'コードエディターを表示',
+                'button.recompile': '再コンパイル',
+                'button.copyError': 'エラーをコピー',
+                'button.close': '閉じる',
+                'preset.simple': 'シンプル',
+                'preset.debug': 'デバッグ',
+                'preset.release': 'リリース',
+                'preset.minimal': '最小サイズ',
+                'panel.sourceCode': '📝 AssemblyScript ソースコード',
+                'panel.application': '🕹️ ゲーム',
+                'stat.wasmSize': 'WASM:',
+                'stat.compileTime': 'コンパイル:',
+                'status.initializing': 'ゲームを初期化しています...',
+                'status.compiling': 'コンパイル中...',
+                'status.ready': 'プレイ可能',
+                'error.title': 'エラーが発生しました'
+            },
+            en: {
+                'tab.app': 'Game Settings',
+                'tab.wasm': 'WebAssembly',
+                'section.execution': 'Execution Control',
+                'section.presets': 'Compile Presets',
+                'section.optimization': 'Optimization Options',
+                'section.runtime': 'Runtime Options',
+                'option.autoCompile': 'Auto Compile',
+                'option.showStats': 'Show Statistics',
+                'option.showCodeEditor': 'Show Code Editor',
+                'button.recompile': 'Re-compile',
+                'button.copyError': 'Copy Error',
+                'button.close': 'Close',
+                'preset.simple': 'Simple',
+                'preset.debug': 'Debug',
+                'preset.release': 'Release',
+                'preset.minimal': 'Minimal',
+                'panel.sourceCode': '📝 AssemblyScript Source Code',
+                'panel.application': '🕹️ Game',
+                'stat.wasmSize': 'WASM:',
+                'stat.compileTime': 'Compile:',
+                'status.initializing': 'Initializing game...',
+                'status.compiling': 'Compiling...',
+                'status.ready': 'Ready to Play',
+                'error.title': 'An error occurred'
+            }
+        };
+        
+        let currentLanguage = 'ja';
+        
+        function updateLanguage(lang) {
+            currentLanguage = lang;
+            const translations = i18n[lang];
+            
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[key]) {
+                    element.textContent = translations[key];
+                }
+            });
+            
+            localStorage.setItem('language', lang);
+        }
+        
+        // ============================================
+        // CDNプロバイダー定義
+        // ============================================
+        const CDN_PROVIDERS = [
+            {
+                name: 'jsDelivr',
+                baseUrl: 'https://cdn.jsdelivr.net/npm',
+                timeout: 10000,
+                priority: 1
+            },
+            {
+                name: 'UNPKG',
+                baseUrl: 'https://unpkg.com',
+                timeout: 10000,
+                priority: 2
+            }
+        ];
+        
+        // ============================================
+        // アプリケーションモジュール（PONGU CHAMPIONSHIP）
+        // ============================================
+        const AppModule = {
+            name: "PONGU CHAMPIONSHIP",
+            description: "レトロアーケードゲーム",
+            
+            sourceCode: `
+// ゲーム設定
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 400;
+const PADDLE_HEIGHT = 80;
+const PADDLE_WIDTH = 10;
+const BALL_SIZE = 10;
+const PADDLE_SPEED = <f32>5.0;
+const BALL_SPEED_INITIAL = <f32>4.0;
+const MAX_SCORE = 11;
+
+// ゲーム状態
+enum GameState {
+    MENU,
+    PLAYING_SINGLE,
+    PLAYING_MULTI,
+    PAUSED,
+    GAME_OVER
+}
+
+// パドル
+class Paddle {
+    x: f32;
+    y: f32;
+    width: f32;
+    height: f32;
+    speed: f32;
+    score: i32;
+    
+    constructor(x: f32, isLeft: bool) {
+        this.x = x;
+        this.y = <f32>(CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2);
+        this.width = <f32>PADDLE_WIDTH;
+        this.height = <f32>PADDLE_HEIGHT;
+        this.speed = PADDLE_SPEED;
+        this.score = 0;
+    }
+    
+    moveUp(): void {
+        this.y -= this.speed;
+        if (this.y < 0) this.y = 0;
+    }
+    
+    moveDown(): void {
+        this.y += this.speed;
+        if (this.y + this.height > <f32>CANVAS_HEIGHT) {
+            this.y = <f32>CANVAS_HEIGHT - this.height;
+        }
+    }
+    
+    update(ballY: f32, difficulty: f32): void {
+        // AI movement
+        let targetY = ballY - this.height / <f32>2;
+        let diff = targetY - this.y;
+        
+        if (<f32>Math.abs(diff) > <f32>5) {
+            if (diff > 0) {
+                this.y += this.speed * difficulty;
+            } else {
+                this.y -= this.speed * difficulty;
+            }
+            
+            // Boundaries
+            if (this.y < 0) this.y = 0;
+            if (this.y + this.height > <f32>CANVAS_HEIGHT) {
+                this.y = <f32>CANVAS_HEIGHT - this.height;
+            }
+        }
+    }
+}
+
+// ボール
+class Ball {
+    x: f32;
+    y: f32;
+    vx: f32;
+    vy: f32;
+    size: f32;
+    speed: f32;
+    trail: Array<f32>;
+    
+    constructor() {
+        this.size = <f32>BALL_SIZE;
+        this.speed = BALL_SPEED_INITIAL;
+        this.trail = new Array<f32>();
+        this.reset();
+    }
+    
+    reset(): void {
+        this.x = <f32>(CANVAS_WIDTH / 2);
+        this.y = <f32>(CANVAS_HEIGHT / 2);
+        
+        // Random direction
+        let angle = (<f32>Math.random() * <f32>0.5 - <f32>0.25) * <f32>Math.PI;
+        let direction = <f32>Math.random() > 0.5 ? <f32>1 : <f32>-1;
+        
+        this.vx = <f32>Math.cos(angle) * this.speed * direction;
+        this.vy = <f32>Math.sin(angle) * this.speed;
+        
+        this.trail = new Array<f32>();
+    }
+    
+    update(): void {
+        // Trail effect
+        if (this.trail.length >= 20) {
+            this.trail.shift();
+            this.trail.shift();
+        }
+        this.trail.push(this.x);
+        this.trail.push(this.y);
+        
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // Top and bottom collision
+        if (this.y <= this.size || this.y >= <f32>CANVAS_HEIGHT - this.size) {
+            this.vy = -this.vy;
+            this.y = this.y <= this.size ? this.size : <f32>CANVAS_HEIGHT - this.size;
+        }
+    }
+    
+    checkPaddleCollision(paddle: Paddle): bool {
+        if (this.x - this.size < paddle.x + paddle.width &&
+            this.x + this.size > paddle.x &&
+            this.y - this.size < paddle.y + paddle.height &&
+            this.y + this.size > paddle.y) {
+            
+            // Calculate hit position (-1 to 1)
+            let hitPos = ((this.y - paddle.y) / paddle.height - <f32>0.5) * <f32>2;
+            
+            // Adjust angle based on hit position
+            let angle = hitPos * <f32>Math.PI / <f32>4; // Max 45 degrees
+            
+            // Reverse X direction and apply new angle
+            this.vx = <f32>Math.abs(this.vx) * (paddle.x < <f32>CANVAS_WIDTH / <f32>2 ? <f32>1 : <f32>-1);
+            this.vy = <f32>Math.sin(angle) * this.speed;
+            
+            // Speed up slightly
+            this.speed *= <f32>1.05;
+            if (this.speed > <f32>15) this.speed = <f32>15;
+            
+            // Update velocity with new speed
+            let currentSpeed = <f32>Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+            this.vx = (this.vx / currentSpeed) * this.speed;
+            this.vy = (this.vy / currentSpeed) * this.speed;
+            
+            return true;
+        }
+        return false;
+    }
+}
+
+// グローバル変数
+let leftPaddle: Paddle | null = null;
+let rightPaddle: Paddle | null = null; 
+let ball: Ball | null = null;
+let gameState: GameState = GameState.MENU;
+let difficulty: f32 = <f32>0.6;
+let winner: i32 = 0; // 0=none, 1=left, 2=right
+
+// キー入力状態
+let keyW: bool = false;
+let keyS: bool = false;
+let keyUp: bool = false;
+let keyDown: bool = false;
+let keySpace: bool = false;
+let keyEsc: bool = false;
+
+// ゲーム初期化
+export function init(): void {
+    leftPaddle = new Paddle(<f32>30, true);
+    rightPaddle = new Paddle(<f32>(CANVAS_WIDTH - 30 - PADDLE_WIDTH), false);
+    ball = new Ball();
+    gameState = GameState.MENU;
+}
+
+// キー入力処理
+export function setKey(keyCode: i32, pressed: bool): void {
+    switch(keyCode) {
+        case 87: keyW = pressed; break; // W
+        case 83: keyS = pressed; break; // S
+        case 38: keyUp = pressed; break; // Arrow Up
+        case 40: keyDown = pressed; break; // Arrow Down
+        case 32: keySpace = pressed; break; // Space
+        case 27: keyEsc = pressed; break; // Escape
+    }
+}
+
+// ゲームパッド入力
+export function setGamepadInput(player: i32, y: f32): void {
+    if (player == 1) {
+        if (y < <f32>-0.3) keyW = true;
+        else if (y > <f32>0.3) keyS = true;
+        else {
+            keyW = false;
+            keyS = false;
+        }
+    } else {
+        if (y < <f32>-0.3) keyUp = true;
+        else if (y > <f32>0.3) keyDown = true;
+        else {
+            keyUp = false;
+            keyDown = false;
+        }
+    }
+}
+
+// メニュー選択
+export function selectMode(mode: i32): void {
+    if (gameState == GameState.MENU) {
+        if (mode == 1) {
+            gameState = GameState.PLAYING_SINGLE;
+        } else {
+            gameState = GameState.PLAYING_MULTI;
+        }
+        resetGame();
+    }
+}
+
+// ゲームリセット
+export function resetGame(): void {
+    if (!leftPaddle || !rightPaddle || !ball) return;
+    
+    leftPaddle!.score = 0;
+    rightPaddle!.score = 0;
+    leftPaddle!.y = <f32>(CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2);
+    rightPaddle!.y = <f32>(CANVAS_HEIGHT / 2 - PADDLE_HEIGHT / 2);
+    ball!.reset();
+    winner = 0;
+}
+
+// 難易度設定
+export function setDifficulty(level: f32): void {
+    difficulty = level;
+}
+
+// ゲーム更新
+export function update(): void {
+    if (!leftPaddle || !rightPaddle || !ball) return;
+    
+    // ESCでメニューに戻る
+    if (keyEsc) {
+        gameState = GameState.MENU;
+        keyEsc = false;
+        return;
+    }
+    
+    if (gameState == GameState.MENU) {
+        return;
+    }
+    
+    if (gameState == GameState.GAME_OVER) {
+        if (keySpace) {
+            gameState = GameState.MENU;
+            keySpace = false;
+        }
+        return;
+    }
+    
+    // ポーズ処理
+    if (keySpace && gameState != GameState.PAUSED) {
+        gameState = GameState.PAUSED;
+        keySpace = false;
+        return;
+    } else if (keySpace && gameState == GameState.PAUSED) {
+        gameState = gameState == GameState.PLAYING_SINGLE ? 
+                    GameState.PLAYING_SINGLE : GameState.PLAYING_MULTI;
+        keySpace = false;
+        return;
+    }
+    
+    if (gameState == GameState.PAUSED) {
+        return;
+    }
+    
+    // パドル移動
+    if (keyW) leftPaddle!.moveUp();
+    if (keyS) leftPaddle!.moveDown();
+    
+    if (gameState == GameState.PLAYING_SINGLE) {
+        // AIコントロール
+        rightPaddle!.update(ball!.y, difficulty);
+    } else {
+        // プレイヤー2コントロール
+        if (keyUp) rightPaddle!.moveUp();
+        if (keyDown) rightPaddle!.moveDown();
+    }
+    
+    // ボール更新
+    ball!.update();
+    
+    // パドルとの衝突判定
+    ball!.checkPaddleCollision(leftPaddle!);
+    ball!.checkPaddleCollision(rightPaddle!);
+    
+    // スコア判定
+    if (ball!.x < 0) {
+        rightPaddle!.score++;
+        ball!.reset();
+        
+        if (rightPaddle!.score >= MAX_SCORE) {
+            gameState = GameState.GAME_OVER;
+            winner = 2;
+        }
+    } else if (ball!.x > <f32>CANVAS_WIDTH) {
+        leftPaddle!.score++;
+        ball!.reset();
+        
+        if (leftPaddle!.score >= MAX_SCORE) {
+            gameState = GameState.GAME_OVER;
+            winner = 1;
+        }
+    }
+}
+
+// Getter functions
+export function getGameState(): i32 { return gameState as i32; }
+export function getLeftPaddleY(): f32 { return leftPaddle ? leftPaddle!.y : <f32>0; }
+export function getRightPaddleY(): f32 { return rightPaddle ? rightPaddle!.y : <f32>0; }
+export function getBallX(): f32 { return ball ? ball!.x : <f32>0; }
+export function getBallY(): f32 { return ball ? ball!.y : <f32>0; }
+export function getLeftScore(): i32 { return leftPaddle ? leftPaddle!.score : 0; }
+export function getRightScore(): i32 { return rightPaddle ? rightPaddle!.score : 0; }
+export function getWinner(): i32 { return winner; }
+export function getBallTrailLength(): i32 { return ball ? ball!.trail.length / 2 : 0; }
+export function getBallTrailX(index: i32): f32 { 
+    return ball && index * 2 < ball!.trail.length ? ball!.trail[index * 2] : <f32>0; 
+}
+export function getBallTrailY(index: i32): f32 { 
+    return ball && index * 2 + 1 < ball!.trail.length ? ball!.trail[index * 2 + 1] : <f32>0; 
+}
+            `.trim(),
+            
+            defaultOptions: {
+                optimize: true,
+                optimizeLevel: '3',
+                runtime: 'minimal',
+                noAssert: true
+            },
+            
+            getImports() {
+                return {};
+            },
+            
+            async init(wasmExports) {
+                const viewport = document.getElementById('app-viewport');
+                viewport.innerHTML = `
+                    <div class="game-container" id="game-container">
+                        <div class="retro-screen" id="scanlines"></div>
+                        <div class="score-display left" id="score-left">0</div>
+                        <div class="score-display right" id="score-right">0</div>
+                        <canvas id="game-canvas" width="800" height="400"></canvas>
+                        <div class="game-controls" id="game-controls">
+                            <div class="control-info">
+                                <strong>P1</strong>
+                                <div><kbd>W</kbd> / <kbd>S</kbd></div>
+                            </div>
+                            <div class="control-info">
+                                <strong>START</strong>
+                                <div><kbd>SPACE</kbd></div>
+                            </div>
+                            <div class="control-info">
+                                <strong>P2</strong>
+                                <div><kbd>↑</kbd> / <kbd>↓</kbd></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Initialize game
+                wasmExports.init();
+                this.wasmExports = wasmExports;
+                this.canvas = document.getElementById('game-canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.animationId = null;
+                this.lastFrameTime = performance.now();
+                this.frameCount = 0;
+                this.fps = 60;
+                
+                // Sound system (Web Audio API)
+                this.initSound();
+                
+                // Setup input handlers
+                this.setupInputHandlers();
+                
+                // Setup gamepad support
+                this.setupGamepad();
+                
+                // Start game loop
+                this.startGameLoop();
+                
+                // Apply saved settings
+                this.applySettings();
+            },
+            
+            initSound() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    
+                    // Sound effects functions
+                    this.playHit = () => {
+                        if (!document.getElementById('enable-sound').checked) return;
+                        
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+                        
+                        oscillator.frequency.value = 400;
+                        oscillator.type = 'square';
+                        gainNode.gain.value = 0.1;
+                        
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 0.05);
+                    };
+                    
+                    this.playScore = () => {
+                        if (!document.getElementById('enable-sound').checked) return;
+                        
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+                        
+                        oscillator.frequency.setValueAtTime(200, this.audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(100, this.audioContext.currentTime + 0.2);
+                        oscillator.type = 'sawtooth';
+                        gainNode.gain.value = 0.2;
+                        
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 0.2);
+                    };
+                    
+                    this.playGameOver = () => {
+                        if (!document.getElementById('enable-sound').checked) return;
+                        
+                        const oscillator = this.audioContext.createOscillator();
+                        const gainNode = this.audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(this.audioContext.destination);
+                        
+                        oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+                        oscillator.frequency.exponentialRampToValueAtTime(110, this.audioContext.currentTime + 1);
+                        oscillator.type = 'triangle';
+                        gainNode.gain.value = 0.3;
+                        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 1);
+                        
+                        oscillator.start();
+                        oscillator.stop(this.audioContext.currentTime + 1);
+                    };
+                    
+                } catch (e) {
+                    console.warn('Web Audio API not supported');
+                    this.playHit = () => {};
+                    this.playScore = () => {};
+                    this.playGameOver = () => {};
+                }
+            },
+            
+            setupInputHandlers() {
+                // Keyboard input
+                document.addEventListener('keydown', (e) => {
+                    this.wasmExports.setKey(e.keyCode, true);
+                    
+                    // Menu controls
+                    if (this.wasmExports.getGameState() === 0) { // MENU
+                        if (e.key === '1') {
+                            this.wasmExports.selectMode(1); // Single player
+                            this.playHit();
+                        } else if (e.key === '2') {
+                            this.wasmExports.selectMode(2); // Two players
+                            this.playHit();
+                        }
+                    }
+                    
+                    if (e.key === 'r' || e.key === 'R') {
+                        this.wasmExports.resetGame();
+                        this.playHit();
+                    }
+                });
+                
+                document.addEventListener('keyup', (e) => {
+                    this.wasmExports.setKey(e.keyCode, false);
+                });
+                
+                // Touch/Click controls for menu
+                this.canvas.addEventListener('click', (e) => {
+                    if (this.wasmExports.getGameState() === 0) { // MENU
+                        const rect = this.canvas.getBoundingClientRect();
+                        const x = e.clientX - rect.left;
+                        const y = e.clientY - rect.top;
+                        
+                        // Check button positions
+                        if (y > 200 && y < 250) {
+                            if (x > 250 && x < 450) {
+                                this.wasmExports.selectMode(1); // Single player
+                                this.playHit();
+                            } else if (x > 450 && x < 650) {
+                                this.wasmExports.selectMode(2); // Two players
+                                this.playHit();
+                            }
+                        }
+                    }
+                });
+            },
+            
+            setupGamepad() {
+                this.gamepads = {};
+                
+                window.addEventListener('gamepadconnected', (e) => {
+                    console.log('Gamepad connected:', e.gamepad.id);
+                    this.gamepads[e.gamepad.index] = true;
+                });
+                
+                window.addEventListener('gamepaddisconnected', (e) => {
+                    console.log('Gamepad disconnected:', e.gamepad.id);
+                    delete this.gamepads[e.gamepad.index];
+                });
+            },
+            
+            pollGamepads() {
+                if (!document.getElementById('enable-joystick').checked) return;
+                
+                const gamepads = navigator.getGamepads();
+                
+                for (let i = 0; i < gamepads.length; i++) {
+                    const gamepad = gamepads[i];
+                    if (gamepad) {
+                        // Player 1 uses first gamepad
+                        if (i === 0) {
+                            this.wasmExports.setGamepadInput(1, gamepad.axes[1] || 0);
+                            
+                            // Button controls
+                            if (gamepad.buttons[0] && gamepad.buttons[0].pressed) {
+                                this.wasmExports.setKey(32, true); // Space
+                            }
+                        }
+                        
+                        // Player 2 uses second gamepad
+                        if (i === 1) {
+                            this.wasmExports.setGamepadInput(2, gamepad.axes[1] || 0);
+                        }
+                    }
+                }
+            },
+            
+            startGameLoop() {
+                const gameLoop = () => {
+                    // Poll gamepads
+                    this.pollGamepads();
+                    
+                    // Calculate FPS
+                    const currentTime = performance.now();
+                    const deltaTime = currentTime - this.lastFrameTime;
+                    this.frameCount++;
+                    
+                    if (this.frameCount % 30 === 0) {
+                        this.fps = Math.round(1000 / deltaTime);
+                        document.getElementById('stat-fps').textContent = this.fps;
+                    }
+                    
+                    this.lastFrameTime = currentTime;
+                    
+                    // Store previous scores for sound effects
+                    const prevLeftScore = this.wasmExports.getLeftScore();
+                    const prevRightScore = this.wasmExports.getRightScore();
+                    const prevState = this.wasmExports.getGameState();
+                    
+                    // Update game logic
+                    this.wasmExports.update();
+                    
+                    // Check for scoring
+                    const leftScore = this.wasmExports.getLeftScore();
+                    const rightScore = this.wasmExports.getRightScore();
+                    
+                    if (leftScore > prevLeftScore || rightScore > prevRightScore) {
+                        this.playScore();
+                    }
+                    
+                    // Check for game over
+                    const currentState = this.wasmExports.getGameState();
+                    if (currentState === 4 && prevState !== 4) { // GAME_OVER
+                        this.playGameOver();
+                    }
+                    
+                    // Render game
+                    this.render();
+                    
+                    // Update UI
+                    this.updateUI();
+                    
+                    this.animationId = requestAnimationFrame(gameLoop);
+                };
+                
+                gameLoop();
+            },
+            
+            render() {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                // Clear canvas
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const gameState = this.wasmExports.getGameState();
+                
+                if (gameState === 0) { // MENU
+                    this.renderMenu();
+                } else if (gameState === 4) { // GAME_OVER
+                    this.renderGameOver();
+                } else {
+                    this.renderGame();
+                }
+            },
+            
+            renderMenu() {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                // Title
+                ctx.fillStyle = '#00ff00';
+                ctx.font = 'bold 48px Courier New';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = '#00ff00';
+                ctx.shadowBlur = 20;
+                ctx.fillText('PONGU', canvas.width / 2, 100);
+                ctx.font = 'bold 32px Courier New';
+                ctx.fillText('CHAMPIONSHIP', canvas.width / 2, 140);
+                
+                // Subtitle
+                ctx.font = '16px Courier New';
+                ctx.fillStyle = '#ffb000';
+                ctx.shadowColor = '#ffb000';
+                ctx.shadowBlur = 10;
+                ctx.fillText('THE ULTIMATE RETRO EXPERIENCE', canvas.width / 2, 170);
+                
+                // Menu buttons
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 2;
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 10;
+                
+                // Single player button
+                ctx.strokeRect(250, 200, 150, 50);
+                ctx.fillStyle = '#00ffff';
+                ctx.font = 'bold 18px Courier New';
+                ctx.fillText('1 PLAYER', 325, 230);
+                
+                // Two players button
+                ctx.strokeRect(400, 200, 150, 50);
+                ctx.fillText('2 PLAYERS', 475, 230);
+                
+                // Instructions
+                ctx.font = '14px Courier New';
+                ctx.fillStyle = '#ff00ff';
+                ctx.shadowColor = '#ff00ff';
+                ctx.shadowBlur = 5;
+                ctx.fillText('PRESS 1 OR 2 TO START', canvas.width / 2, 300);
+                ctx.fillText('USE W/S AND ↑/↓ TO MOVE', canvas.width / 2, 330);
+                ctx.fillText('PRESS SPACE TO PAUSE', canvas.width / 2, 360);
+                
+                // Reset shadow
+                ctx.shadowBlur = 0;
+            },
+            
+            renderGame() {
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                // Draw center line
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([10, 10]);
+                ctx.beginPath();
+                ctx.moveTo(canvas.width / 2, 0);
+                ctx.lineTo(canvas.width / 2, canvas.height);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                
+                // Draw paddles
+                const leftY = this.wasmExports.getLeftPaddleY();
+                const rightY = this.wasmExports.getRightPaddleY();
+                
+                ctx.fillStyle = '#00ff00';
+                ctx.shadowColor = '#00ff00';
+                ctx.shadowBlur = 10;
+                ctx.fillRect(30, leftY, 10, 80);
+                ctx.fillRect(canvas.width - 40, rightY, 10, 80);
+                
+                // Draw ball trail
+                const trailLength = this.wasmExports.getBallTrailLength();
+                if (trailLength > 0 && document.getElementById('enable-particles').checked) {
+                    for (let i = 0; i < trailLength; i++) {
+                        const alpha = i / trailLength * 0.5;
+                        ctx.fillStyle = `rgba(0, 255, 255, ${alpha})`;
+                        const trailX = this.wasmExports.getBallTrailX(i);
+                        const trailY = this.wasmExports.getBallTrailY(i);
+                        ctx.fillRect(trailX - 5, trailY - 5, 10, 10);
+                    }
+                }
+                
+                // Draw ball
+                const ballX = this.wasmExports.getBallX();
+                const ballY = this.wasmExports.getBallY();
+                
+                ctx.fillStyle = '#00ffff';
+                ctx.shadowColor = '#00ffff';
+                ctx.shadowBlur = 15;
+                ctx.fillRect(ballX - 5, ballY - 5, 10, 10);
+                
+                // Reset shadow
+                ctx.shadowBlur = 0;
+                
+                // Pause indicator
+                if (this.wasmExports.getGameState() === 3) { // PAUSED
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    ctx.fillStyle = '#ffff00';
+                    ctx.font = 'bold 48px Courier New';
+                    ctx.textAlign = 'center';
+                    ctx.shadowColor = '#ffff00';
+                    ctx.shadowBlur = 20;
+                    ctx.fillText('PAUSED', canvas.width / 2, canvas.height / 2);
+                    ctx.shadowBlur = 0;
+                }
+            },
+            
+            renderGameOver() {
+                this.renderGame(); // Draw final game state
+                
+                const ctx = this.ctx;
+                const canvas = this.canvas;
+                
+                // Overlay
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Winner text
+                const winner = this.wasmExports.getWinner();
+                ctx.fillStyle = '#ff00ff';
+                ctx.font = 'bold 48px Courier New';
+                ctx.textAlign = 'center';
+                ctx.shadowColor = '#ff00ff';
+                ctx.shadowBlur = 20;
+                
+                if (winner === 1) {
+                    ctx.fillText('PLAYER 1 WINS!', canvas.width / 2, canvas.height / 2 - 30);
+                } else {
+                    ctx.fillText('PLAYER 2 WINS!', canvas.width / 2, canvas.height / 2 - 30);
+                }
+                
+                ctx.font = '24px Courier New';
+                ctx.fillStyle = '#00ffff';
+                ctx.fillText('PRESS SPACE TO CONTINUE', canvas.width / 2, canvas.height / 2 + 30);
+                
+                ctx.shadowBlur = 0;
+            },
+            
+            updateUI() {
+                // Update scores
+                document.getElementById('score-left').textContent = this.wasmExports.getLeftScore();
+                document.getElementById('score-right').textContent = this.wasmExports.getRightScore();
+                
+                // Update game mode display
+                const gameState = this.wasmExports.getGameState();
+                let modeText = '待機中';
+                
+                switch(gameState) {
+                    case 0: modeText = 'メニュー'; break;
+                    case 1: modeText = '1P vs CPU'; break;
+                    case 2: modeText = '2P対戦'; break;
+                    case 3: modeText = '一時停止'; break;
+                    case 4: modeText = 'ゲーム終了'; break;
+                }
+                
+                document.getElementById('stat-game-mode').textContent = modeText;
+            },
+            
+            applySettings() {
+                // Scanlines effect
+                const scanlines = document.getElementById('scanlines');
+                if (document.getElementById('enable-scanlines').checked) {
+                    scanlines.style.display = 'block';
+                } else {
+                    scanlines.style.display = 'none';
+                }
+            },
+            
+            cleanup() {
+                if (this.animationId) {
+                    cancelAnimationFrame(this.animationId);
+                }
+                if (this.audioContext) {
+                    this.audioContext.close();
+                }
+            }
+        };
+        
+        // Global functions
+        window.changeDifficulty = function() {
+            const level = document.getElementById('difficulty-select').value;
+            const difficultyMap = {
+                'easy': 0.4,
+                'normal': 0.6,
+                'hard': 0.8,
+                'extreme': 1.0
+            };
+            
+            if (AppModule.wasmExports) {
+                AppModule.wasmExports.setDifficulty(difficultyMap[level]);
+            }
+        };
+        
+        window.changeBallSpeed = function() {
+            // This would require adding a function to the WASM module
+            // For now, it's a placeholder for future enhancement
+        };
+        
+        // ============================================
+        // 安全な初期化
+        // ============================================
+        let wasmExports = null;
+        let isCompiling = false;
+        let menuOpen = false;
+        let statsVisible = false;
+        let optionsChanged = false;
+        
+        // ============================================
+        // コマンドラインプレビュー機能
+        // ============================================
+        function updateCmdPreview() {
+            const options = {};
+            
+            ['optimize', 'exportRuntime', 'noAssert'].forEach(opt => {
+                const el = document.getElementById(`opt-${opt}`);
+                if (el && el.checked) options[opt] = true;
+            });
+            
+            ['optimizeLevel', 'shrinkLevel', 'runtime'].forEach(opt => {
+                const el = document.getElementById(`opt-${opt}`);
+                if (el && el.value) options[opt] = el.value;
+            });
+            
+            const cmd = generateCmdLine(options);
+            const preview = document.getElementById('cmd-preview');
+            if (preview) {
+                preview.textContent = cmd;
+            }
+            
+            markOptionsChanged();
+        }
+        
+        function markOptionsChanged() {
+            if (!optionsChanged) {
+                optionsChanged = true;
+                const btn = document.getElementById('recompileBtn');
+                if (btn) {
+                    btn.classList.add('options-changed');
+                    btn.innerHTML = '⚠️ <span data-i18n="button.recompile">再コンパイル</span>';
+                }
+            }
+        }
+        
+        function generateCmdLine(options) {
+            const parts = ['asc', 'main.ts', '-o', 'main.wasm'];
+            
+            Object.entries(options).forEach(([key, value]) => {
+                if (typeof value === 'boolean' && value) {
+                    parts.push(`--${key}`);
+                } else if (typeof value !== 'boolean' && value !== '') {
+                    parts.push(`--${key}`, value.toString());
+                }
+            });
+            
+            return parts.join(' ');
+        }
+        
+        // UI制御関数
+        function toggleMenu() {
+            menuOpen = !menuOpen;
+            const hamburger = document.getElementById('hamburger');
+            const sideMenu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('overlay');
+            const mainContainer = document.getElementById('mainContainer');
+            const statusBar = document.getElementById('statusBar');
+            
+            if (menuOpen) {
+                hamburger.classList.add('active');
+                sideMenu.classList.add('active');
+                overlay.classList.add('active');
+                mainContainer.classList.add('menu-open');
+                statusBar.classList.add('menu-open');
+            } else {
+                hamburger.classList.remove('active');
+                sideMenu.classList.remove('active');
+                overlay.classList.remove('active');
+                mainContainer.classList.remove('menu-open');
+                statusBar.classList.remove('menu-open');
+            }
+        }
+        
+        function closeMenu() {
+            if (menuOpen) {
+                toggleMenu();
+            }
+        }
+        
+        function toggleStats() {
+            statsVisible = !statsVisible;
+            const statsToggle = document.getElementById('statsToggle');
+            const statusBar = document.getElementById('statusBar');
+            const showStatsCheckbox = document.getElementById('show-stats');
+            
+            if (statsVisible) {
+                statsToggle.classList.add('active');
+                statusBar.classList.add('active');
+                showStatsCheckbox.checked = true;
+            } else {
+                statsToggle.classList.remove('active');
+                statusBar.classList.remove('active');
+                showStatsCheckbox.checked = false;
+            }
+            
+            localStorage.setItem('statsVisible', statsVisible);
+        }
+        
+        function switchTab(tabName) {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            tabButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.closest('.tab-button').classList.add('active');
+            
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            if (tabName === 'app') {
+                document.getElementById('appTab').classList.add('active');
+            } else if (tabName === 'wasm') {
+                document.getElementById('wasmTab').classList.add('active');
+            }
+        }
+        
+        function changeTheme() {
+            const theme = document.getElementById('theme-select').value;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+        }
+        
+        function changeLanguage() {
+            const lang = document.getElementById('language-select').value;
+            updateLanguage(lang);
+        }
+        
+        function toggleCodeEditor() {
+            const showCode = document.getElementById('show-code-editor').checked;
+            const codePanel = document.getElementById('codePanel');
+            const workspace = document.getElementById('workspace');
+            
+            if (showCode) {
+                codePanel.classList.remove('hidden');
+                workspace.classList.remove('single-column');
+                
+                const sourceDisplay = document.getElementById('source-code-display');
+                if (sourceDisplay) {
+                    sourceDisplay.textContent = AppModule.sourceCode;
+                }
+            } else {
+                codePanel.classList.add('hidden');
+                workspace.classList.add('single-column');
+            }
+            
+            localStorage.setItem('showCodeEditor', showCode);
+        }
+        
+        window.toggleMenu = toggleMenu;
+        window.closeMenu = closeMenu;
+        window.toggleStats = toggleStats;
+        window.switchTab = switchTab;
+        window.changeTheme = changeTheme;
+        window.changeLanguage = changeLanguage;
+        window.updateCmdPreview = updateCmdPreview;
+        
+        function updateStatus(status, message) {
+            const dot = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            
+            if (dot) {
+                dot.className = 'status-dot';
+                if (status === 'loading') dot.classList.add('loading');
+                if (status === 'error') dot.classList.add('error');
+            }
+            if (text) {
+                const translations = i18n[currentLanguage];
+                const translationKey = `status.${status}`;
+                text.textContent = translations[translationKey] || message;
+            }
+            
+            const progressContainer = document.getElementById('progress-container');
+            if (progressContainer) {
+                if (status === 'loading') {
+                    progressContainer.classList.add('loading');
+                } else {
+                    progressContainer.classList.remove('loading');
+                }
+            }
+        }
+        
+        function updateProgress(percent, message, detail = null) {
+            const progressBar = document.getElementById('progress-bar');
+            const statusText = document.getElementById('status-text');
+            
+            if (progressBar) progressBar.style.width = `${percent}%`;
+            if (statusText) {
+                let text = message;
+                if (detail) text += ` (${detail})`;
+                statusText.textContent = text;
+            }
+            
+            console.log(`[Progress] ${percent}% - ${message}${detail ? ` (${detail})` : ''}`);
+        }
+        
+        // ============================================
+        // コンパイラローダー（簡略版）
+        // ============================================
+        async function loadCompilerWithCDNFallback() {
+            const version = "0.28.8"; // 固定バージョン
+            console.log(`[Loader] Loading AssemblyScript ${version}`);
+            
+            for (let i = 0; i < CDN_PROVIDERS.length; i++) {
+                const cdn = CDN_PROVIDERS[i];
+                
+                try {
+                    updateProgress(30 + (i * 35), 'コンパイラ読み込み中', cdn.name);
+                    
+                    const webJsUrl = `${cdn.baseUrl}/assemblyscript@${version}/dist/web.js`;
+                    console.log(`[Loader] Attempting ${cdn.name}: ${webJsUrl}`);
+                    
+                    await loadWebJS(webJsUrl, cdn.timeout);
+                    await waitForImportMap();
+                    
+                    const asc = await import("assemblyscript/asc");
+                    const compiler = asc.default || asc;
+                    
+                    console.log(`[Loader] Success with ${cdn.name}`);
+                    updateProgress(100, 'コンパイラ準備完了');
+                    
+                    return compiler;
+                    
+                } catch (error) {
+                    console.error(`[Loader] ${cdn.name} failed:`, error.message);
+                    cleanupFailedScripts();
+                    
+                    delete window.ASSEMBLYSCRIPT_VERSION;
+                    delete window.ASSEMBLYSCRIPT_IMPORTMAP;
+                }
+            }
+            
+            throw new Error(`Failed to load AssemblyScript ${version} from all CDN providers`);
+        }
+        
+        function loadWebJS(url, timeout) {
+            return new Promise((resolve, reject) => {
+                if (window.ASSEMBLYSCRIPT_VERSION) {
+                    console.log('[Loader] AssemblyScript already loaded');
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = url;
+                script.dataset.assemblyScript = 'loading';
+                
+                const timeoutId = setTimeout(() => {
+                    script.remove();
+                    reject(new Error(`Timeout loading: ${url}`));
+                }, timeout);
+                
+                script.onload = () => {
+                    clearTimeout(timeoutId);
+                    script.dataset.assemblyScript = 'loaded';
+                    console.log('[Loader] Script loaded successfully');
+                    setTimeout(resolve, 300);
+                };
+                
+                script.onerror = () => {
+                    clearTimeout(timeoutId);
+                    script.remove();
+                    reject(new Error(`Failed to load script: ${url}`));
+                };
+                
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function waitForImportMap() {
+            const maxAttempts = 20;
+            const waitTime = 100;
+            
+            for (let i = 0; i < maxAttempts; i++) {
+                if (window.ASSEMBLYSCRIPT_VERSION) {
+                    console.log('[Loader] Import map and globals ready');
+                    return;
+                }
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+            }
+            
+            throw new Error('Import map setup timeout');
+        }
+        
+        function cleanupFailedScripts() {
+            const scripts = document.querySelectorAll('script[data-assembly-script]');
+            scripts.forEach(script => {
+                if (script.dataset.assemblyScript !== 'loaded') {
+                    console.log('[Loader] Removing failed script tag');
+                    script.remove();
+                }
+            });
+        }
+        
+        async function safeInit() {
+            try {
+                console.log('[Init] Starting initialization...');
+                
+                const asc = await loadCompilerWithCDNFallback();
+                
+                if (!asc) {
+                    throw new Error('Failed to load compiler');
+                }
+                
+                window.asc = asc;
+                
+                // 保存された設定を復元
+                const savedTheme = localStorage.getItem('theme') || 'dark';
+                document.getElementById('theme-select').value = savedTheme;
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                
+                const savedLanguage = localStorage.getItem('language') || 'ja';
+                document.getElementById('language-select').value = savedLanguage;
+                updateLanguage(savedLanguage);
+                
+                const savedShowCode = localStorage.getItem('showCodeEditor') === 'true';
+                document.getElementById('show-code-editor').checked = savedShowCode;
+                toggleCodeEditor();
+                
+                await initializeApp(asc);
+                
+            } catch (error) {
+                console.error('[Init] Failed to initialize:', error);
+                showFatalError(`コンパイラの読み込みに失敗しました。ページを再読み込みしてください。`);
+            }
+        }
+        
+        // ============================================
+        // プリセット定義
+        // ============================================
+        const PRESETS = {
+            simple: {
+                optimize: false,
+                runtime: 'minimal'
+            },
+            debug: {
+                optimize: false,
+                optimizeLevel: '0',
+                debug: true,
+                sourceMap: true
+            },
+            release: {
+                optimize: true,
+                optimizeLevel: '3',
+                shrinkLevel: '1',
+                noAssert: true
+            },
+            minimal: {
+                optimize: true,
+                optimizeLevel: '3',
+                shrinkLevel: '2',
+                runtime: 'stub',
+                noAssert: true
+            }
+        };
+        
+        // ============================================
+        // コンパイラコア
+        // ============================================
+        const CompilerCore = {
+            compiler: null,
+            
+            init(ascInstance) {
+                this.compiler = ascInstance;
+                return true;
+            },
+            
+            async compile(sourceCode, options) {
+                if (!this.compiler) {
+                    throw new Error('Compiler not initialized');
+                }
+                
+                const compileOptions = this.buildOptions(options);
+                let wasmBinary = null;
+                let compileStats = '';
+                
+                const { error, stdout, stderr } = await this.compiler.main(compileOptions, {
+                    readFile: (filename) => {
+                        if (filename === "main.ts") return sourceCode;
+                        return null;
+                    },
+                    writeFile: (filename, contents) => {
+                        if (filename === "main.wasm") {
+                            wasmBinary = contents;
+                        }
+                    },
+                    listFiles: () => ["main.ts"]
+                });
+                
+                if (error) throw new Error(stderr || error.toString());
+                if (!wasmBinary) throw new Error('No WebAssembly binary generated');
+                
+                if (stdout) compileStats = stdout;
+                
+                return { wasmBinary, stats: compileStats };
+            },
+            
+            buildOptions(userOptions) {
+                const flags = ["main.ts", "-o", "main.wasm"];
+                
+                Object.entries(userOptions).forEach(([key, value]) => {
+                    if (typeof value === 'boolean' && value) {
+                        flags.push(`--${key}`);
+                    } else if (typeof value !== 'boolean' && value !== '') {
+                        flags.push(`--${key}`, value.toString());
+                    }
+                });
+                
+                return flags;
+            }
+        };
+        
+        // ============================================
+        // オプション管理
+        // ============================================
+        const OptionsManager = {
+            current: {},
+            
+            init() {
+                this.current = { runtime: 'minimal' };
+                this.loadFromStorage();
+                this.updateUI();
+                updateCmdPreview();
+            },
+            
+            apply(preset) {
+                if (PRESETS[preset]) {
+                    document.querySelectorAll('[id^="opt-"]').forEach(el => {
+                        if (el.type === 'checkbox') {
+                            el.checked = false;
+                        } else if (el.tagName === 'SELECT') {
+                            const defaultOption = el.querySelector('option[selected]');
+                            el.value = defaultOption ? defaultOption.value : (el.options[0] ? el.options[0].value : '');
+                        }
+                    });
+
+                    this.current = { ...PRESETS[preset] };
+                    this.updateUI();
+                    this.saveToStorage();
+                }
+            },
+            
+            collectFromUI() {
+                const options = {};
+                
+                ['optimize', 'exportRuntime', 'noAssert'].forEach(opt => {
+                    const el = document.getElementById(`opt-${opt}`);
+                    if (el && el.checked) options[opt] = true;
+                });
+                
+                ['optimizeLevel', 'shrinkLevel', 'runtime'].forEach(opt => {
+                    const el = document.getElementById(`opt-${opt}`);
+                    if (el && el.value) options[opt] = el.value;
+                });
+                
+                this.current = options;
+                this.saveToStorage();
+                
+                return options;
+            },
+            
+            updateUI() {
+                Object.keys(this.current).forEach(key => {
+                    const el = document.getElementById(`opt-${key}`);
+                    if (el) {
+                        if (el.type === 'checkbox') {
+                            el.checked = this.current[key] === true;
+                        } else {
+                            el.value = this.current[key] || '';
+                        }
+                    }
+                });
+            },
+            
+            saveToStorage() {
+                try {
+                    localStorage.setItem('asmOptions', JSON.stringify(this.current));
+                } catch(e) {}
+            },
+            
+            loadFromStorage() {
+                try {
+                    const saved = localStorage.getItem('asmOptions');
+                    if (saved) this.current = JSON.parse(saved);
+                } catch(e) {}
+            }
+        };
+        
+        // ============================================
+        // WebAssembly実行管理
+        // ============================================
+        const WasmRunner = {
+            instance: null,
+            
+            async instantiate(wasmBinary, imports = {}) {
+                const defaultImports = {
+                    env: {
+                        abort: (msg, file, line, column) => {
+                            console.error(`Abort: ${msg} at ${file}:${line}:${column}`);
+                        },
+                        trace: (msg, n, ...args) => {
+                            console.log(`Trace: ${msg}`, ...args);
+                        },
+                        seed: () => Date.now(),
+                        memory: new WebAssembly.Memory({ initial: 1 })
+                    },
+                    Math: Math,
+                    Date: Date
+                };
+                
+                const mergedImports = this.mergeImports(defaultImports, imports);
+                
+                let buffer;
+                if (wasmBinary instanceof ArrayBuffer) {
+                    buffer = wasmBinary;
+                } else if (wasmBinary instanceof Uint8Array) {
+                    buffer = wasmBinary.buffer.slice(wasmBinary.byteOffset, 
+                                                     wasmBinary.byteOffset + wasmBinary.byteLength);
+                } else {
+                    throw new Error('Unexpected binary format');
+                }
+                
+                const wasmModule = await WebAssembly.compile(buffer);
+                this.instance = await WebAssembly.instantiate(wasmModule, mergedImports);
+                
+                return this.instance.exports;
+            },
+            
+            mergeImports(defaults, custom) {
+                const merged = { ...defaults };
+                Object.keys(custom).forEach(key => {
+                    if (typeof custom[key] === 'object' && !Array.isArray(custom[key])) {
+                        merged[key] = { ...defaults[key], ...custom[key] };
+                    } else {
+                        merged[key] = custom[key];
+                    }
+                });
+                return merged;
+            }
+        };
+        
+        // ============================================
+        // 統計情報更新
+        // ============================================
+        function updateStats(compileTime, wasmSize) {
+            document.getElementById('stat-compile-time').textContent = 
+                compileTime ? `${compileTime}ms` : '-';
+            document.getElementById('stat-wasm-size').textContent = 
+                wasmSize ? `${(wasmSize / 1024).toFixed(1)}KB` : '-';
+        }
+        
+        // ============================================
+        // エラー処理
+        // ============================================
+        function showError(error) {
+            console.error(error);
+            document.getElementById('error-content').textContent = 
+                error.stack || error.message || String(error);
+            document.getElementById('error-overlay').style.display = 'flex';
+            updateStatus('error', 'エラーが発生しました');
+        }
+        
+        window.closeError = function() {
+            document.getElementById('error-overlay').style.display = 'none';
+        };
+        
+        window.copyError = async function() {
+            const content = document.getElementById('error-content').textContent;
+            try {
+                await navigator.clipboard.writeText(content);
+                alert('エラー内容をコピーしました');
+            } catch(e) {
+                console.error('Copy failed:', e);
+            }
+        };
+        
+        window.applyPreset = function(preset) {
+            OptionsManager.apply(preset);
+            updateCmdPreview();
+        };
+        
+        // ============================================
+        // コンパイル処理
+        // ============================================
+        async function compile() {
+            if (isCompiling) return;
+            isCompiling = true;
+            
+            const startTime = performance.now();
+            
+            try {
+                updateStatus('loading', 'コンパイル中...');
+                
+                const options = OptionsManager.collectFromUI();
+                
+                const { wasmBinary, stats } = await CompilerCore.compile(
+                    AppModule.sourceCode, 
+                    options
+                );
+                
+                const imports = AppModule.getImports();
+                wasmExports = await WasmRunner.instantiate(wasmBinary, imports);
+                
+                const compileTime = Math.round(performance.now() - startTime);
+                const wasmSize = wasmBinary.byteLength || wasmBinary.length;
+                
+                updateStats(compileTime, wasmSize);
+                
+                if (AppModule.init) {
+                    await AppModule.init(wasmExports);
+                }
+                
+                updateStatus('ready', 'プレイ可能');
+                
+                optionsChanged = false;
+                const btn = document.getElementById('recompileBtn');
+                if (btn) {
+                    btn.classList.remove('options-changed');
+                    btn.innerHTML = '⟳ <span data-i18n="button.recompile">再コンパイル</span>';
+                }
+                
+                return true;
+            } catch (error) {
+                showError(error);
+                return false;
+            } finally {
+                isCompiling = false;
+            }
+        }
+        
+        async function recompile() {
+            const btn = document.getElementById('recompileBtn');
+            const originalText = btn.innerHTML;
+            const translations = i18n[currentLanguage];
+            btn.innerHTML = '⏳ ' + (translations['status.compiling'] || 'コンパイル中...');
+            btn.disabled = true;
+            
+            // Cleanup previous instance
+            if (AppModule.cleanup) {
+                AppModule.cleanup();
+            }
+            
+            await compile();
+            
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+        
+        window.recompile = recompile;
+        
+        function showFatalError(message) {
+            document.getElementById('status-text').textContent = message;
+            document.getElementById('status-dot').className = 'status-dot error';
+            document.getElementById('app-viewport').innerHTML = `
+                <div style="text-align: center; color: var(--error-color);">
+                    <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+                    <div style="font-size: 18px; font-weight: bold;">初期化エラー</div>
+                    <div style="margin-top: 12px; color: var(--text-secondary);">${message}</div>
+                    <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        ページを再読み込み
+                    </button>
+                </div>
+            `;
+        }
+        
+        // ============================================
+        // メインアプリケーション初期化
+        // ============================================
+        async function initializeApp(asc) {
+            console.log('[Init] Starting application initialization...');
+            
+            document.getElementById('app-title').textContent = `🕹️ ${AppModule.name}`;
+            document.getElementById('app-description').textContent = AppModule.description;
+            
+            // コードエディター表示設定
+            document.getElementById('show-code-editor').addEventListener('change', toggleCodeEditor);
+            
+            // 統計表示設定
+            const showStatsCheckbox = document.getElementById('show-stats');
+            showStatsCheckbox.addEventListener('change', (e) => {
+                statsVisible = e.target.checked;
+                toggleStats();
+            });
+            
+            const savedStatsVisible = localStorage.getItem('statsVisible');
+            if (savedStatsVisible === 'true') {
+                statsVisible = true;
+                document.getElementById('statsToggle').classList.add('active');
+                document.getElementById('statusBar').classList.add('active');
+                showStatsCheckbox.checked = true;
+            }
+            
+            // Settings listeners
+            document.getElementById('enable-scanlines').addEventListener('change', () => {
+                if (AppModule.applySettings) AppModule.applySettings();
+            });
+            
+            document.getElementById('enable-particles').addEventListener('change', () => {
+                // Particles are handled in render
+            });
+            
+            CompilerCore.init(asc);
+            OptionsManager.init();
+            
+            if (AppModule.defaultOptions) {
+                OptionsManager.current = { ...AppModule.defaultOptions };
+                OptionsManager.updateUI();
+            }
+            
+            updateStatus('loading', 'コンパイル準備中...');
+            
+            const autoCompile = document.getElementById('auto-compile');
+            if (autoCompile.checked) {
+                await compile();
+            } else {
+                updateStatus('ready', '待機中');
+                document.getElementById('app-viewport').innerHTML = `
+                    <div class="text-center" style="color: var(--text-secondary);">
+                        <div style="font-size: 48px; margin-bottom: 16px;">⏸️</div>
+                        <div>自動コンパイルが無効です</div>
+                        <button class="btn btn-primary" style="margin-top: 20px;" onclick="recompile()">
+                            ⟳ コンパイル開始
+                        </button>
+                    </div>
+                `;
+            }
+            
+            console.log('[Init] Application initialized successfully');
+        }
+        
+        // ============================================
+        // エントリーポイント
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[Init] DOM ready, preparing initialization...');
+            document.getElementById('status-text').textContent = 'コンパイラを読み込み中...';
+        });
+        
+        setTimeout(() => {
+            safeInit().catch(error => {
+                console.error('[Init] Initialization failed:', error);
+                showFatalError('初期化に失敗しました: ' + error.message);
+            });
+        }, 100);
+    </script>
+</body>
+</html>
