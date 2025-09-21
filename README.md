@@ -26,7 +26,7 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 - 数式PNG画像の生成（matplotlibによるTeX風描画の数式）
 ### ブラウザサンドボックス+WASM（AssemblyScript使用）
 - WASMで最適化した単体HTML型webアプリの生成
-## レシピのローカル実行について
+## ⚠️レシピのローカル実行について⚠️
 AIに生成させた文章の記述とは異なり、実測してみるとVRAM16GBのビデオカードで動作するモデルではことごとくレシピの実行に失敗しました。コンテキストウィンドウ長に加えてモデル規模も重要な制限要因のようです。
 <br><br>
 今後Colab等で検証することを考えています。他に可能性があるものとしてはAppleのSilicon系Macですね。時間はかかりますが、CPUで重量級モデルを推論する方法でも何とかなるかもしれません。
@@ -155,21 +155,25 @@ graph LR
 
 ## 🎬 デモ
 ### Claude
+「魔王軍の営業報告のプレゼンを5枚で作って。」
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_claude.html)
 - [生成されたプレゼンテーション](examples/maougun_report_claude.pptx)
 <br><br>
 ![Claude](examples/screenshot_claude.png)
 ### ChatGPT
+「魔王軍の営業報告のプレゼンを5枚で作って。」
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_chatgpt.html)
 - [生成されたプレゼンテーション](examples/maougun_report_chatgpt.pptx)
 <br><br>
 ![ChatGPT](examples/screenshot_chatgpt.png)
 ### Gemini
+「魔王軍の営業報告のプレゼンを5枚で作って。」
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_gemini.html)
 - [生成されたプレゼンテーション](examples/maougun_report_gemini.pptx)
 <br><br>
 ![Claude](examples/screenshot_gemini.png)
 ### Perplexity
+「魔王軍の営業報告のプレゼンを5枚で作って。」
 - [プレゼンダウンロード用HTML](examples/maougun_reportgenerator_perplexity.html)
 - [生成されたプレゼンテーション](examples/maougun_report_perplexity.pptx)
 <br><br>
@@ -262,7 +266,7 @@ WASM使用Webアプリ → ASMSCRIPT-OPTIMIZER-RECIPE.md
 生成されたHTMLを保存 → ブラウザで開く → ダウンロードボタンをクリック！
 
 ### 高度なプライバシー保護で始める（Ollama使用）
-※ コンシューマー向けGPUで本リポジトリ記載のレシピが実行できるというのはハルシネーションのようです。※
+⚠️コンシューマー向けGPUで本リポジトリ記載のレシピが実行できるというのはハルシネーションのようです。安定動作には20B以上のパラメーター数のモデルが必要でした。⚠️
 
 <details>
 <summary>🔐 機密文書を扱う場合はこちら</summary>
@@ -539,7 +543,7 @@ flowchart TD
 | **ストレージ** | 100MB（キャッシュ用） | 500MB以上 |
 
 ### システム要件（ローカルAI使用時）
-
+⚠️以下のAIによる節はハルシネーションを起こしていました。実測の結果、レシピの正常な解釈には20B、もしくはそれ以上のパラメーター数のモデルが必要のようです。⚠️
 #### 📊 **ハードウェア要件**
 
 | 項目 | 最小要件 | 標準推奨 | 快適動作 |
@@ -814,8 +818,8 @@ ollama serve
 <summary>Q: 機密文書を扱っても安全ですか？</summary>
 
 **A:** AIの選択によってプライバシー保護レベルが異なります：
-- **Ollama/Jan**: ⭐⭐⭐⭐⭐ 高度な安全性（ローカル処理）
-- **Claude/ChatGPT**: ⭐⭐⭐ 標準的な安全性（レシピと要望がAIサービスに送信される）
+- **Ollama/Jan**: ⭐⭐⭐⭐⭐ 高度な保護（ローカル処理）
+- **Claude/ChatGPT**: ⭐⭐⭐ 標準的な保護（レシピと要望がAIサービスに送信される）
 
 機密性の高い文書にはOllama/Janの使用を強く推奨します。
 </details>
