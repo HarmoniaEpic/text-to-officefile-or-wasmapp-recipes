@@ -84,7 +84,7 @@ graph LR
 # 🎉 Office文書自動生成レシピシステム
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Version](https://img.shields.io/badge/Version-1.2.0-blue.svg)](https://github.com/HarmoniaEpic/text-to-office-recipes)
+[![Version](https://img.shields.io/badge/Version-1.2.1-blue.svg)](https://github.com/HarmoniaEpic/text-to-office-recipes)
 [![Python](https://img.shields.io/badge/Python-3.x-green.svg)](https://www.python.org/)
 [![Pyodide](https://img.shields.io/badge/Powered%20by-Pyodide-orange.svg)](https://pyodide.org/)
 
@@ -285,7 +285,7 @@ cat PPTX-RECIPE.md | ollama run gemma3 "このレシピを使って営業報告�
 
 | コンポーネント | バージョン | 最終更新 | 状態 |
 |-------------|----------|---------|------|
-| **プロジェクト全体** | v1.2.0 | 2025-09-17 | ✅ 安定版 |
+| **プロジェクト全体** | v1.2.1 | 2025-09-21 | ✅ 安定版 |
 | PPTX-RECIPE | v4.0 | 2025-09-17 | ✅ 最新 |
 | DOCX-RECIPE | v4.0 | 2025-09-17 | ✅ 最新 |
 | XLSX-RECIPE | v2.0 | 2025-09-17 | ✅ 最新 |
