@@ -1026,7 +1026,7 @@ SOFTWARE.
 
 <div align="center">
 
-**楽しいOffice文書とWebアプリの作成ライフを！** 🎊
+**楽しいOffice文書とWebアプリ作成ライフを！** 🎊
 
 Made with Claude and ChatGPT
 
