@@ -78,7 +78,7 @@ graph LR
 - AIにやりたいことを自然言語で指示することで、ブラウザ上に解決策を構築する
 - AIに文字通りサンドボックス（砂場）を提供する
 <br>
-上記3点に特徴があります。AI単体で実現不可能な機能が、PyodideやAssemblyScript等によるブラウザサンドボックス上の開発環境構築を前提にHTMLを出力するだけで実現出来るため、AIの機能拡張手段として非常に手軽かつ柔軟です。WASIやWASI Socketsで出来ることも増えつつある今、工夫次第ではAIに設計させてブラウザ上に目的用途のMCPサーバーを作成するといった使い方も可能になるかもしれません。
+上記3点に特徴があります。AI単体で実現不可能な機能が、PyodideやAssemblyScript等によるブラウザサンドボックス上の開発環境構築を前提にHTMLを出力するだけで実現出来るため、AIの機能拡張手段として非常に手軽かつ柔軟です。WASIやWASI Socketsで出来ることも増えつつある今、工夫次第ではAIに設計させてブラウザ上に目的の用途のMCPサーバーを作成しプロキシ経由で利用するといった使い方も可能になるかもしれません。
 
 # 🎉 Office文書自動生成レシピシステム
 
@@ -820,7 +820,7 @@ ollama serve
 <details>
 <summary>Q: なぜサーバーが不要なのですか？</summary>
 
-**A:** Pyodide（WebAssembly版Python）を使用しているため、すべてのPython処理がブラウザ内で実行されます。ただし、AI処理は選択したAIによって異なります（Ollama/Janはローカル、Claude/ChatGPTはクラウド）。
+**A:** Pyodide（WebAssembly版Python）やAssemblyScript（WebAssembly作成用高級言語）を使用しているため、すべてのPython処理がブラウザ内で実行されます。ただし、AI処理は選択したAIによって異なります（Ollama/Janはローカル、Claude/ChatGPTはクラウド）。
 </details>
 
 <details>
