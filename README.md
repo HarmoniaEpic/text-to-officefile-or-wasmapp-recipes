@@ -87,7 +87,7 @@ graph LR
 [![Python](https://img.shields.io/badge/Python-3.x-green.svg)](https://www.python.org/)
 [![Pyodide](https://img.shields.io/badge/Powered%20by-Pyodide-orange.svg)](https://pyodide.org/)
 
-**AIとレシピファイルで、PowerPoint・Word・Excel・PDF・数式PNGを手軽に自動生成出来ます**
+**AIとレシピファイルで、PowerPoint・Word・Excel・PDF・数式PNG・WASM最適化Webアプリを手軽に自動生成出来ます**
 
 ローカルAI対応・MITライセンス・選択可能な２段階のプライバシー保護レベルを実現したオフィス系文書ファイル＆WASM対応単体HTML型webアプリ生成レシピ
 
