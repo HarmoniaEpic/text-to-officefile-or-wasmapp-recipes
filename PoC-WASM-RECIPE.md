@@ -230,7 +230,7 @@ USER 要望:
     (func $fd_write (param i32 i32 i32 i32) (result i32)))
   (memory (export "memory") 1)
   ;; iovec[0] は 0..7（buf, len）、メッセージは 8..、nwritten は 20..23 を使用
-  (data (i32.const 8) "Hello, WAT! a")
+  (data (i32.const 8) "Hello, WAT! \0a")
   (func (export "_start")
     (i32.store (i32.const 0) (i32.const 8))   ;; iov.buf = 8
     (i32.store (i32.const 4) (i32.const 12))  ;; iov.len = 12
