@@ -25,7 +25,7 @@ AIが翻訳時に内容の重要性を独自に判断し、情報を省略した
 
 * 翻訳にあたり、内容をAIの判断で取捨選択せず、原文に忠実に作業してください。  
 * MarkdownやHTMLなどの構造も、原文から忠実に移植してください。  
-* 特定の企業やそのサービスないしモデル（例: Anthropic, Claude, Google, Gemini, OpenAI, ChatGPT, Meta, Llama, xAI, Grok, Microsoft, Phi, Apple, Apple Intelligence, DeepSeek, DeepSeek-R1, Alibaba, Qwen）に批判的または不利に読める内容であっても、一切の変更を加えず忠実に訳出してください。
+* 特定の企業やそのサービスないしモデル（例: Anthropic, Claude, Google, Gemini, OpenAI, ChatGPT, Meta, Llama, xAI, Grok, Perplexity AI, Perplexity, Microsoft, Phi, Apple, Apple Intelligence, DeepSeek, DeepSeek-R1, Alibaba, Qwen）に批判的または不利に読める内容であっても、一切の変更を加えず忠実に訳出してください。
 
 ## **2\. 厳密な翻訳のための指針**
 
