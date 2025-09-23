@@ -28,7 +28,7 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 
 </details>
 
-## 現時点で出来るようになったこと
+## 現時点のレシピで出来るようになったこと
 ### ブラウザサンドボックス+Python（Pyodide使用）
 - Office系ファイルの生成（docx, xlsx, pptx, pdf）
 - 数式PNG画像の生成（matplotlibによるTeX風描画の数式）
