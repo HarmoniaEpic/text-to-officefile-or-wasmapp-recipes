@@ -1,6 +1,11 @@
 # まえがき
 ## 👉Download Here👈
 **[👉ZIPファイルをダウンロード👈](https://github.com/HarmoniaEpic/text-to-office-recipes/archive/refs/heads/main.zip)**
+## もうやめて！退屈なの！
+親愛なるミス・スウィーティー・プー、こちらをお納めください。
+<br><br>
+[PoC-WAT2WASM-RECIPE.md](PoC-WAT2WASM-RECIPE.md)
+
 ## 💣Caution! This product is still PoC!💣
 ## 🚽概念実証につき不満は水に流して下さい🚽
 ## これは何？
