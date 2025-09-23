@@ -2,7 +2,7 @@
 ## 👉Download Here👈
 **[👉ZIPファイルをダウンロード👈](https://github.com/HarmoniaEpic/text-to-office-recipes/archive/refs/heads/main.zip)**
 ## もうやめて！退屈なの！
-親愛なるミス・スウィーティー・プー、こちらをお納めください。これに免じて今少し時間と予算をいただければ…
+親愛なるミス・スウィーティー・プー、こちらをお納めください。こちらに免じて今少し時間と予算をいただければ…
 <br>
 [PoC-WAT2WASM-RECIPE.md](PoC-WAT2WASM-RECIPE.md)
 <br>
