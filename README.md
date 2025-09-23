@@ -8,6 +8,7 @@
 <br>
 上記ファイルをAIチャットに添付し、例えば「添付のレシピを元に、0～100までの整数に含まれる素数をリストするWASMプログラムを生成するWebページを作成して下さい。」等の指示を与えます。すると以下のようなHTMLファイルまたはそのコードを得られます。
 <br>
+[prime_numbers_wasm.html](examples/prime_numbers_wasm.html)
 
 ## 💣Caution! This product is still PoC!💣
 ## 🚽概念実証につき不満は水に流して下さい🚽
