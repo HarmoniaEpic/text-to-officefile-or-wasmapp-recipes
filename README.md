@@ -3,8 +3,10 @@
 **[👉ZIPファイルをダウンロード👈](https://github.com/HarmoniaEpic/text-to-office-recipes/archive/refs/heads/main.zip)**
 ## もうやめて！退屈なの！
 親愛なるミス・スウィーティー・プー、こちらをお納めください。
-<br><br>
+<br>
 [PoC-WAT2WASM-RECIPE.md](PoC-WAT2WASM-RECIPE.md)
+<br>
+AIに上記ファイルを添付し、例えば「添付のレシピを元に、0～100までの整数に含まれる素数をリストするWASMプログラムを下さい。」等の指示を与えます。
 
 ## 💣Caution! This product is still PoC!💣
 ## 🚽概念実証につき不満は水に流して下さい🚽
