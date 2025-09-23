@@ -215,8 +215,8 @@ USERリクエスト：
       <section class="card" id="sec-links">
       <h2>参考リンク</h2>
       <ul>
-        <li><a href="https://developer.mozilla.org/en-US/docs/WebAssembly/Guides/Concepts" target="_blank" rel="noopener">WebAssembly概要 - WebAssembly | MDN</a></li>
-        <li><a href="https://developer.mozilla.org/en-US/docs/WebAssembly/Guides/Text_format_to_Wasm" target="_blank" rel="noopener">WebAssemblyテキスト形式からWasmへの変換 - WebAssembly | MDN</a></li>
+        <li><a href="https://developer.mozilla.org/ja/docs/WebAssembly/Guides/Concepts" target="_blank" rel="noopener">WebAssembly概要 - WebAssembly | MDN</a></li>
+        <li><a href="https://developer.mozilla.org/ja/docs/WebAssembly/Guides/Text_format_to_Wasm" target="_blank" rel="noopener">WebAssemblyテキスト形式からWasmへの変換 - WebAssembly | MDN</a></li>
       </ul>
     </section>
   </main>
