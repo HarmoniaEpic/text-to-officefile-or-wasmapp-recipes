@@ -105,7 +105,7 @@ USERリクエスト：
     body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", Arial; line-height: 1.5; }
     header { padding: 12px 16px; background: #0001; }
     main { display: grid; grid-template-columns: 1fr; gap: 12px; padding: 12px; }
-    @media (min-width: 1120px) { main { grid-template-columns: 1fr 1fr; } }
+    /* @media (min-width: 1120px) { main { grid-template-columns: 1fr 1fr; } } */
     h1 { font-size: 1.05rem; margin: 0; }
     textarea, pre, button, input { font: inherit; }
     textarea { width: 100%; min-height: 260px; padding: 8px; border-radius: 8px; border: 1px solid #0002; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
