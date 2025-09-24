@@ -1,6 +1,6 @@
 # まえがき
-## 👉Download Here👈
-**[👉ZIPファイルをダウンロード👈](https://github.com/HarmoniaEpic/text-to-office-recipes/archive/refs/heads/main.zip)**
+## [👉ダウンロードはこちら👈](https://github.com/HarmoniaEpic/text-to-office-recipes/archive/refs/heads/main.zip)
+## 👉English version is here👉[text-to-officefile-or-wasmapp-recipes_en](https://github.com/HarmoniaEpic/text-to-officefile-or-wasmapp-recipes_en/)
 ## もうやめて！退屈なの！
 親愛なる[ミス・スウィーティー・プー](https://ja.wikipedia.org/wiki/%E3%82%A4%E3%82%B0%E3%83%8E%E3%83%BC%E3%83%99%E3%83%AB%E8%B3%9E#%E6%8E%88%E8%B3%9E%E5%BC%8F)、こちらをお納めください。これに免じて[今少し時間と予算をいただければ…](https://dic.pixiv.net/a/%E3%83%8B%E3%83%88%E3%83%AD%E5%8D%9A%E5%A3%AB)
 <br><br>
