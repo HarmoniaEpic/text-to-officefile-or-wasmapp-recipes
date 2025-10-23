@@ -29,10 +29,10 @@ DockerのDockfileみたいなものを用意して、ブラウザのサンドボ
 </details>
 
 ## 現時点のレシピで出来るようになったこと
-### ブラウザサンドボックス+WASM+Python（Pyodide使用）
+### ブラウザサンドボックス+Python（Pyodide使用）
 - Office系ファイルの生成（docx, xlsx, pptx, pdf）
 - 数式PNG画像の生成（matplotlibによるTeX風描画の数式）
-### ブラウザサンドボックス+WASM（AssemblyScript使用）
+### ブラウザサンドボックス+WASM直接使用（AssemblyScript使用）
 - WASMで最適化した単体HTML型webアプリの生成
 ## ⚠️レシピのローカル実行について⚠️
 AIに生成させた文章の記述とは異なり、実測してみるとVRAM16GBのビデオカードで動作するモデルではことごとくレシピの実行に失敗しました。コンテキストウィンドウ長に加えてモデル規模も重要な制限要因のようです。
